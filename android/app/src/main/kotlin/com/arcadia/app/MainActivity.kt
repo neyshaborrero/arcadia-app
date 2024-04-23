@@ -1,4 +1,4 @@
-package com.example.arcadia_mobile
+package com.arcadia.app
 
 import io.flutter.embedding.android.FlutterActivity
 

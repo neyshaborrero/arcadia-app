@@ -16,13 +16,12 @@ class StartScreen extends StatelessWidget {
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            //mainAxisSize: MainAxisSize.min,
             children: [
               const Spacer(flex:2),
               ConstrainedBox(
                 constraints: const BoxConstraints(
                   minWidth: 150,
-                  maxWidth: 300,
+                  maxWidth: 368,
                 ),
                 child: Image.asset(
                   'assets/2024_Logo-B.png',
@@ -31,7 +30,7 @@ class StartScreen extends StatelessWidget {
               ),
               const Spacer(), 
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 368),
                 child: ElevatedButton(
                   onPressed: () {
                     _navigateWithSlideTransition(context, const LoginScreen());
@@ -50,7 +49,7 @@ class StartScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 368),
                 child: OutlinedButton(
                   onPressed: () {
                     _navigateWithSlideTransition(context, const CreateAccountView());
@@ -69,7 +68,7 @@ class StartScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 368),
                 child: OutlinedButton(
                   onPressed: () {
                     _navigateUpWithSlideTransition(context, const TicketTiers());

@@ -1,4 +1,10 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.arcadia_mobile">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.arcadia.app">
+    <!-- User Permissions -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+
     <application
         android:label="arcadia"
         android:icon="@mipmap/ic_launcher">

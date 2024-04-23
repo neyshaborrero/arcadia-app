@@ -1,82 +1,283 @@
 import 'package:flutter/material.dart';
-
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'dart:io';
 
 class UserProfileUpdateScreen extends StatefulWidget {
   const UserProfileUpdateScreen({super.key});
 
   @override
-  _UserProfileUpdateScreenState createState() => _UserProfileUpdateScreenState();
+  _UserProfileUpdateScreenState createState() =>
+      _UserProfileUpdateScreenState();
 }
 
 class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _gamertagController = TextEditingController();
+  final TextEditingController _dateOfBirthController = TextEditingController();
   String? _selectedGender;
   String? _selectedUserType;
+
+  final ImagePicker _picker = ImagePicker();
+  XFile? _imageFile; // Used to hold the image file
+
+  // Method to show the bottom sheet menu
+  void _showImagePickerMenu(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return SafeArea(
+            child: Wrap(
+              children: <Widget>[
+                ListTile(
+                    leading: const Icon(Icons.photo_camera),
+                    title: const Text('Take Photo'),
+                    onTap: () {
+                      _imgFromCamera();
+                      Navigator.of(context).pop();
+                    }),
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Choose Photo'),
+                  onTap: () {
+                    _imgFromGallery();
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cancel),
+                  title: const Text('Cancel'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+  // Method to handle image selection from the camera
+  Future<void> _imgFromCamera() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 50,
+    );
+
+    setState(() {
+      _imageFile = image;
+    });
+  }
+
+  // Method to handle image selection from the gallery
+  Future<void> _imgFromGallery() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
+
+    setState(() {
+      _imageFile = image;
+    });
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime initialDate = DateTime(1975, 4, 6);
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != DateTime.now()) {
+      setState(() {
+        _dateOfBirthController.text = DateFormat('dd/MM/yyyy').format(picked);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black, // Adjust to match your color
       appBar: AppBar(
-        title: const Text('Create Account'),
-        backgroundColor: Colors.black, // Adjust to match your color
+        backgroundColor: Colors.black,
+        title: const Text(
+          'Create Account',
+          style: TextStyle(
+            fontSize: 24.0,
+            fontWeight:
+                FontWeight.w700, // This corresponds to font-weight: 700 in CSS
+          ),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.grey[800], // Adjust to match your color
-              child: IconButton(
-                icon: const Icon(Icons.add, size: 40),
-                color: Colors.white,
-                onPressed: () {
-                  // TODO: Implement profile picture upload
-                },
-              ),
+            Stack(
+              alignment:
+                  Alignment.center, // Aligns the '+' icon over the avatar
+
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(
+                      2), // This value is the width of the border
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white, // Border color
+                      width: 4.0, // Border width
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 60, // Adjust the radius to your preference
+                    backgroundColor: const Color(
+                        0xFF2C2B2B), // Background color for the avatar
+                    child: FractionallySizedBox(
+                      widthFactor: _imageFile != null
+                          ? 1.0
+                          : 0.6, // scales down the image to 80% of the CircleAvatar's size
+                      heightFactor: _imageFile != null
+                          ? 1.0
+                          : 0.6, // scales down the image to 80% of the CircleAvatar's size
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: _imageFile != null
+                                ? FileImage(File(_imageFile!.path))
+                                    as ImageProvider // Use picked image
+                                : const AssetImage(
+                                    'assets/player_default_prof_icon.png'), // Fallback to default asset image
+                            fit: BoxFit
+                                .fill, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0, // Adjust the position as per your design
+                  right: 0, // Adjust the position as per your design
+                  child: GestureDetector(
+                    onTap: () => _showImagePickerMenu(context),
+                    child: Container(
+                      width: 46.0,
+                      height: 46.0,
+                      decoration: const BoxDecoration(
+                        color: Color(
+                            0xFFD20E0D), // Background color of the '+' icon circle
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextFormField(
-              controller: _fullNameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name *',
-                fillColor: Colors.grey,
-                filled: true,
-              ),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 16),
+                controller: _fullNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Full Name *',
+                  contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(
+                          10), // CSS border-radius: 10px 0px 0px 0px;
+                      topRight: Radius.circular(10),
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                    borderSide:
+                        BorderSide.none, // CSS opacity: 0; implies no border
+                  ),
+                  fillColor: Color(0xFF2C2B2B), // Use appropriate color
+                ),
+                keyboardType: TextInputType.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                )),
+            const SizedBox(height: 20),
             TextFormField(
-              controller: _gamertagController,
-              decoration: const InputDecoration(
-                labelText: 'Gamertag *',
-                fillColor: Colors.grey,
-                filled: true,
-              ),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 16),
+                controller: _gamertagController,
+                decoration: const InputDecoration(
+                  labelText: 'Gamertag *',
+                  contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(
+                          10), // CSS border-radius: 10px 0px 0px 0px;
+                      topRight: Radius.circular(10),
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                    borderSide:
+                        BorderSide.none, // CSS opacity: 0; implies no border
+                  ),
+                  fillColor: Color(0xFF2C2B2B), // Use appropriate color
+                ),
+                keyboardType: TextInputType.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                )),
+            const SizedBox(height: 20),
             TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Date of Birth *',
-                fillColor: Colors.grey,
-                filled: true,
-              ),
-              style: const TextStyle(color: Colors.white),
-              // You can use a date picker input here
-            ),
-            const SizedBox(height: 16),
+                controller: _dateOfBirthController,
+                decoration: const InputDecoration(
+                  labelText: 'Date of Birth *',
+                  contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(
+                          10), // CSS border-radius: 10px 0px 0px 0px;
+                      topRight: Radius.circular(10),
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                    borderSide:
+                        BorderSide.none, // CSS opacity: 0; implies no border
+                  ),
+                  fillColor: Color(0xFF2C2B2B), // Use appropriate color
+                  suffixIcon: Icon(Icons.calendar_today, color: Colors.white),
+                ),
+                keyboardType: TextInputType.datetime,
+                onTap: () => _selectDate(context),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                )),
+            const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(
                 labelText: 'Gender *',
-                fillColor: Colors.grey,
+                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                fillColor: Color(0xFF2C2B2B),
                 filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(
+                        10), // CSS border-radius: 10px 0px 0px 0px;
+                    topRight: Radius.circular(10),
+                    bottomLeft: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                  ),
+                  borderSide:
+                      BorderSide.none, // CSS opacity: 0; implies no border
+                ),
               ),
               value: _selectedGender,
-              items: <String>['Male', 'Female', 'Other']
+              items: <String>['Male', 'Female', 'Other', 'Prefer Not to Say']
                   .map((String value) => DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
@@ -87,17 +288,32 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                   _selectedGender = newValue;
                 });
               },
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(
                 labelText: 'User Type *',
-                fillColor: Colors.grey,
+                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                fillColor: Color(0xFF2C2B2B),
                 filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(
+                        10), // CSS border-radius: 10px 0px 0px 0px;
+                    topRight: Radius.circular(10),
+                    bottomLeft: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                  ),
+                  borderSide:
+                      BorderSide.none, // CSS opacity: 0; implies no border
+                ),
               ),
               value: _selectedUserType,
-              items: <String>['Player', 'Coach', 'Spectator']
+              items: <String>['Player', 'Cosplayer', 'Operator']
                   .map((String value) => DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
@@ -108,20 +324,30 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                   _selectedUserType = newValue;
                 });
               },
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Please verify your information carefully.\nOnce submitted, your details cannot be edited later.',
+            const SizedBox(height: 50),
+            const Text(
+              'Please verify your information carefully. Once submitted, your details cannot be edited later.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[500]), // Adjust to match your color
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                // TODO: Implement create account logic
-              },
-              child: const Text('Create Account'),
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                child: Text(
+                  'Create Account',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
             ),
           ],
         ),

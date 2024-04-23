@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:547299899901:android:fc1c0334058f7789060194",
+        "mobilesdk_app_id": "1:547299899901:android:53b1628f02fc6c15060194",
         "android_client_info": {
-          "package_name": "com.example.arcadia_mobile"
+          "package_name": "com.arcadia.app"
         }
       },
       "oauth_client": [],

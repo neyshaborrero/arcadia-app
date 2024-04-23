@@ -1,115 +1,54 @@
+import 'package:arcadia_mobile/src/views/auth/change_password.dart';
 import 'package:flutter/material.dart';
-import '../profile/update_profile.dart';
-import '../../routes/slide_right_route.dart';
 import 'package:flutter/gestures.dart';
+import '../../routes/slide_right_route.dart';
 import '../auth/login_view.dart';
 
-class CreateAccountView extends StatefulWidget {
-  const CreateAccountView({super.key});
+class ResetPasswordScreen extends StatefulWidget {
+  const ResetPasswordScreen({super.key});
 
   @override
-  _CreateAccountViewState createState() => _CreateAccountViewState();
+  _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
 }
 
-class _CreateAccountViewState extends State<CreateAccountView> {
-  final TextEditingController _ticketCodeController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  bool _passwordVisible = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.black, // Adjust the color as needed
         title: const Text(
-          'Create Account',
+          'Reset password',
           style: TextStyle(
             fontSize: 24.0,
             fontWeight:
                 FontWeight.w700, // This corresponds to font-weight: 700 in CSS
           ),
         ),
-        backgroundColor: Colors.black, // Adjust the color as needed
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          const SizedBox(height: 32),
-
-          TextFormField(
-              controller: _ticketCodeController,
-              decoration: const InputDecoration(
-                labelText: 'Ticket Code *',
-                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(
-                        10), // CSS border-radius: 10px 0px 0px 0px;
-                    topRight: Radius.circular(10),
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  borderSide:
-                      BorderSide.none, // CSS opacity: 0; implies no border
-                ),
-                fillColor: Color(0xFF2C2B2B), // Use appropriate color
-              ),
-              keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              )),
-          const SizedBox(height: 50),
-
-          // Email TextField
-          TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email address *',
-                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(
-                        10), // CSS border-radius: 10px 0px 0px 0px;
-                    topRight: Radius.circular(10),
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  borderSide:
-                      BorderSide.none, // CSS opacity: 0; implies no border
-                ),
-                fillColor: Color(0xFF2C2B2B), // Use appropriate color
-              ),
-              keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              )),
+          const SizedBox(height: 75),
+          const Text(
+            'Please type your new password',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
           const SizedBox(height: 50),
           // Password TextField
           TextFormField(
               controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Create a password *',
+              decoration: const InputDecoration(
+                labelText: 'New password',
                 hintText: 'must be 8 characters',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _passwordVisible = !_passwordVisible;
-                    });
-                  },
-                ),
-                contentPadding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-                fillColor: const Color(0xFF2C2B2B), // Use appropriate color
+                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
                 filled: true,
-                border: const OutlineInputBorder(
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(
                         10), // CSS border-radius: 10px 0px 0px 0px;
@@ -120,8 +59,9 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                   borderSide:
                       BorderSide.none, // CSS opacity: 0; implies no border
                 ),
+                fillColor: Color(0xFF2C2B2B), // Use appropriate color
               ),
-              obscureText: !_passwordVisible,
+              keyboardType: TextInputType.emailAddress,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -129,23 +69,12 @@ class _CreateAccountViewState extends State<CreateAccountView> {
           const SizedBox(height: 50),
           TextFormField(
               controller: _confirmPasswordController,
-              decoration: InputDecoration(
-                labelText: 'Confirm password *',
+              decoration: const InputDecoration(
+                labelText: 'Confirm new password',
                 hintText: 'repeat password',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _passwordVisible = !_passwordVisible;
-                    });
-                  },
-                ),
-                contentPadding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-                fillColor: const Color(0xFF2C2B2B), // Use appropriate color
+                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
                 filled: true,
-                border: const OutlineInputBorder(
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(
                         10), // CSS border-radius: 10px 0px 0px 0px;
@@ -156,18 +85,18 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                   borderSide:
                       BorderSide.none, // CSS opacity: 0; implies no border
                 ),
+                fillColor: Color(0xFF2C2B2B), // Use appropriate color
               ),
-              obscureText: !_passwordVisible,
+              keyboardType: TextInputType.emailAddress,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
               )),
-
           const SizedBox(height: 50),
           ElevatedButton(
             onPressed: () {
               _navigateWithSlideTransition(
-                  context, const UserProfileUpdateScreen());
+                  context, const ChangePasswordScreen());
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
@@ -175,7 +104,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
               child: Text(
-                'Next',
+                'Reset Password',
                 style: TextStyle(fontSize: 18),
               ),
             ),
@@ -208,12 +137,6 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 50),
-          const Text(
-            'By creating an account you Agree to our Terms & Conditions.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontSize: 16),
           ),
         ]),
       ),

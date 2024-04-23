@@ -1,19 +1,17 @@
-import 'package:arcadia_mobile/src/views/auth/forget_password.dart';
+import 'package:arcadia_mobile/src/views/auth/reset_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import '../auth/create_account_view.dart';
 import '../../routes/slide_right_route.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ForgetPasswordScreen extends StatefulWidget {
+  const ForgetPasswordScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _ForgetPasswordScreenState createState() => _ForgetPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black, // Adjust the color as needed
         title: const Text(
-          'Log In',
+          'Forgot password?',
           style: TextStyle(
             fontSize: 24.0,
             fontWeight:
@@ -32,7 +30,13 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          const SizedBox(height: 116),
+          const SizedBox(height: 75),
+          const Text(
+            'Please enter the email address associated with the account',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          const SizedBox(height: 24),
           // Email TextField
           TextFormField(
               controller: _emailController,
@@ -59,47 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 fontSize: 16,
               )),
           const SizedBox(height: 50),
-          // Password TextField
-          TextFormField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                fillColor: Color(0xFF2C2B2B), // Use appropriate color
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(
-                        10), // CSS border-radius: 10px 0px 0px 0px;
-                    topRight: Radius.circular(10),
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  borderSide:
-                      BorderSide.none, // CSS opacity: 0; implies no border
-                ),
-                suffixIcon: Icon(Icons.visibility_off), // Change as needed
-              ),
-              obscureText: true,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              )),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () {
-              _navigateWithSlideTransition(
-                  context, const ForgetPasswordScreen());
-            },
-            child: const Text(
-              'Forgot password?',
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ),
-          const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              // TODO: Implement login functionality
+              _navigateWithSlideTransition(
+                  context, const ResetPasswordScreen());
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
@@ -107,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
               child: Text(
-                'Log in',
+                'Send Link',
                 style: TextStyle(fontSize: 18),
               ),
             ),
@@ -120,22 +87,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
               children: <TextSpan>[
                 const TextSpan(
-                  text: "Don't have an account? ",
+                  text: "Remember password? ",
                 ),
                 TextSpan(
-                  text: 'Sign Up',
+                  text: 'Log in',
                   style: const TextStyle(
                     color: Color(0xFFD20E0D), // text color for "Sign Up"
                     fontWeight: FontWeight.bold,
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const CreateAccountView()), // Replace with your sign-up screen widget
-                      );
+                      Navigator.pop(context);
                     },
                 ),
               ],
