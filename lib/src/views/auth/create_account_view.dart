@@ -33,7 +33,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
         ),
         backgroundColor: Colors.black, // Adjust the color as needed
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
           const SizedBox(height: 32),
