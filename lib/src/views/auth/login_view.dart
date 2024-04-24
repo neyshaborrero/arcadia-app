@@ -1,8 +1,10 @@
 import 'package:arcadia_mobile/src/views/auth/forget_password.dart';
+import 'package:arcadia_mobile/src/views/start/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../auth/create_account_view.dart';
 import '../../routes/slide_right_route.dart';
+import '../../routes/slide_up_route.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -99,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              // TODO: Implement login functionality
+              _navigateWithSlideUpTransition(context, const NewsScreen());
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
@@ -149,5 +151,10 @@ class _LoginScreenState extends State<LoginScreen> {
   // Function to navigate with the slide transition
   void _navigateWithSlideTransition(BuildContext context, Widget page) {
     Navigator.of(context).push(SlideRightRoute(page: page));
+  }
+
+  // Function to navigate with the slide transition
+  void _navigateWithSlideUpTransition(BuildContext context, Widget page) {
+    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
   }
 }

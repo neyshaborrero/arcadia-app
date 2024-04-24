@@ -1,5 +1,7 @@
+import 'package:arcadia_mobile/src/views/start/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../routes/slide_up_route.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 
@@ -337,7 +339,9 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                _navigateWithSlideUpTransition(context, const NewsScreen());
+              },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),
@@ -353,5 +357,10 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
         ),
       ),
     );
+  }
+
+  // Function to navigate with the slide transition
+  void _navigateWithSlideUpTransition(BuildContext context, Widget page) {
+    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
   }
 }
