@@ -340,7 +340,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                _navigateWithSlideUpTransition(context, const NewsScreen());
+                _navigateWithSlideUpTransition(context, const HomeScreen());
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),

@@ -50,6 +50,5 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>The Arcadia app needs access to the photo library to select profile pictures.</string>
 
-
 </dict>
 </plist>
