@@ -8,7 +8,7 @@ import '../../notifiers/change_notifier.dart';
 class NewsScreen extends StatelessWidget {
   final List<NewsArticle> newsArticleList;
 
-  const NewsScreen({Key? key, required this.newsArticleList}) : super(key: key);
+  const NewsScreen({super.key, required this.newsArticleList});
 
   @override
   Widget build(BuildContext context) {

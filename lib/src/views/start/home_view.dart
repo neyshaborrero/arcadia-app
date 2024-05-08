@@ -1,6 +1,9 @@
 import 'package:arcadia_mobile/src/structure/news_article.dart';
+import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
+import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
 import '../events/news_screen.dart';
+import '../../routes/slide_up_route.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -62,6 +65,34 @@ class _HomeScreenState extends State<HomeScreen>
             Uri.parse('https://www.facebook.com/yosoyungamerfb/?locale=es_LA')),
   ];
 
+  List<NewsArticle> questList = [
+    NewsArticle(
+        id: 1,
+        title: "Check-in",
+        subtitle: "Win 30XP for checking in to ClaroPR",
+        icon: const Icon(Icons.location_on_outlined)),
+    NewsArticle(
+        id: 2,
+        title: "Check-in",
+        subtitle: "Win 50XP for checking in to Kia Motors",
+        icon: const Icon(Icons.location_on_outlined)),
+    NewsArticle(
+        id: 3,
+        title: "Check-in",
+        subtitle: "Win 30XP for checking in to TacoBell",
+        icon: const Icon(Icons.location_on_outlined)),
+    NewsArticle(
+        id: 4,
+        title: "Purchase",
+        subtitle: "Win 100XP for every Taco Bell purchase",
+        icon: const Icon(Icons.shopping_bag)),
+    NewsArticle(
+        id: 5,
+        title: "Purchase",
+        subtitle: "Win 100XP for every Taco Bell purchase",
+        icon: const Icon(Icons.shopping_bag_outlined)),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          const Center(child: Text('Quests Content')),
+          QuestsView(newsArticleList: questList),
           NewsScreen(newsArticleList: newsArticleList)
         ],
       ),
@@ -169,12 +200,7 @@ class _HomeScreenState extends State<HomeScreen>
                                       0.3, // 5% of screen height
                                   fit: BoxFit.contain,
                                 ),
-                                onPressed: () {
-                                  // Navigator.of(context).push(
-                                  //   MaterialPageRoute(
-                                  //       builder: (context) => QRViewExample()),
-                                  // );
-                                },
+                                onPressed: () {},
                               ),
                             ),
                             Expanded(
@@ -205,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen>
         child: FloatingActionButton(
           shape: const CircleBorder(),
           onPressed: () {
-            // Add action for your floating button here
+            _navigateUpWithSlideTransition(context, const QRCodeScreen());
           },
           backgroundColor: const Color(0xFFD20E0D),
           elevation: 5.0, // Default elevation for FAB shadow
@@ -218,4 +244,8 @@ class _HomeScreenState extends State<HomeScreen>
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
+}
+
+void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
+  Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
 }
