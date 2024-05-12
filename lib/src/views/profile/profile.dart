@@ -1,4 +1,7 @@
+import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
+import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
+import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
 
 class ProfileView extends StatelessWidget {
@@ -51,7 +54,10 @@ class ProfileView extends StatelessWidget {
                 bottom: 0, // Adjust the position as per your design
                 right: 0, // Adjust the position as per your design
                 child: GestureDetector(
-                  onTap: () => {},
+                  onTap: () => {
+                    _navigateUpWithSlideTransition(
+                        context, const QRCodeScreen())
+                  },
                   child: Container(
                     width: 54.0,
                     height: 54.0,
@@ -70,16 +76,18 @@ class ProfileView extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 21),
           Container(
-            padding: const EdgeInsets.all(0.0),
+            padding: const EdgeInsets.all(12.0),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFFD20E0D), // Dark red color start
-                  Color(0xFF020202), // Lighter red color end
+                  const Color(0xFFD20E0D)
+                      .withOpacity(0.85), // Dark red color start
+                  const Color(0xFF020202)
+                      .withOpacity(0.85), // Lighter red color end
                 ],
               ),
               borderRadius: BorderRadius.circular(10),
@@ -92,13 +100,19 @@ class ProfileView extends StatelessWidget {
                   children: [
                     Text(
                       'XP',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     Row(children: [
-                      Image.asset('assets/ribbon.png'),
+                      Image.asset(
+                        'assets/ribbon.png',
+                        width: 39,
+                        height: 39,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(width: 25),
                       Text(
-                        '3,050',
-                        style: Theme.of(context).textTheme.titleSmall,
+                        '0',
+                        style: Theme.of(context).textTheme.titleLarge,
                       )
                     ])
                   ],
@@ -113,13 +127,19 @@ class ProfileView extends StatelessWidget {
                   children: [
                     Text(
                       'Tokens',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     Row(children: [
-                      Image.asset('assets/tokenization.png'),
+                      Image.asset(
+                        'assets/tokenization.png',
+                        width: 41,
+                        height: 41,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(width: 25),
                       Text(
                         '200',
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: Theme.of(context).textTheme.titleLarge,
                       )
                     ])
                   ],
@@ -127,6 +147,62 @@ class ProfileView extends StatelessWidget {
               ],
             ),
           ),
+          Padding(
+              padding: const EdgeInsets.only(top: 9.0, left: 37.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Activity',
+                    textAlign: TextAlign.left,
+                    style: Theme.of(context).textTheme.titleLarge),
+              )),
+          const SizedBox(height: 10),
+          Expanded(
+              child: Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: ListView.builder(
+                      itemCount: newsArticleList.length,
+                      itemBuilder: (context, index) {
+                        NewsArticle article = newsArticleList[index];
+                        return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2c2b2b),
+                                  borderRadius: BorderRadius.circular(
+                                      10.0), // Adds rounded corners to the container
+                                ), // Conditional background color
+                                child: ListTile(
+                                    title: Text(
+                                      article.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge,
+                                    ),
+                                    subtitle: Text(
+                                      article.subtitle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelMedium,
+                                    ),
+                                    leading: article.icon,
+                                    onTap: () async {
+                                      showActivityDialog(
+                                          context,
+                                          true,
+                                          article.title,
+                                          article.subtitle,
+                                          article.imageComplete,
+                                          article.imageIncomplete);
+                                    })));
+                      })))
         ]));
+  }
+
+  void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
+    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
   }
 }

@@ -153,7 +153,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                                 : const AssetImage(
                                     'assets/player_default_prof_icon.png'), // Fallback to default asset image
                             fit: BoxFit
-                                .contain, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
+                                .cover, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
                           ),
                         ),
                       ),

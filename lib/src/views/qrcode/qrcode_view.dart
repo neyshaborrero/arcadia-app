@@ -1,4 +1,5 @@
 import 'package:arcadia_mobile/src/components/qr_code_widget.dart';
+import 'package:arcadia_mobile/src/views/qrcode/my_qr_code.dart';
 import 'package:flutter/material.dart';
 
 class QRCodeScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _QRCodeScreenState extends State<QRCodeScreen>
         controller: _tabController,
         children: const [
           QRScan(),
-          Center(child: Text('MyQR')),
+          MyQRCode(),
         ],
       ),
     );

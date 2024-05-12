@@ -1,7 +1,9 @@
+import 'package:arcadia_mobile/src/routes/slide_right_route.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
 import 'package:arcadia_mobile/src/views/profile/profile.dart';
+import 'package:arcadia_mobile/src/views/profile/settings.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
 import '../events/news_screen.dart';
@@ -40,31 +42,43 @@ class _HomeScreenState extends State<HomeScreen>
         id: 1,
         title: "¡Nuevos Lanzamientos!",
         subtitle: "Descubre los juegos más esperados del mes.",
+        imageComplete: '',
+        imageIncomplete: '',
         url: Uri.parse('https://twitter.com/YoSoyUnGamerTW.')),
     NewsArticle(
         id: 2,
         title: "Secretos Revelados",
         subtitle: "Los Easter Eggs más ingeniosos de los videojuegos.",
+        imageComplete: '',
+        imageIncomplete: '',
         url: Uri.parse('https://www.linkedin.com/company/yosoyungamer')),
     NewsArticle(
         id: 3,
         title: "La Evolución de los Juegos de Rol",
         subtitle: "Descubre cómo los RPG han evolucionado.",
+        imageComplete: '',
+        imageIncomplete: '',
         url: Uri.parse('https://yosoyungamer.shop/')),
     NewsArticle(
         id: 4,
         title: "Entrevista Exclusiva",
         subtitle: "Directamente de la mente maestra detras de...",
+        imageComplete: '',
+        imageIncomplete: '',
         url: Uri.parse('https://www.patreon.com/yosoyungamer')),
     NewsArticle(
         id: 5,
         title: "Personajes Legendarios",
         subtitle: "Celebra a los heroés y villanos que han dejado una...",
+        imageComplete: '',
+        imageIncomplete: '',
         url: Uri.parse('https://www.patreon.com/yosoyungamer')),
     NewsArticle(
         id: 6,
         title: "Análisis Profundo",
         subtitle: "Sumérgete en el mundo de la VR y descubre cómo...",
+        imageComplete: '',
+        imageIncomplete: '',
         url:
             Uri.parse('https://www.facebook.com/yosoyungamerfb/?locale=es_LA')),
   ];
@@ -74,27 +88,52 @@ class _HomeScreenState extends State<HomeScreen>
         id: 1,
         title: "Check-in",
         subtitle: "Win 30XP for checking in to ClaroPR",
-        icon: const Icon(Icons.location_on_outlined)),
+        imageComplete: 'assets/map_icon_1.png',
+        imageIncomplete: 'assets/map_icon_1_grey.png',
+        icon: const Icon(
+          Icons.location_on_outlined,
+          size: 35,
+        )),
     NewsArticle(
         id: 2,
         title: "Check-in",
         subtitle: "Win 50XP for checking in to Kia Motors",
-        icon: const Icon(Icons.location_on_outlined)),
+        imageComplete: 'assets/map_icon_1.png',
+        imageIncomplete: 'assets/map_icon_1_grey.png',
+        icon: const Icon(
+          Icons.location_on_outlined,
+          size: 35,
+        )),
     NewsArticle(
         id: 3,
         title: "Check-in",
         subtitle: "Win 30XP for checking in to TacoBell",
-        icon: const Icon(Icons.location_on_outlined)),
+        imageComplete: 'assets/map_icon_1.png',
+        imageIncomplete: 'assets/map_icon_1_grey.png',
+        icon: const Icon(
+          Icons.location_on_outlined,
+          size: 35,
+        )),
     NewsArticle(
         id: 4,
         title: "Purchase",
         subtitle: "Win 100XP for every Taco Bell purchase",
-        icon: const Icon(Icons.shopping_bag)),
+        imageComplete: 'assets/shopping_bag.png',
+        imageIncomplete: 'assets/shopping_bag.png',
+        icon: const Icon(
+          Icons.shopping_bag_outlined,
+          size: 35,
+        )),
     NewsArticle(
         id: 5,
         title: "Purchase",
         subtitle: "Win 100XP for every Taco Bell purchase",
-        icon: const Icon(Icons.shopping_bag_outlined)),
+        imageComplete: 'assets/shopping_bag.png',
+        imageIncomplete: 'assets/shopping_bag.png',
+        icon: const Icon(
+          Icons.shopping_bag_outlined,
+          size: 35,
+        )),
   ];
 
   @override
@@ -109,25 +148,7 @@ class _HomeScreenState extends State<HomeScreen>
                     size: 32,
                   ),
                   onPressed: () {
-                    // Action to be performed when the info icon is pressed
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Information'),
-                          content:
-                              const Text('This is an info icon on AppBar.'),
-                          actions: [
-                            TextButton(
-                              child: Text('Close'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                    _navigateWithSlideTransition(context, SettingsScreen());
                   },
                 ),
               ]
@@ -315,4 +336,9 @@ class _HomeScreenState extends State<HomeScreen>
 
 void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
   Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
+}
+
+// Function to navigate with the slide transition
+void _navigateWithSlideTransition(BuildContext context, Widget page) {
+  Navigator.of(context).push(SlideRightRoute(page: page));
 }
