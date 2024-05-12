@@ -59,7 +59,7 @@ class NewsScreen extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color: clickedState.isClicked(article.id)
                                         ? const Color(0xFFD20E0D)
-                                        : Colors.transparent,
+                                        : const Color(0xFF2c2b2b),
                                     borderRadius: BorderRadius.circular(
                                         10.0), // Adds rounded corners to the container
                                     border: clickedState.isClicked(article.id)

@@ -1,5 +1,7 @@
 import 'package:arcadia_mobile/src/structure/news_article.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
+import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
 import '../events/news_screen.dart';
@@ -16,10 +18,12 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  ViewType _currentView = ViewType.profile;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: 1);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
 
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -97,32 +101,79 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: _currentView == ViewType.profile
+            ? <Widget>[
+                IconButton(
+                  icon: const Icon(
+                    Icons.settings_outlined,
+                    size: 32,
+                  ),
+                  onPressed: () {
+                    // Action to be performed when the info icon is pressed
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Information'),
+                          content:
+                              const Text('This is an info icon on AppBar.'),
+                          actions: [
+                            TextButton(
+                              child: Text('Close'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ]
+            : null,
+        backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
         centerTitle: true,
         title: Text(
-          tabTitles[_tabController.index],
+          _currentView == ViewType.events
+              ? tabTitles[_tabController.index]
+              : 'hambopr',
           style: const TextStyle(
             fontSize: 24.0,
             fontWeight:
                 FontWeight.w700, // This corresponds to font-weight: 700 in CSS
           ),
         ),
-        toolbarHeight: 30.0,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'Quests'),
-            Tab(text: 'News'),
-          ],
-        ),
+        toolbarHeight: 60.0,
+        bottom: _currentView == ViewType.events
+            ? TabBar(
+                controller: _tabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                tabs: const [
+                  Tab(text: 'Quests'),
+                  Tab(text: 'News'),
+                ],
+              )
+            : null,
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          QuestsView(newsArticleList: questList),
-          NewsScreen(newsArticleList: newsArticleList)
-        ],
+      body: Builder(
+        builder: (context) {
+          switch (_currentView) {
+            case ViewType.profile:
+              return ProfileView(newsArticleList: questList);
+            case ViewType.events:
+              return TabBarView(
+                controller: _tabController,
+                children: [
+                  QuestsView(newsArticleList: questList),
+                  NewsScreen(newsArticleList: newsArticleList)
+                ],
+              );
+            default:
+              return ProfileView(newsArticleList: questList);
+          }
+        },
       ),
       bottomNavigationBar: Container(
           height: MediaQuery.of(context).size.height *
@@ -164,21 +215,29 @@ class _HomeScreenState extends State<HomeScreen>
                               child: IconButton(
                                 padding: EdgeInsets.zero,
                                 icon: Image.asset(
-                                  'assets/player_default_prof_icon.png',
+                                  _currentView == ViewType.profile
+                                      ? 'assets/player_default_prof_red.png'
+                                      : 'assets/player_default_prof_icon.png',
                                   width: MediaQuery.of(context).size.width *
                                       0.1, // 10% of screen width
                                   height: MediaQuery.of(context).size.height *
                                       0.3, // 5% of screen height
                                   fit: BoxFit.contain,
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  setState(() {
+                                    _currentView = ViewType.profile;
+                                  });
+                                },
                               ),
                             ),
                             Expanded(
                                 child: Text(
                               'Profile',
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: _currentView == ViewType.profile
+                                      ? const Color(0xFFD20E0D)
+                                      : Colors.white,
                                   fontSize: MediaQuery.of(context).size.width *
                                       0.03), // Adjust text size relative to screen width
                             )),
@@ -193,21 +252,29 @@ class _HomeScreenState extends State<HomeScreen>
                               child: IconButton(
                                 padding: EdgeInsets.zero,
                                 icon: Image.asset(
-                                  'assets/calendar_red.png',
+                                  _currentView == ViewType.events
+                                      ? 'assets/calendar_red.png'
+                                      : 'assets/calendar_white.png',
                                   width: MediaQuery.of(context).size.width *
                                       0.1, // 10% of screen width
                                   height: MediaQuery.of(context).size.height *
                                       0.3, // 5% of screen height
                                   fit: BoxFit.contain,
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  setState(() {
+                                    _currentView = ViewType.events;
+                                  });
+                                },
                               ),
                             ),
                             Expanded(
                                 child: (Text(
                               'Event',
                               style: TextStyle(
-                                color: const Color(0xFFD20E0D),
+                                color: _currentView == ViewType.events
+                                    ? const Color(0xFFD20E0D)
+                                    : Colors.white,
                                 fontSize: MediaQuery.of(context).size.width *
                                     0.03, // Adjust text size relative to screen width
                               ),
