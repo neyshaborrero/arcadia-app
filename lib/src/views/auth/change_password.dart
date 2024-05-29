@@ -1,14 +1,18 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:flutter/material.dart';
 import '../auth/login_view.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
-  const ChangePasswordScreen({super.key});
+  final FirebaseService firebaseService;
+  const ChangePasswordScreen({super.key, required this.firebaseService});
 
   @override
   _ChangePasswordScreenState createState() => _ChangePasswordScreenState();
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  late final FirebaseService firebaseService;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,8 +43,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                    builder: (context) =>
-                        const LoginScreen()), // Replace with your sign-up screen widget
+                    builder: (context) => LoginScreen(
+                        firebaseService:
+                            firebaseService)), // Replace with your sign-up screen widget
               );
             },
             style: ElevatedButton.styleFrom(

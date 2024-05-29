@@ -1,3 +1,5 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:flutter/material.dart';
 import '../profile/update_profile.dart';
 import '../../routes/slide_right_route.dart';
@@ -5,19 +7,76 @@ import 'package:flutter/gestures.dart';
 import '../auth/login_view.dart';
 
 class CreateAccountView extends StatefulWidget {
-  const CreateAccountView({super.key});
+  final FirebaseService firebaseService;
+  const CreateAccountView({super.key, required this.firebaseService});
 
   @override
   _CreateAccountViewState createState() => _CreateAccountViewState();
 }
 
 class _CreateAccountViewState extends State<CreateAccountView> {
-  final TextEditingController _ticketCodeController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  //final TextEditingController _ticketCodeController = TextEditingController();
+  final TextEditingController _emailController =
+      TextEditingController(text: "neysha.borrero@gmail.com");
+  final TextEditingController _passwordController =
+      TextEditingController(text: "M0nonok3@7669");
   final TextEditingController _confirmPasswordController =
-      TextEditingController();
+      TextEditingController(text: "M0nonok3@7669");
+  late final ArcadiaCloud _arcadiaCloud;
   bool _passwordVisible = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _arcadiaCloud = ArcadiaCloud(widget.firebaseService);
+  }
+
+  Future<void> _createUser() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('You wont be able to get in without email and password.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response =
+          await _arcadiaCloud.createUser(email, password, confirmPassword);
+
+      if (response['success']) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+              builder: (context) => const UserProfileUpdateScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'])),
+        );
+      }
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('An unexpected error occurred. Please try again later.')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,31 +97,31 @@ class _CreateAccountViewState extends State<CreateAccountView> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
           const SizedBox(height: 32),
 
-          TextFormField(
-              controller: _ticketCodeController,
-              decoration: const InputDecoration(
-                labelText: 'Ticket Code *',
-                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(
-                        10), // CSS border-radius: 10px 0px 0px 0px;
-                    topRight: Radius.circular(10),
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  borderSide:
-                      BorderSide.none, // CSS opacity: 0; implies no border
-                ),
-                fillColor: Color(0xFF2C2B2B), // Use appropriate color
-              ),
-              keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              )),
-          const SizedBox(height: 50),
+          // TextFormField(
+          //     controller: _ticketCodeController,
+          //     decoration: const InputDecoration(
+          //       labelText: 'Ticket Code *',
+          //       contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+          //       filled: true,
+          //       border: OutlineInputBorder(
+          //         borderRadius: BorderRadius.only(
+          //           topLeft: Radius.circular(
+          //               10), // CSS border-radius: 10px 0px 0px 0px;
+          //           topRight: Radius.circular(10),
+          //           bottomLeft: Radius.circular(10),
+          //           bottomRight: Radius.circular(10),
+          //         ),
+          //         borderSide:
+          //             BorderSide.none, // CSS opacity: 0; implies no border
+          //       ),
+          //       fillColor: Color(0xFF2C2B2B), // Use appropriate color
+          //     ),
+          //     keyboardType: TextInputType.emailAddress,
+          //     style: const TextStyle(
+          //       color: Colors.white,
+          //       fontSize: 16,
+          //     )),
+          // const SizedBox(height: 50),
 
           // Email TextField
           TextFormField(
@@ -164,22 +223,21 @@ class _CreateAccountViewState extends State<CreateAccountView> {
               )),
 
           const SizedBox(height: 50),
-          ElevatedButton(
-            onPressed: () {
-              _navigateWithSlideTransition(
-                  context, const UserProfileUpdateScreen());
-            },
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size.fromHeight(50),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-              child: Text(
-                'Next',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ),
+          _isLoading
+              ? const CircularProgressIndicator()
+              : ElevatedButton(
+                  onPressed: _createUser,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                    child: Text(
+                      'Next',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
           const SizedBox(height: 24),
           RichText(
             text: TextSpan(
@@ -201,8 +259,9 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                const LoginScreen()), // Replace with your sign-up screen widget
+                            builder: (context) => LoginScreen(
+                                firebaseService: widget
+                                    .firebaseService)), // Replace with your sign-up screen widget
                       );
                     },
                 ),

@@ -1,13 +1,14 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:flutter/material.dart';
 import '../auth/create_account_view.dart';
 import '../auth/login_view.dart';
 import '../tickets/ticket_tiers_view.dart';
 import '../../routes/slide_right_route.dart';
 import '../../routes/slide_up_route.dart';
-// import 'package:url_launcher/url_launcher.dart';
 
 class StartScreen extends StatelessWidget {
-  const StartScreen({super.key});
+  final FirebaseService firebaseService;
+  const StartScreen({super.key, required this.firebaseService});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,8 @@ class StartScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 368),
               child: ElevatedButton(
                 onPressed: () {
-                  _navigateWithSlideTransition(context, const LoginScreen());
+                  _navigateWithSlideTransition(
+                      context, LoginScreen(firebaseService: firebaseService));
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
@@ -51,8 +53,8 @@ class StartScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 368),
               child: OutlinedButton(
                 onPressed: () {
-                  _navigateWithSlideTransition(
-                      context, const CreateAccountView());
+                  _navigateWithSlideTransition(context,
+                      CreateAccountView(firebaseService: firebaseService));
                 },
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),

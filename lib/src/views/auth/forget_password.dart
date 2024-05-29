@@ -1,10 +1,12 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/views/auth/reset_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../routes/slide_right_route.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
-  const ForgetPasswordScreen({super.key});
+  final FirebaseService firebaseService;
+  const ForgetPasswordScreen({super.key, required this.firebaseService});
 
   @override
   _ForgetPasswordScreenState createState() => _ForgetPasswordScreenState();
@@ -12,6 +14,7 @@ class ForgetPasswordScreen extends StatefulWidget {
 
 class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
+  late final FirebaseService firebaseService;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +69,10 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           ElevatedButton(
             onPressed: () {
               _navigateWithSlideTransition(
-                  context, const ResetPasswordScreen());
+                  context,
+                  ResetPasswordScreen(
+                    firebaseService: firebaseService,
+                  ));
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),

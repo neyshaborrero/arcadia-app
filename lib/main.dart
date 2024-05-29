@@ -1,19 +1,31 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:flutter/material.dart';
 import 'src/views/start/start_view.dart';
 import 'package:provider/provider.dart';
 import 'src/notifiers/change_notifier.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  final firebaseService = FirebaseService.createInstance();
+  await firebaseService.initialize();
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => ClickedState(),
-      child: const MyApp(),
+      child: MyApp(firebaseService: firebaseService),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final FirebaseService firebaseService;
+  const MyApp({super.key, required this.firebaseService});
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +96,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const StartScreen(),
+      home: StartScreen(firebaseService: firebaseService),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/views/auth/forget_password.dart';
 import 'package:arcadia_mobile/src/views/start/home_view.dart';
 import 'package:flutter/material.dart';
@@ -7,15 +9,69 @@ import '../../routes/slide_right_route.dart';
 import '../../routes/slide_up_route.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final FirebaseService firebaseService;
+
+  const LoginScreen({super.key, required this.firebaseService});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController =
+      TextEditingController(text: "neysha.borrero@gmail.com");
+  final TextEditingController _passwordController =
+      TextEditingController(text: "mononoke");
+  late final ArcadiaCloud _arcadiaCloud;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _arcadiaCloud = ArcadiaCloud(widget.firebaseService);
+  }
+
+  Future<void> _loginUser() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('You wont be able to get in without email and password.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _arcadiaCloud.loginUser(email, password);
+
+      if (response['success']) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'])),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('An unexpected error occurred. Please try again later.')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +147,10 @@ class _LoginScreenState extends State<LoginScreen> {
           TextButton(
             onPressed: () {
               _navigateWithSlideTransition(
-                  context, const ForgetPasswordScreen());
+                  context,
+                  ForgetPasswordScreen(
+                    firebaseService: widget.firebaseService,
+                  ));
             },
             child: const Text(
               'Forgot password?',
@@ -99,21 +158,21 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              _navigateWithSlideUpTransition(context, const HomeScreen());
-            },
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size.fromHeight(50),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-              child: Text(
-                'Log in',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ),
+          _isLoading
+              ? const CircularProgressIndicator()
+              : ElevatedButton(
+                  onPressed: _loginUser,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                    child: Text(
+                      'Log in',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
           const SizedBox(height: 24),
           RichText(
             text: TextSpan(
@@ -135,8 +194,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                const CreateAccountView()), // Replace with your sign-up screen widget
+                            builder: (context) => CreateAccountView(
+                                  firebaseService: widget.firebaseService,
+                                )), // Replace with your sign-up screen widget
                       );
                     },
                 ),

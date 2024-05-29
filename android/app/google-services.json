@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "547299899901",
-    "project_id": "arcadia-46604",
-    "storage_bucket": "arcadia-46604.appspot.com"
+    "project_number": "263565338043",
+    "project_id": "ysug-arcadia-aaa5e",
+    "storage_bucket": "ysug-arcadia-aaa5e.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:547299899901:android:53b1628f02fc6c15060194",
+        "mobilesdk_app_id": "1:263565338043:android:2b2ec91cce92702799909e",
         "android_client_info": {
           "package_name": "com.arcadia.app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyByaDQrmddQ7jIdaZdlqAQVL1eGk8cXX_0"
+          "current_key": "AIzaSyD6dwVbfmxWSVRLO5lm4jJcviKiz3eRzUI"
         }
       ],
       "services": {

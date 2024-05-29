@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/views/auth/change_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -5,7 +6,8 @@ import '../../routes/slide_right_route.dart';
 import '../auth/login_view.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final FirebaseService firebaseService;
+  const ResetPasswordScreen({super.key, required this.firebaseService});
 
   @override
   _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
@@ -15,6 +17,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  late final FirebaseService firebaseService;
 
   @override
   Widget build(BuildContext context) {
@@ -95,8 +98,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           const SizedBox(height: 50),
           ElevatedButton(
             onPressed: () {
-              _navigateWithSlideTransition(
-                  context, const ChangePasswordScreen());
+              _navigateWithSlideTransition(context,
+                  ChangePasswordScreen(firebaseService: firebaseService));
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
@@ -130,8 +133,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                const LoginScreen()), // Replace with your sign-up screen widget
+                            builder: (context) => LoginScreen(
+                                firebaseService:
+                                    firebaseService)), // Replace with your sign-up screen widget
                       );
                     },
                 ),
