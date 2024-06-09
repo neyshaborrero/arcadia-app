@@ -2,7 +2,7 @@
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+    show defaultTargetPlatform, TargetPlatform;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -16,18 +16,11 @@ import 'package:flutter/foundation.dart'
 /// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
-    if (kIsWeb) {
-      return web;
-    }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
         return ios;
-      case TargetPlatform.macOS:
-        return macos;
-      case TargetPlatform.windows:
-        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -40,50 +33,22 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDKQR7tFWWEveUxdusnaOY3rch5qGlY0X8',
-    appId: '1:263565338043:web:f69aac8b3f0d11fe99909e',
-    messagingSenderId: '263565338043',
-    projectId: 'ysug-arcadia-aaa5e',
-    authDomain: 'ysug-arcadia-aaa5e.firebaseapp.com',
-    storageBucket: 'ysug-arcadia-aaa5e.appspot.com',
-    measurementId: 'G-G76JF0X53B',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD6dwVbfmxWSVRLO5lm4jJcviKiz3eRzUI',
-    appId: '1:263565338043:android:2b2ec91cce92702799909e',
-    messagingSenderId: '263565338043',
-    projectId: 'ysug-arcadia-aaa5e',
-    storageBucket: 'ysug-arcadia-aaa5e.appspot.com',
+    apiKey: 'AIzaSyDPoih-EcEwUKVk3QKwtPk6EYOAU69rFpM',
+    appId: '1:375872375930:android:f78f740daa9dfed7d5ffc3',
+    messagingSenderId: '375872375930',
+    projectId: 'ysug-arcadia-46a15',
+    databaseURL: 'https://ysug-arcadia-46a15-default-rtdb.firebaseio.com',
+    storageBucket: 'ysug-arcadia-46a15.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDSj5-oBd8uP-Vo2V4id1DAFckYd-zZG0E',
-    appId: '1:263565338043:ios:1423645ccaf10bd099909e',
-    messagingSenderId: '263565338043',
-    projectId: 'ysug-arcadia-aaa5e',
-    storageBucket: 'ysug-arcadia-aaa5e.appspot.com',
+    apiKey: 'AIzaSyAyD5Bn9ntE8y40MLREymEq3VP5OAfVWzY',
+    appId: '1:375872375930:ios:72810ec5e82addc2d5ffc3',
+    messagingSenderId: '375872375930',
+    projectId: 'ysug-arcadia-46a15',
+    databaseURL: 'https://ysug-arcadia-46a15-default-rtdb.firebaseio.com',
+    storageBucket: 'ysug-arcadia-46a15.appspot.com',
     iosBundleId: 'com.arcadia.app',
   );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDSj5-oBd8uP-Vo2V4id1DAFckYd-zZG0E',
-    appId: '1:263565338043:ios:d56d009c94d2a73e99909e',
-    messagingSenderId: '263565338043',
-    projectId: 'ysug-arcadia-aaa5e',
-    storageBucket: 'ysug-arcadia-aaa5e.appspot.com',
-    iosBundleId: 'com.example.arcadiaMobile',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDKQR7tFWWEveUxdusnaOY3rch5qGlY0X8',
-    appId: '1:263565338043:web:48698850eb330b1199909e',
-    messagingSenderId: '263565338043',
-    projectId: 'ysug-arcadia-aaa5e',
-    authDomain: 'ysug-arcadia-aaa5e.firebaseapp.com',
-    storageBucket: 'ysug-arcadia-aaa5e.appspot.com',
-    measurementId: 'G-J6WYSM4NSE',
-  );
-
 }

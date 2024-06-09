@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyDSj5-oBd8uP-Vo2V4id1DAFckYd-zZG0E</string>
+	<string>AIzaSyAyD5Bn9ntE8y40MLREymEq3VP5OAfVWzY</string>
 	<key>GCM_SENDER_ID</key>
-	<string>263565338043</string>
+	<string>375872375930</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.arcadia.app</string>
 	<key>PROJECT_ID</key>
-	<string>ysug-arcadia-aaa5e</string>
+	<string>ysug-arcadia-46a15</string>
 	<key>STORAGE_BUCKET</key>
-	<string>ysug-arcadia-aaa5e.appspot.com</string>
+	<string>ysug-arcadia-46a15.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:263565338043:ios:1423645ccaf10bd099909e</string>
+	<string>1:375872375930:ios:72810ec5e82addc2d5ffc3</string>
+	<key>DATABASE_URL</key>
+	<string>https://ysug-arcadia-46a15-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>

@@ -17,7 +17,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  late final FirebaseService firebaseService;
 
   @override
   Widget build(BuildContext context) {
@@ -98,8 +97,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           const SizedBox(height: 50),
           ElevatedButton(
             onPressed: () {
-              _navigateWithSlideTransition(context,
-                  ChangePasswordScreen(firebaseService: firebaseService));
+              _navigateWithSlideTransition(
+                  context,
+                  ChangePasswordScreen(
+                      firebaseService: widget.firebaseService));
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
@@ -134,8 +135,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => LoginScreen(
-                                firebaseService:
-                                    firebaseService)), // Replace with your sign-up screen widget
+                                firebaseService: widget
+                                    .firebaseService)), // Replace with your sign-up screen widget
                       );
                     },
                 ),

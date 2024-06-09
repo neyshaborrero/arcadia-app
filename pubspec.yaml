@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.0.4+2
+version: 0.1.0+0
 
 environment:
   sdk: '>=3.3.3 <4.0.0'
@@ -46,6 +46,9 @@ dependencies:
   firebase_core: ^2.32.0
   firebase_remote_config: ^4.4.7
   firebase_analytics: ^10.10.7
+  firebase_auth: ^4.20.0
+  firebase_storage: ^11.7.7
+  cached_network_image: ^3.3.1
 
 dev_dependencies:
   flutter_test:
@@ -84,6 +87,7 @@ flutter:
     - assets/tokenization.png
     - assets/shopping_bag.png
     - assets/ysug.png
+    - assets/ad_splash.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

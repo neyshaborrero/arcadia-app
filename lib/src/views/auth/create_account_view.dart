@@ -1,6 +1,11 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/src/providers/change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/error_detail.dart';
+import 'package:arcadia_mobile/src/structure/user_profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../profile/update_profile.dart';
 import '../../routes/slide_right_route.dart';
 import 'package:flutter/gestures.dart';
@@ -16,12 +21,11 @@ class CreateAccountView extends StatefulWidget {
 
 class _CreateAccountViewState extends State<CreateAccountView> {
   //final TextEditingController _ticketCodeController = TextEditingController();
-  final TextEditingController _emailController =
-      TextEditingController(text: "neysha.borrero@gmail.com");
-  final TextEditingController _passwordController =
-      TextEditingController(text: "M0nonok3@7669");
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
-      TextEditingController(text: "M0nonok3@7669");
+      TextEditingController();
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   late final ArcadiaCloud _arcadiaCloud;
   bool _passwordVisible = false;
   bool _isLoading = false;
@@ -52,24 +56,93 @@ class _CreateAccountViewState extends State<CreateAccountView> {
 
     try {
       final response =
-          await _arcadiaCloud.createUser(email, password, confirmPassword);
+          await _arcadiaCloud.checkPassword(email, password, confirmPassword);
 
       if (response['success']) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-              builder: (context) => const UserProfileUpdateScreen()),
+        UserCredential userCredential =
+            await _firebaseAuth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
         );
+
+        User? user = userCredential.user;
+
+        if (user != null) {
+          String? token = await user.getIdToken();
+
+          // Send the user data to the backend
+          final response = await _arcadiaCloud.saveUserToDB(email, token);
+
+          if (response['success']) {
+            print(token);
+            UserProfile? profile = token != null
+                ? await _arcadiaCloud.fetchUserProfile(token)
+                : null;
+
+            if (profile != null) {
+              Provider.of<UserProfileProvider>(context, listen: false)
+                  .setUserProfile(profile);
+            }
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (context) => UserProfileUpdateScreen(
+                      firebaseService: widget.firebaseService)),
+            );
+          }
+        } else {
+          List<ErrorDetail> errors = response['errors'];
+          String errorMessage = errors.isNotEmpty
+              ? errors.map((e) => e.message).join(', ')
+              : 'An unknown error occurred';
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+          );
+        }
       } else {
+        List<ErrorDetail> errors = response['errors'];
+        String errorMessage = errors.isNotEmpty
+            ? errors.map((e) => e.message).join(', ')
+            : 'An unknown error occurred';
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'])),
+          SnackBar(content: Text(errorMessage)),
         );
       }
+    } on FirebaseAuthException catch (e) {
+      ErrorDetail errorDetail;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorDetail = ErrorDetail(
+              path: 'email',
+              message:
+                  'The email address is already in use by another account.');
+          break;
+        case 'invalid-email':
+          errorDetail = ErrorDetail(
+              path: 'email', message: 'The email address is not valid.');
+          break;
+        case 'operation-not-allowed':
+          errorDetail = ErrorDetail(
+              path: 'email',
+              message: 'Email/password accounts are not enabled.');
+          break;
+        case 'weak-password':
+          errorDetail =
+              ErrorDetail(path: 'email', message: 'The password is too weak.');
+          break;
+        default:
+          errorDetail = ErrorDetail(path: null, message: '$e');
+          break;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorDetail.message)),
+      );
     } catch (e) {
-      print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content:
-                Text('An unexpected error occurred. Please try again later.')),
+            content: Text(
+                'Oops, theres an error happening in our side. Please try again later.')),
       );
     } finally {
       setState(() {
@@ -154,7 +227,8 @@ class _CreateAccountViewState extends State<CreateAccountView> {
               controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'Create a password *',
-                hintText: 'must be 8 characters',
+                hintText:
+                    'must be 8 characters long contain at least 1 number and 1 special character',
                 suffixIcon: IconButton(
                   icon: Icon(
                     _passwordVisible ? Icons.visibility : Icons.visibility_off,

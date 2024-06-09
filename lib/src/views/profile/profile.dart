@@ -1,8 +1,11 @@
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
+import 'package:arcadia_mobile/src/providers/change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileView extends StatelessWidget {
   final List<NewsArticle> newsArticleList;
@@ -11,6 +14,7 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
     return Center(
         child: Column(
             mainAxisAlignment:
@@ -37,13 +41,17 @@ class ProfileView extends StatelessWidget {
                   child: FractionallySizedBox(
                     widthFactor: 1.0,
                     child: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         image: DecorationImage(
-                          image: AssetImage(
-                              'assets/hambopr.jpg'), // Fallback to default asset image
+                          image: userProfile != null &&
+                                  userProfile.profileImageUrl.isNotEmpty
+                              ? CachedNetworkImageProvider(
+                                  userProfile.profileImageUrl)
+                              : const AssetImage('assets/hambopr.jpg')
+                                  as ImageProvider, // Fallback to default asset image
                           fit: BoxFit
-                              .contain, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
+                              .cover, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
                         ),
                       ),
                     ),

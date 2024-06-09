@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/src/providers/change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_right_route.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
@@ -6,11 +7,15 @@ import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/profile/settings.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../events/news_screen.dart';
 import '../../routes/slide_up_route.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final FirebaseService firebaseService;
+
+  const HomeScreen({super.key, required this.firebaseService});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -20,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  ViewType _currentView = ViewType.profile;
+  ViewType _currentView = ViewType.events;
 
   @override
   void initState() {
@@ -138,6 +143,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
     return Scaffold(
       appBar: AppBar(
         actions: _currentView == ViewType.profile
@@ -148,7 +154,10 @@ class _HomeScreenState extends State<HomeScreen>
                     size: 32,
                   ),
                   onPressed: () {
-                    _navigateWithSlideTransition(context, SettingsScreen());
+                    _navigateWithSlideTransition(
+                        context,
+                        SettingsScreen(
+                            firebaseService: widget.firebaseService));
                   },
                 ),
               ]
@@ -159,7 +168,9 @@ class _HomeScreenState extends State<HomeScreen>
         title: Text(
           _currentView == ViewType.events
               ? tabTitles[_tabController.index]
-              : 'hambopr',
+              : userProfile != null && userProfile.profileImageUrl.isNotEmpty
+                  ? userProfile.gamertag
+                  : 'hambopr',
           style: const TextStyle(
             fontSize: 24.0,
             fontWeight:

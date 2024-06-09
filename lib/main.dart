@@ -1,6 +1,7 @@
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/providers/change_notifier.dart';
+import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'src/views/start/start_view.dart';
 import 'package:provider/provider.dart';
 import 'src/notifiers/change_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,8 +17,11 @@ void main() async {
   await firebaseService.initialize();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ClickedState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ClickedState()),
+        ChangeNotifierProvider(create: (_) => UserProfileProvider()),
+      ],
       child: MyApp(firebaseService: firebaseService),
     ),
   );
@@ -96,7 +100,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: StartScreen(firebaseService: firebaseService),
+      home: SplashScreen(firebaseService: firebaseService),
     );
   }
 }

@@ -14,10 +14,12 @@ class FirebaseService {
   Future<void> initialize() async {
     await _remoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: const Duration(minutes: 1),
-      minimumFetchInterval: const Duration(hours: 1),
+      minimumFetchInterval: const Duration(seconds: 1),
     ));
     await _remoteConfig.fetchAndActivate();
   }
 
   String get xApiKey => _remoteConfig.getString('x_api_key');
+  String get arcadiaCloudAddress =>
+      _remoteConfig.getString('arcadia_cloud_address');
 }
