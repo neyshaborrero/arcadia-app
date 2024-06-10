@@ -9,8 +9,7 @@ import 'package:provider/provider.dart';
 import 'home_view.dart'; // Import your Home screen
 
 class SplashScreen extends StatefulWidget {
-  final FirebaseService firebaseService;
-  const SplashScreen({super.key, required this.firebaseService});
+  const SplashScreen({super.key});
 
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -22,7 +21,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _arcadiaCloud = ArcadiaCloud(widget.firebaseService);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
     _checkAuthStatus();
   }
 
@@ -33,8 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (user == null) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) =>
-                StartScreen(firebaseService: widget.firebaseService),
+            builder: (context) => const StartScreen(),
           ),
         );
       } else {
@@ -48,10 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
               .setUserProfile(profile);
         }
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-              builder: (context) => HomeScreen(
-                    firebaseService: widget.firebaseService,
-                  )),
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       }
     });

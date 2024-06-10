@@ -1,4 +1,5 @@
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
+import 'package:arcadia_mobile/src/providers/change_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../structure/news_article.dart';
@@ -11,6 +12,7 @@ class QuestsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
     return Consumer<ClickedState>(
         builder: (context, clickedState, child) => Column(
               children: <Widget>[
@@ -51,7 +53,9 @@ class QuestsView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              '200',
+                              userProfile != null
+                                  ? userProfile.tokens.toString()
+                                  : '0',
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             // Text(
@@ -134,6 +138,7 @@ class QuestsView extends StatelessWidget {
                                               onTap: () async {
                                                 showActivityDialog(
                                                         context,
+                                                        false,
                                                         clickedState.isClicked(
                                                             article.id),
                                                         article.title,

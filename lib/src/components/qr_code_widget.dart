@@ -1,3 +1,5 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/views/qrcode/manual_code.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,11 @@ class _QRScanState extends State<QRScan> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
   bool isScanning = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

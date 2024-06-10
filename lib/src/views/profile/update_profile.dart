@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/providers/change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
@@ -10,13 +11,10 @@ import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 
 class UserProfileUpdateScreen extends StatefulWidget {
-  final FirebaseService firebaseService;
-
-  const UserProfileUpdateScreen({super.key, required this.firebaseService});
+  const UserProfileUpdateScreen({super.key});
 
   @override
   _UserProfileUpdateScreenState createState() =>
@@ -41,7 +39,9 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   @override
   void initState() {
     super.initState();
-    _arcadiaCloud = ArcadiaCloud(widget.firebaseService);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
   }
 
   // Method to show the bottom sheet menu
@@ -172,9 +172,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                 .setUserProfile(profile);
           }
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-                builder: (context) =>
-                    HomeScreen(firebaseService: widget.firebaseService)),
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         } else {
           List<ErrorDetail> errors = response['errors'];

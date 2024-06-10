@@ -14,9 +14,7 @@ import '../../routes/slide_up_route.dart';
 //import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
-  final FirebaseService firebaseService;
-
-  const LoginScreen({super.key, required this.firebaseService});
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -33,7 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _arcadiaCloud = ArcadiaCloud(widget.firebaseService);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
   }
 
   Future<void> _loginUser() async {
@@ -71,10 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
               .setUserProfile(profile);
         }
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-              builder: (context) => HomeScreen(
-                    firebaseService: widget.firebaseService,
-                  )),
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -203,10 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
           TextButton(
             onPressed: () {
               _navigateWithSlideTransition(
-                  context,
-                  ForgetPasswordScreen(
-                    firebaseService: widget.firebaseService,
-                  ));
+                  context, const ForgetPasswordScreen());
             },
             child: const Text(
               'Forgot password?',
@@ -250,9 +244,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => CreateAccountView(
-                                  firebaseService: widget.firebaseService,
-                                )), // Replace with your sign-up screen widget
+                            builder: (context) =>
+                                const CreateAccountView()), // Replace with your sign-up screen widget
                       );
                     },
                 ),

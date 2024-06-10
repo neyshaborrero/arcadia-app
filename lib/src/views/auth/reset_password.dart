@@ -6,8 +6,7 @@ import '../../routes/slide_right_route.dart';
 import '../auth/login_view.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  final FirebaseService firebaseService;
-  const ResetPasswordScreen({super.key, required this.firebaseService});
+  const ResetPasswordScreen({super.key});
 
   @override
   _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
@@ -98,9 +97,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           ElevatedButton(
             onPressed: () {
               _navigateWithSlideTransition(
-                  context,
-                  ChangePasswordScreen(
-                      firebaseService: widget.firebaseService));
+                  context, const ChangePasswordScreen());
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
@@ -134,9 +131,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => LoginScreen(
-                                firebaseService: widget
-                                    .firebaseService)), // Replace with your sign-up screen widget
+                            builder: (context) =>
+                                const LoginScreen()), // Replace with your sign-up screen widget
                       );
                     },
                 ),

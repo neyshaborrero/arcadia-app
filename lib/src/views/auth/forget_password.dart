@@ -5,8 +5,7 @@ import 'package:flutter/gestures.dart';
 import '../../routes/slide_right_route.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
-  final FirebaseService firebaseService;
-  const ForgetPasswordScreen({super.key, required this.firebaseService});
+  const ForgetPasswordScreen({super.key});
 
   @override
   _ForgetPasswordScreenState createState() => _ForgetPasswordScreenState();
@@ -14,7 +13,6 @@ class ForgetPasswordScreen extends StatefulWidget {
 
 class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  late final FirebaseService firebaseService;
 
   @override
   Widget build(BuildContext context) {
@@ -69,10 +67,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           ElevatedButton(
             onPressed: () {
               _navigateWithSlideTransition(
-                  context,
-                  ResetPasswordScreen(
-                    firebaseService: firebaseService,
-                  ));
+                  context, const ResetPasswordScreen());
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),

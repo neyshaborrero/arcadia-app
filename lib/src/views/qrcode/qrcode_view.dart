@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/qr_code_widget.dart';
 import 'package:arcadia_mobile/src/views/qrcode/my_qr_code.dart';
 import 'package:flutter/material.dart';

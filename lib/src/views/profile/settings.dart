@@ -13,9 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final FirebaseService firebaseService;
-
-  const SettingsScreen({super.key, required this.firebaseService});
+  const SettingsScreen({super.key});
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -29,7 +27,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _arcadiaCloud = ArcadiaCloud(widget.firebaseService);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
   }
 
   // Method to show the bottom sheet menu
@@ -77,6 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() {
       _imageFile = image;
+      _saveUserProfile();
     });
   }
 
@@ -89,6 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() {
       _imageFile = image;
+      _saveUserProfile();
     });
   }
 
@@ -97,10 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await FirebaseAuth.instance.signOut();
     Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-            builder: (context) => StartScreen(
-                  firebaseService: widget.firebaseService,
-                )),
+        MaterialPageRoute(builder: (context) => const StartScreen()),
         ModalRoute.withName('/') // Replace with your sign-up screen widget
         ); // Redirect to the login screen
   }
@@ -215,12 +214,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
-                              image: userProfile != null &&
+                              image: _imageFile == null &&
+                                      userProfile != null &&
                                       userProfile.profileImageUrl.isNotEmpty
                                   ? CachedNetworkImageProvider(
                                       userProfile.profileImageUrl)
-                                  : const AssetImage('assets/hambopr.jpg')
-                                      as ImageProvider,
+                                  : _imageFile != null
+                                      ? FileImage(File(_imageFile!.path))
+                                      : const AssetImage('assets/hambopr.jpg')
+                                          as ImageProvider,
                               // image: AssetImage('assets/hambopr.jpg'),
                               // image: _imageFile != null
                               //     ? FileImage(File(_imageFile!.path))

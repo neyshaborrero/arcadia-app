@@ -12,8 +12,7 @@ import 'package:flutter/gestures.dart';
 import '../auth/login_view.dart';
 
 class CreateAccountView extends StatefulWidget {
-  final FirebaseService firebaseService;
-  const CreateAccountView({super.key, required this.firebaseService});
+  const CreateAccountView({super.key});
 
   @override
   _CreateAccountViewState createState() => _CreateAccountViewState();
@@ -33,7 +32,9 @@ class _CreateAccountViewState extends State<CreateAccountView> {
   @override
   void initState() {
     super.initState();
-    _arcadiaCloud = ArcadiaCloud(widget.firebaseService);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
   }
 
   Future<void> _createUser() async {
@@ -85,8 +86,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
             }
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                  builder: (context) => UserProfileUpdateScreen(
-                      firebaseService: widget.firebaseService)),
+                  builder: (context) => const UserProfileUpdateScreen()),
             );
           }
         } else {
@@ -333,9 +333,8 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => LoginScreen(
-                                firebaseService: widget
-                                    .firebaseService)), // Replace with your sign-up screen widget
+                            builder: (context) =>
+                                const LoginScreen()), // Replace with your sign-up screen widget
                       );
                     },
                 ),

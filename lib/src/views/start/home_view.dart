@@ -13,9 +13,7 @@ import '../../routes/slide_up_route.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 
 class HomeScreen extends StatefulWidget {
-  final FirebaseService firebaseService;
-
-  const HomeScreen({super.key, required this.firebaseService});
+  const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -155,9 +153,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   onPressed: () {
                     _navigateWithSlideTransition(
-                        context,
-                        SettingsScreen(
-                            firebaseService: widget.firebaseService));
+                        context, const SettingsScreen());
                   },
                 ),
               ]

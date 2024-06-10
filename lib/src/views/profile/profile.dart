@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/providers/change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
@@ -10,7 +11,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 class ProfileView extends StatelessWidget {
   final List<NewsArticle> newsArticleList;
 
-  const ProfileView({super.key, required this.newsArticleList});
+  const ProfileView({
+    super.key,
+    required this.newsArticleList,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +150,9 @@ class ProfileView extends StatelessWidget {
                       ),
                       const SizedBox(width: 25),
                       Text(
-                        '200',
+                        userProfile != null
+                            ? userProfile.tokens.toString()
+                            : '0',
                         style: Theme.of(context).textTheme.titleLarge,
                       )
                     ])
@@ -200,6 +206,7 @@ class ProfileView extends StatelessWidget {
                                     onTap: () async {
                                       showActivityDialog(
                                           context,
+                                          true,
                                           true,
                                           article.title,
                                           article.subtitle,

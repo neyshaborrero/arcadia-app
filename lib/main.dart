@@ -21,15 +21,15 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ClickedState()),
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
+        Provider<FirebaseService>.value(value: firebaseService),
       ],
-      child: MyApp(firebaseService: firebaseService),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final FirebaseService firebaseService;
-  const MyApp({super.key, required this.firebaseService});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +100,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: SplashScreen(firebaseService: firebaseService),
+      home: SplashScreen(),
     );
   }
 }

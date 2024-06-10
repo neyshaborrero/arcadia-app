@@ -1,5 +1,11 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
+import 'package:arcadia_mobile/src/providers/change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/token_details.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ManualQRCodeView extends StatefulWidget {
   const ManualQRCodeView({super.key});
@@ -10,6 +16,73 @@ class ManualQRCodeView extends StatefulWidget {
 
 class _ManualQRCodeViewState extends State<ManualQRCodeView> {
   final TextEditingController _codeController = TextEditingController();
+  bool _isLoading = false;
+  late final ArcadiaCloud _arcadiaCloud;
+
+  @override
+  void initState() {
+    super.initState();
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
+  }
+
+  Future<void> _validateQRCode() async {
+    final code = _codeController.text.trim();
+    print("my qr code $code");
+    if (code.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a QR Code to earn tokens.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final String? token = await user.getIdToken();
+        if (token != null) {
+          final Token? response =
+              await _arcadiaCloud.validateQRCode(code, token);
+
+          if (response != null) {
+            final userProfileProvider =
+                Provider.of<UserProfileProvider>(context, listen: false);
+            userProfileProvider.updateTokens(response.value);
+
+            showActivityDialog(
+                context,
+                true,
+                true,
+                response.title,
+                response.description,
+                response.imageComplete,
+                response.imageComplete);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text(
+                      'We couldnt validate the QR Code, try another one.')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('We couldnt validate the QR Code, try another one.')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -43,30 +116,25 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
             fontSize: 16,
           )),
       Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: Center(
-            child: ElevatedButton(
-              onPressed: () {
-                showActivityDialog(
-                    context,
-                    true,
-                    'Quest Check-in',
-                    'Won 10 tokens for checking in to Taco Bell',
-                    'assets/map_icon_1.png',
-                    '');
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                child: Text(
-                  'Continue',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
+        padding: const EdgeInsets.all(30.0),
+        child: Center(
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _validateQRCode,
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
             ),
-          )),
+            child: _isLoading
+                ? const CircularProgressIndicator()
+                : const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                    child: Text(
+                      'Continue',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+          ),
+        ),
+      ),
     ]);
   }
 }

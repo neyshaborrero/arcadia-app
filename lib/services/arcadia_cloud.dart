@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/response_detail.dart';
+import 'package:arcadia_mobile/src/structure/token_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:http/http.dart' as http;
 
@@ -210,6 +211,29 @@ class ArcadiaCloud {
     } else {
       // Handle error
       print('Failed to load user profile');
+      return null;
+    }
+  }
+
+  Future<Token?> validateQRCode(String qrCode, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/mission/validate'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({
+        'qrcode': qrCode,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      print(json.decode(response.body));
+      return Token.fromJson(data);
+    } else {
       return null;
     }
   }

@@ -22,4 +22,9 @@ class UserProfileProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void updateTokens(int tokensEarned) {
+    _userProfile!.tokens = _userProfile!.tokens + tokensEarned;
+    notifyListeners();
+  }
 }

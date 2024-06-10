@@ -7,8 +7,7 @@ import '../../routes/slide_right_route.dart';
 import '../../routes/slide_up_route.dart';
 
 class StartScreen extends StatelessWidget {
-  final FirebaseService firebaseService;
-  const StartScreen({super.key, required this.firebaseService});
+  const StartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +32,7 @@ class StartScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 368),
               child: ElevatedButton(
                 onPressed: () {
-                  _navigateWithSlideTransition(
-                      context, LoginScreen(firebaseService: firebaseService));
+                  _navigateWithSlideTransition(context, const LoginScreen());
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
@@ -53,8 +51,8 @@ class StartScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 368),
               child: OutlinedButton(
                 onPressed: () {
-                  _navigateWithSlideTransition(context,
-                      CreateAccountView(firebaseService: firebaseService));
+                  _navigateWithSlideTransition(
+                      context, const CreateAccountView());
                 },
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
