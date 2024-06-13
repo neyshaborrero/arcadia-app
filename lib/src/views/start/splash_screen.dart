@@ -1,6 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
-import 'package:arcadia_mobile/src/providers/change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:flutter/material.dart';

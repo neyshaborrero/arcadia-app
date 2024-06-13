@@ -1,4 +1,4 @@
-import 'package:arcadia_mobile/src/providers/change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_right_route.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
@@ -189,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen>
         builder: (context) {
           switch (_currentView) {
             case ViewType.profile:
-              return ProfileView(newsArticleList: questList);
+              return ProfileView();
             case ViewType.events:
               return TabBarView(
                 controller: _tabController,
@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
               );
             default:
-              return ProfileView(newsArticleList: questList);
+              return ProfileView();
           }
         },
       ),

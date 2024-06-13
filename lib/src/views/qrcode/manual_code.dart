@@ -1,8 +1,10 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
-import 'package:arcadia_mobile/src/providers/change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/token_details.dart';
+import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +31,6 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
 
   Future<void> _validateQRCode() async {
     final code = _codeController.text.trim();
-    print("my qr code $code");
     if (code.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Enter a QR Code to earn tokens.')),
@@ -46,13 +47,15 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
       if (user != null) {
         final String? token = await user.getIdToken();
         if (token != null) {
-          final Token? response =
+          final UserActivity? response =
               await _arcadiaCloud.validateQRCode(code, token);
 
           if (response != null) {
             final userProfileProvider =
                 Provider.of<UserProfileProvider>(context, listen: false);
             userProfileProvider.updateTokens(response.value);
+            Provider.of<UserActivityProvider>(context, listen: false)
+                .addUserActivity(response);
 
             showActivityDialog(
                 context,

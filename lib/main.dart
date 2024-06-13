@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/firebase.dart';
-import 'package:arcadia_mobile/src/providers/change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,22 +15,24 @@ void main() async {
   );
 
   final firebaseService = FirebaseService.createInstance();
-  await firebaseService.initialize();
+  bool initialized = await firebaseService.initialize();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ClickedState()),
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
+        ChangeNotifierProvider(create: (_) => UserActivityProvider()),
         Provider<FirebaseService>.value(value: firebaseService),
       ],
-      child: const MyApp(),
+      child: MyApp(initialized: initialized),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool initialized;
+  const MyApp({super.key, required this.initialized});
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +103,39 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: SplashScreen(),
+      home: initialized ? const SplashScreen() : const ErrorScreen(),
     );
+  }
+}
+
+class ErrorScreen extends StatelessWidget {
+  const ErrorScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: 150,
+              maxWidth: 368,
+            ),
+            child: Image.asset(
+              'assets/2024_Logo-B.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Could not load The Arcadia Battle Royale App. Please make sure you are connected to the internet',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+            textAlign: TextAlign.center,
+          )
+        ],
+      ),
+    ));
   }
 }

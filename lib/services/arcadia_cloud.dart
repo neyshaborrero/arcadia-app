@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
+import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/response_detail.dart';
 import 'package:arcadia_mobile/src/structure/token_details.dart';
+import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:http/http.dart' as http;
 
@@ -215,7 +217,7 @@ class ArcadiaCloud {
     }
   }
 
-  Future<Token?> validateQRCode(String qrCode, String token) async {
+  Future<UserActivity?> validateQRCode(String qrCode, String token) async {
     final response = await http.post(
       Uri.parse(
           '${_firebaseService.arcadiaCloudAddress}/mission/validate'), // Replace with your actual endpoint
@@ -232,8 +234,37 @@ class ArcadiaCloud {
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
       print(json.decode(response.body));
-      return Token.fromJson(data);
+      return UserActivity.fromJson(data, "idsir");
     } else {
+      return null;
+    }
+  }
+
+  //Activities
+  Future<List<UserActivity>?> fetchUserActivity(String token) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/activity/getuseractivity');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<UserActivity> activities = [];
+      data.forEach((key, value) {
+        activities.add(UserActivity.fromJson(value, key));
+      });
+      print(activities);
+      return activities;
+    } else {
+      // Handle error
+      print('Failed to load user activity');
       return null;
     }
   }
