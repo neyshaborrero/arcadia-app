@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 
 class ClickedState with ChangeNotifier {
-  final Set<int> _clickedIds = {};
+  final Set<String> _clickedIds = {};
   bool _isVisible = true;
   bool get isVisible => _isVisible;
 
-  void toggleClicked(int id) {
+  void toggleClicked(String id) {
     if (_clickedIds.contains(id)) {
       _clickedIds.remove(id);
     } else {
@@ -14,7 +14,7 @@ class ClickedState with ChangeNotifier {
     notifyListeners();
   }
 
-  bool isClicked(int id) {
+  bool isClicked(String id) {
     return _clickedIds.contains(id);
   }
 

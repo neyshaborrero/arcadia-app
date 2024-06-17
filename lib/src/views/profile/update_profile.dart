@@ -1,6 +1,7 @@
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
+import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/views/start/home_view.dart';
 import 'package:flutter/material.dart';
@@ -163,17 +164,22 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
             _selectedUserType!,
             token);
         if (response['success']) {
-          UserProfile? profile = token != null
-              ? await _arcadiaCloud.fetchUserProfile(token)
-              : null;
+          if (token != null) {
+            UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
 
-          if (profile != null) {
-            Provider.of<UserProfileProvider>(context, listen: false)
-                .setUserProfile(profile);
+            if (profile != null) {
+              Provider.of<UserProfileProvider>(context, listen: false)
+                  .setUserProfile(profile);
+            }
+
+            List<MissionDetails>? missions = await _fetchMissions(token);
+            if (missions != null) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                    builder: (context) => HomeScreen(missions: missions)),
+              );
+            }
           }
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
         } else {
           List<ErrorDetail> errors = response['errors'];
           String errorMessage = errors.isNotEmpty
@@ -197,6 +203,17 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
             content: Text('Please fill all fields and select an image.')),
       );
     }
+  }
+
+  Future<List<MissionDetails>?> _fetchMissions(String token) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return null;
+
+    return await _arcadiaCloud.fetchArcadiaMissions(token);
   }
 
   @override

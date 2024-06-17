@@ -1,6 +1,7 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:flutter/material.dart';
@@ -40,18 +41,36 @@ class _SplashScreenState extends State<SplashScreen> {
       } else {
         print(await user.getIdToken());
         String? token = await user.getIdToken();
-        UserProfile? profile =
-            token != null ? await _arcadiaCloud.fetchUserProfile(token) : null;
 
-        if (profile != null) {
-          Provider.of<UserProfileProvider>(context, listen: false)
-              .setUserProfile(profile);
+        if (token != null) {
+          UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
+
+          if (profile != null) {
+            Provider.of<UserProfileProvider>(context, listen: false)
+                .setUserProfile(profile);
+          }
+
+          List<MissionDetails>? missions = await _fetchMissions(token);
+          if (missions != null) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (context) => HomeScreen(missions: missions)),
+            );
+          }
         }
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
       }
     });
+  }
+
+  Future<List<MissionDetails>?> _fetchMissions(String token) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return null;
+
+    return await _arcadiaCloud.fetchArcadiaMissions(token);
   }
 
   @override

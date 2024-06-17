@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class NewsArticle {
-  final int id;
+  final String id;
   final String title;
   final String subtitle;
   final Uri? url;

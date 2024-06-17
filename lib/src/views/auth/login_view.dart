@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
@@ -63,16 +64,24 @@ class _LoginScreenState extends State<LoginScreen> {
       if (user != null) {
         String? token = await user.getIdToken();
         print(token);
-        UserProfile? profile =
-            token != null ? await _arcadiaCloud.fetchUserProfile(token) : null;
+        if (token != null) {
+          UserProfile? profile = token != null
+              ? await _arcadiaCloud.fetchUserProfile(token)
+              : null;
 
-        if (profile != null) {
-          Provider.of<UserProfileProvider>(context, listen: false)
-              .setUserProfile(profile);
+          if (profile != null) {
+            Provider.of<UserProfileProvider>(context, listen: false)
+                .setUserProfile(profile);
+          }
+
+          List<MissionDetails>? missions = await _fetchMissions(token);
+          if (missions != null) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (context) => HomeScreen(missions: missions)),
+            );
+          }
         }
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
@@ -114,6 +123,17 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<List<MissionDetails>?> _fetchMissions(String token) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return null;
+
+    return await _arcadiaCloud.fetchArcadiaMissions(token);
   }
 
   @override

@@ -1,12 +1,12 @@
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../structure/news_article.dart';
 import '../../notifiers/change_notifier.dart';
 
 class QuestsView extends StatelessWidget {
-  final List<NewsArticle> newsArticleList;
+  final List<MissionDetails> newsArticleList;
 
   const QuestsView({super.key, required this.newsArticleList});
 
@@ -85,7 +85,7 @@ class QuestsView extends StatelessWidget {
                                 ListView.builder(
                                   itemCount: newsArticleList.length,
                                   itemBuilder: (context, index) {
-                                    NewsArticle article =
+                                    MissionDetails article =
                                         newsArticleList[index];
                                     return Padding(
                                         padding: const EdgeInsets.symmetric(
@@ -106,7 +106,7 @@ class QuestsView extends StatelessWidget {
                                                     .labelLarge,
                                               ),
                                               subtitle: Text(
-                                                article.subtitle,
+                                                article.description,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: Theme.of(context)
@@ -142,7 +142,7 @@ class QuestsView extends StatelessWidget {
                                                         clickedState.isClicked(
                                                             article.id),
                                                         article.title,
-                                                        article.subtitle,
+                                                        article.description,
                                                         article.imageComplete,
                                                         article.imageIncomplete)
                                                     .then((result) {

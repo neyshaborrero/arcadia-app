@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
+import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/response_detail.dart';
 import 'package:arcadia_mobile/src/structure/token_details.dart';
@@ -142,7 +143,6 @@ class ArcadiaCloud {
       return {'success': true};
     } else {
       // Error response
-      print(response.body);
       final Map<String, dynamic> res = json.decode(response.body);
       ResponseDetail parsedResponse = ResponseDetail.fromJson(res);
 
@@ -208,7 +208,6 @@ class ArcadiaCloud {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-      print(json.decode(response.body));
       return UserProfile.fromJson(data);
     } else {
       // Handle error
@@ -233,7 +232,6 @@ class ArcadiaCloud {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-      print(json.decode(response.body));
       return UserActivity.fromJson(data, "idsir");
     } else {
       return null;
@@ -260,11 +258,39 @@ class ArcadiaCloud {
       data.forEach((key, value) {
         activities.add(UserActivity.fromJson(value, key));
       });
-      print(activities);
       return activities;
     } else {
       // Handle error
       print('Failed to load user activity');
+      return null;
+    }
+  }
+
+  //Missions
+  Future<List<MissionDetails>?> fetchArcadiaMissions(String token) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/mission/getmissions');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      List<MissionDetails> missions = [];
+      missions = data.map((missionJson) {
+        return MissionDetails.fromJson(missionJson, missionJson['id']);
+      }).toList();
+
+      return missions;
+    } else {
+      // Handle error
+      print('Failed to load arcadia missions');
       return null;
     }
   }
