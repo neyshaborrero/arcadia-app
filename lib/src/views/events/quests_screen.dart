@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 import '../../notifiers/change_notifier.dart';
 
 class QuestsView extends StatelessWidget {
-  final List<MissionDetails> newsArticleList;
+  final List<MissionDetails> missionList;
 
-  const QuestsView({super.key, required this.newsArticleList});
+  const QuestsView({super.key, required this.missionList});
 
   @override
   Widget build(BuildContext context) {
@@ -83,10 +83,9 @@ class QuestsView extends StatelessWidget {
                         child: Consumer<ClickedState>(
                             builder: (context, clickedState, child) =>
                                 ListView.builder(
-                                  itemCount: newsArticleList.length,
+                                  itemCount: missionList.length,
                                   itemBuilder: (context, index) {
-                                    MissionDetails article =
-                                        newsArticleList[index];
+                                    MissionDetails mission = missionList[index];
                                     return Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 5.0),
@@ -98,7 +97,7 @@ class QuestsView extends StatelessWidget {
                                             ), // Conditional background color
                                             child: ListTile(
                                               title: Text(
-                                                article.title,
+                                                mission.title,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: Theme.of(context)
@@ -106,7 +105,7 @@ class QuestsView extends StatelessWidget {
                                                     .labelLarge,
                                               ),
                                               subtitle: Text(
-                                                article.description,
+                                                mission.description,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: Theme.of(context)
@@ -119,8 +118,10 @@ class QuestsView extends StatelessWidget {
                                                 height:
                                                     29, // Adjust the size as needed
                                                 decoration: BoxDecoration(
-                                                  color: clickedState
-                                                          .isClicked(article.id)
+                                                  color: (clickedState
+                                                              .isClicked(
+                                                                  mission.id) ||
+                                                          mission.completed)
                                                       ? const Color(0XFF4aae50)
                                                       : const Color(
                                                           0XFFc7c7c7), // Background color of the circle
@@ -138,20 +139,22 @@ class QuestsView extends StatelessWidget {
                                               onTap: () async {
                                                 showActivityDialog(
                                                         context,
+                                                        mission.id,
                                                         false,
-                                                        clickedState.isClicked(
-                                                            article.id),
-                                                        article.title,
-                                                        article.description,
-                                                        article.imageComplete,
-                                                        article.imageIncomplete)
+                                                        (clickedState.isClicked(
+                                                                mission.id) ||
+                                                            mission.completed),
+                                                        mission.title,
+                                                        mission.description,
+                                                        mission.imageComplete,
+                                                        mission.imageIncomplete)
                                                     .then((result) {
                                                   clickedState
                                                       .showChildren(true);
                                                   if (result != null &&
                                                       result == true) {
                                                     clickedState.toggleClicked(
-                                                        article.id);
+                                                        mission.id);
                                                     // Handle the result here
                                                   }
                                                 });

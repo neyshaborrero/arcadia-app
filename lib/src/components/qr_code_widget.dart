@@ -1,5 +1,3 @@
-import 'package:arcadia_mobile/services/arcadia_cloud.dart';
-import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/views/qrcode/manual_code.dart';
 import 'package:flutter/material.dart';

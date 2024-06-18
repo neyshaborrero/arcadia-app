@@ -63,11 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final User? user = _firebaseAuth.currentUser;
       if (user != null) {
         String? token = await user.getIdToken();
-        print(token);
         if (token != null) {
-          UserProfile? profile = token != null
-              ? await _arcadiaCloud.fetchUserProfile(token)
-              : null;
+          UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
 
           if (profile != null) {
             Provider.of<UserProfileProvider>(context, listen: false)

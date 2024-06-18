@@ -126,7 +126,9 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
 
     try {
       final User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return null;
+      if (user == null) {
+        throw Exception("User is not authenticated");
+      }
 
       final fileName = '${user.uid}_profile.jpg';
       final storageRef =

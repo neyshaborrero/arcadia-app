@@ -42,51 +42,51 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   List<String> tabTitles = ['Quests', 'News'];
-  List<NewsArticle> newsArticleList = [
-    NewsArticle(
-        id: '1',
-        title: "¡Nuevos Lanzamientos!",
-        subtitle: "Descubre los juegos más esperados del mes.",
-        imageComplete: '',
-        imageIncomplete: '',
-        url: Uri.parse('https://twitter.com/YoSoyUnGamerTW.')),
-    NewsArticle(
-        id: '2',
-        title: "Secretos Revelados",
-        subtitle: "Los Easter Eggs más ingeniosos de los videojuegos.",
-        imageComplete: '',
-        imageIncomplete: '',
-        url: Uri.parse('https://www.linkedin.com/company/yosoyungamer')),
-    NewsArticle(
-        id: '3',
-        title: "La Evolución de los Juegos de Rol",
-        subtitle: "Descubre cómo los RPG han evolucionado.",
-        imageComplete: '',
-        imageIncomplete: '',
-        url: Uri.parse('https://yosoyungamer.shop/')),
-    NewsArticle(
-        id: '4',
-        title: "Entrevista Exclusiva",
-        subtitle: "Directamente de la mente maestra detras de...",
-        imageComplete: '',
-        imageIncomplete: '',
-        url: Uri.parse('https://www.patreon.com/yosoyungamer')),
-    NewsArticle(
-        id: '5',
-        title: "Personajes Legendarios",
-        subtitle: "Celebra a los heroés y villanos que han dejado una...",
-        imageComplete: '',
-        imageIncomplete: '',
-        url: Uri.parse('https://www.patreon.com/yosoyungamer')),
-    NewsArticle(
-        id: '6',
-        title: "Análisis Profundo",
-        subtitle: "Sumérgete en el mundo de la VR y descubre cómo...",
-        imageComplete: '',
-        imageIncomplete: '',
-        url:
-            Uri.parse('https://www.facebook.com/yosoyungamerfb/?locale=es_LA')),
-  ];
+  // List<NewsArticle> newsArticleList = [
+  //   NewsArticle(
+  //       id: '1',
+  //       title: "¡Nuevos Lanzamientos!",
+  //       subtitle: "Descubre los juegos más esperados del mes.",
+  //       imageComplete: '',
+  //       imageIncomplete: '',
+  //       url: Uri.parse('https://twitter.com/YoSoyUnGamerTW.')),
+  //   NewsArticle(
+  //       id: '2',
+  //       title: "Secretos Revelados",
+  //       subtitle: "Los Easter Eggs más ingeniosos de los videojuegos.",
+  //       imageComplete: '',
+  //       imageIncomplete: '',
+  //       url: Uri.parse('https://www.linkedin.com/company/yosoyungamer')),
+  //   NewsArticle(
+  //       id: '3',
+  //       title: "La Evolución de los Juegos de Rol",
+  //       subtitle: "Descubre cómo los RPG han evolucionado.",
+  //       imageComplete: '',
+  //       imageIncomplete: '',
+  //       url: Uri.parse('https://yosoyungamer.shop/')),
+  //   NewsArticle(
+  //       id: '4',
+  //       title: "Entrevista Exclusiva",
+  //       subtitle: "Directamente de la mente maestra detras de...",
+  //       imageComplete: '',
+  //       imageIncomplete: '',
+  //       url: Uri.parse('https://www.patreon.com/yosoyungamer')),
+  //   NewsArticle(
+  //       id: '5',
+  //       title: "Personajes Legendarios",
+  //       subtitle: "Celebra a los heroés y villanos que han dejado una...",
+  //       imageComplete: '',
+  //       imageIncomplete: '',
+  //       url: Uri.parse('https://www.patreon.com/yosoyungamer')),
+  //   NewsArticle(
+  //       id: '6',
+  //       title: "Análisis Profundo",
+  //       subtitle: "Sumérgete en el mundo de la VR y descubre cómo...",
+  //       imageComplete: '',
+  //       imageIncomplete: '',
+  //       url:
+  //           Uri.parse('https://www.facebook.com/yosoyungamerfb/?locale=es_LA')),
+  // ];
 
   // List<MissionDetails> questList = [
   // NewsArticle(
@@ -196,8 +196,8 @@ class _HomeScreenState extends State<HomeScreen>
               return TabBarView(
                 controller: _tabController,
                 children: [
-                  QuestsView(newsArticleList: widget.missions),
-                  NewsScreen(newsArticleList: newsArticleList)
+                  QuestsView(missionList: widget.missions),
+                  NewsScreen()
                 ],
               );
             default:

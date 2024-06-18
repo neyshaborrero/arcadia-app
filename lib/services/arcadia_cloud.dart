@@ -4,7 +4,6 @@ import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/response_detail.dart';
-import 'package:arcadia_mobile/src/structure/token_details.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:http/http.dart' as http;
@@ -253,11 +252,17 @@ class ArcadiaCloud {
     );
 
     if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
+      // final Map<String, dynamic> data = json.decode(response.body);
+      // List<UserActivity> activities = [];
+      // data.forEach((key, value) {
+      //   activities.add(UserActivity.fromJson(value, key));
+      // });
+      // return activities;
+      final List<dynamic> data = json.decode(response.body);
       List<UserActivity> activities = [];
-      data.forEach((key, value) {
-        activities.add(UserActivity.fromJson(value, key));
-      });
+      activities = data.map((activityJson) {
+        return UserActivity.fromJson(activityJson, activityJson['id']);
+      }).toList();
       return activities;
     } else {
       // Handle error
@@ -281,6 +286,11 @@ class ArcadiaCloud {
     );
 
     if (response.statusCode == 200) {
+      // final Map<String, dynamic> data = json.decode(response.body);
+      // List<MissionDetails> missions = [];
+      // data.forEach((key, value) {
+      //   missions.add(MissionDetails.fromJson(value, key));
+      // });
       final List<dynamic> data = json.decode(response.body);
       List<MissionDetails> missions = [];
       missions = data.map((missionJson) {
@@ -291,6 +301,39 @@ class ArcadiaCloud {
     } else {
       // Handle error
       print('Failed to load arcadia missions');
+      return null;
+    }
+  }
+
+  //News
+  Future<List<NewsArticle>?> fetchNews(String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/news/getnews');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // final List<dynamic> data = json.decode(response.body);
+      // List<NewsArticle> newsArticles = data.map((item) {
+      //   return NewsArticle.fromJson(item, "1");
+      // }).toList();
+
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<NewsArticle> newsArticles = [];
+      data.forEach((key, value) {
+        newsArticles.add(NewsArticle.fromJson(value, key));
+      });
+      return newsArticles;
+    } else {
+      // Handle error
+      print('Failed to load news');
       return null;
     }
   }

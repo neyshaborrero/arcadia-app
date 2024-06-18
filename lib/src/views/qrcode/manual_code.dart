@@ -2,8 +2,8 @@ import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
-import 'package:arcadia_mobile/src/structure/token_details.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -56,9 +56,12 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
             userProfileProvider.updateTokens(response.value);
             Provider.of<UserActivityProvider>(context, listen: false)
                 .addUserActivity(response);
+            Provider.of<ClickedState>(context, listen: false)
+                .toggleClicked(response.qrcode);
 
             showActivityDialog(
                 context,
+                response.id,
                 true,
                 true,
                 response.title,

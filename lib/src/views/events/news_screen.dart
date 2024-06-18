@@ -1,3 +1,6 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -5,10 +8,43 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../structure/news_article.dart';
 import '../../notifiers/change_notifier.dart';
 
-class NewsScreen extends StatelessWidget {
-  final List<NewsArticle> newsArticleList;
+class NewsScreen extends StatefulWidget {
+  @override
+  _NewsScreenState createState() => _NewsScreenState();
+}
 
-  const NewsScreen({super.key, required this.newsArticleList});
+class _NewsScreenState extends State<NewsScreen> {
+  late final ArcadiaCloud _arcadiaCloud;
+  bool _isLoading = true;
+  late List<NewsArticle> newsArticle;
+
+  @override
+  void initState() {
+    super.initState();
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
+    _fetchNews();
+  }
+
+  Future<void> _fetchNews() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return;
+
+    final List<NewsArticle>? news = await _arcadiaCloud.fetchNews(token);
+
+    if (news != null) {
+      newsArticle = news;
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,75 +81,83 @@ class NewsScreen extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleLarge),
             )),
         Expanded(
-          child: Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: Consumer<ClickedState>(
-                  builder: (context, clickedState, child) => ListView.builder(
-                        itemCount: newsArticleList.length,
-                        itemBuilder: (context, index) {
-                          NewsArticle article = newsArticleList[index];
-                          return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 5.0),
-                              child: Container(
-                                  decoration: BoxDecoration(
-                                    color: clickedState.isClicked(article.id)
-                                        ? const Color(0xFFD20E0D)
-                                        : const Color(0xFF2c2b2b),
-                                    borderRadius: BorderRadius.circular(
-                                        10.0), // Adds rounded corners to the container
-                                    border: clickedState.isClicked(article.id)
-                                        ? Border.all(
-                                            color: const Color(
-                                                0xFFD20E0D)) // Optional: adds a border when clicked
-                                        : null,
-                                  ), // Conditional background color
-                                  child: ListTile(
-                                    title: Text(
-                                      article.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge,
-                                    ),
-                                    subtitle: Text(
-                                      article.subtitle,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelMedium,
-                                    ),
-                                    trailing: clickedState.isClicked(article.id)
-                                        ? Text(
-                                            getFormattedDate(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelSmall,
-                                          ) // Show today's date when clicked
-                                        : const Icon(Icons.arrow_forward_ios),
-                                    onTap: () async {
-                                      try {
-                                        _launchUrl(article.url);
-                                        clickedState.toggleClicked(article.id);
-                                      } catch (e) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                                'Failed to open the link: $e'), // Display the error message in the SnackBar
-                                            duration:
-                                                const Duration(seconds: 3),
-                                            backgroundColor: Colors
-                                                .red, // Optional: Changes the background color to red for errors
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  )));
-                        },
-                      ))),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Consumer<ClickedState>(
+                      builder: (context, clickedState, child) =>
+                          ListView.builder(
+                            itemCount: newsArticle.length,
+                            itemBuilder: (context, index) {
+                              NewsArticle article = newsArticle[index];
+                              return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 5.0),
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                        color:
+                                            clickedState.isClicked(article.id)
+                                                ? const Color(0xFFD20E0D)
+                                                : const Color(0xFF2c2b2b),
+                                        borderRadius: BorderRadius.circular(
+                                            10.0), // Adds rounded corners to the container
+                                        border: clickedState
+                                                .isClicked(article.id)
+                                            ? Border.all(
+                                                color: const Color(
+                                                    0xFFD20E0D)) // Optional: adds a border when clicked
+                                            : null,
+                                      ), // Conditional background color
+                                      child: ListTile(
+                                        title: Text(
+                                          article.title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge,
+                                        ),
+                                        subtitle: Text(
+                                          article.description,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelMedium,
+                                        ),
+                                        trailing: clickedState
+                                                .isClicked(article.id)
+                                            ? Text(
+                                                getFormattedDate(),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall,
+                                              ) // Show today's date when clicked
+                                            : const Icon(
+                                                Icons.arrow_forward_ios),
+                                        onTap: () async {
+                                          try {
+                                            _launchUrl(article.url);
+                                            clickedState
+                                                .toggleClicked(article.id);
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    'Failed to open the link: $e'), // Display the error message in the SnackBar
+                                                duration:
+                                                    const Duration(seconds: 3),
+                                                backgroundColor: Colors
+                                                    .red, // Optional: Changes the background color to red for errors
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      )));
+                            },
+                          ))),
         ),
       ],
     );

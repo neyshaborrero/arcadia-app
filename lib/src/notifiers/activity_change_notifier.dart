@@ -7,7 +7,7 @@ class UserActivityProvider with ChangeNotifier {
   List<UserActivity> get userActivities => _userActivities;
 
   void addUserActivity(UserActivity activity) {
-    _userActivities.add(activity);
+    _userActivities.insert(0, activity);
     notifyListeners();
   }
 

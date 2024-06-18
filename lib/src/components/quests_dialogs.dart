@@ -1,4 +1,5 @@
 import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
+import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,7 @@ import 'package:arcadia_mobile/src/routes/slide_up_route.dart'; // Update with t
 
 Future<bool?> showActivityDialog(
   BuildContext context,
+  String? missionId,
   bool showChildren,
   bool isCompleted,
   String subtitle,
@@ -88,10 +90,13 @@ Future<bool?> showActivityDialog(
                       backgroundColor: Colors.black,
                     ),
                     onPressed: () {
-                      isCompleted
-                          ? Navigator.of(context).pop()
-                          : _navigateUpWithSlideTransition(context,
-                              const QRCodeScreen()); // Close the dialog
+                      if (isCompleted) {
+                        Navigator.of(context).pop(); // Close the dialog first
+                      } else {
+                        Navigator.of(context).pop(); // Close the dialog first
+                        _navigateUpWithSlideTransition(
+                            context, const QRCodeScreen());
+                      } // Close the dialog
                     },
                     child: ConstrainedBox(
                       constraints:

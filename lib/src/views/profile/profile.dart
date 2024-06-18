@@ -52,7 +52,8 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    final userActivityProvider = Provider.of<UserActivityProvider>(context);
+    final userActivityProvider =
+        Provider.of<UserActivityProvider>(context, listen: true);
     final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
     final userActivities = userActivityProvider.userActivities;
 
@@ -265,6 +266,7 @@ class _ProfileViewState extends State<ProfileView> {
                                       onTap: () async {
                                         showActivityDialog(
                                           context,
+                                          null,
                                           true,
                                           true,
                                           userActivity.title,

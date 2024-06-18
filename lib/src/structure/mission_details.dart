@@ -15,6 +15,7 @@ class MissionDetails {
   final bool oneTimeRedemption;
   final int frequencyPerDay;
   final String expires;
+  final bool completed;
 
   MissionDetails(
       {required this.id,
@@ -29,7 +30,8 @@ class MissionDetails {
       required this.type,
       required this.oneTimeRedemption,
       required this.frequencyPerDay,
-      required this.expires});
+      required this.expires,
+      required this.completed});
 
   factory MissionDetails.fromJson(Map<String, dynamic> json, String id) {
     return MissionDetails(
@@ -45,7 +47,8 @@ class MissionDetails {
         value: json['value'],
         oneTimeRedemption: json['oneTimeRedemption'],
         frequencyPerDay: json['frequencyPerDay'],
-        expires: json['expires']);
+        expires: json['expires'],
+        completed: json['completed']);
   }
 
   String getFormattedDate() {

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
@@ -97,6 +98,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Method to log out the user
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
+    Provider.of<UserProfileProvider>(context, listen: false).clearUserProfile();
+    Provider.of<UserActivityProvider>(context, listen: false)
+        .clearUserActivities();
     Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const StartScreen()),
