@@ -1,7 +1,17 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
+import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
+import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/views/qrcode/manual_code.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:vibration/vibration.dart';
 
 class QRScan extends StatefulWidget {
   const QRScan({super.key});
@@ -14,17 +24,24 @@ class _QRScanState extends State<QRScan> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
   bool isScanning = true;
+  bool isManual = false;
+  String? scannedCode;
+  bool isDialogShown = false;
+  late final ArcadiaCloud _arcadiaCloud;
 
   @override
   void initState() {
     super.initState();
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(children: [
       Expanded(
-          child: !isScanning
+          child: isManual
               ? const ManualQRCodeView()
               : Column(children: [
                   Padding(
@@ -61,8 +78,7 @@ class _QRScanState extends State<QRScan> {
                     padding: const EdgeInsets.all(30.0),
                     child: Center(
                       child: ElevatedButton(
-                        onPressed: () =>
-                            setState(() => isScanning = !isScanning),
+                        onPressed: () => setState(() => isManual = !isManual),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size.fromHeight(50),
                         ),
@@ -81,11 +97,83 @@ class _QRScanState extends State<QRScan> {
     ]);
   }
 
+  Future<void> _validateQRCode(code) async {
+    // setState(() {
+    //   _isLoading = true;
+    // });
+
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final String? token = await user.getIdToken();
+        if (token != null) {
+          final UserActivity? response =
+              await _arcadiaCloud.validateQRCode(code, token);
+
+          if (response != null) {
+            final userProfileProvider =
+                Provider.of<UserProfileProvider>(context, listen: false);
+            userProfileProvider.updateTokens(response.value);
+            Provider.of<UserActivityProvider>(context, listen: false)
+                .addUserActivity(response);
+            Provider.of<ClickedState>(context, listen: false)
+                .toggleClicked(response.qrcode);
+
+            showActivityDialog(
+                context,
+                response.id,
+                true,
+                true,
+                response.title,
+                response.description,
+                response.imageComplete,
+                response.imageComplete);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text(
+                      'We couldnt validate the QR Code, try another one.')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('We couldnt validate the QR Code, try another one.')),
+      );
+    } finally {
+      setState(() {
+        isScanning = true;
+      });
+
+      // setState(() {
+      //   _isLoading = false;
+      // });
+    }
+  }
+
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      // Handle the scanned data
-      print("Scanned Data: ${scanData.code}");
+    controller.scannedDataStream.listen((scanData) async {
+      if (!isDialogShown) {
+        setState(() {
+          scannedCode = scanData.code;
+          isScanning = false; // Stop scanning after the first scan
+          isDialogShown = true;
+        });
+
+        bool isVibratorAvailable = await Vibration.hasVibrator() ?? false;
+        print("vibrating $isVibratorAvailable");
+        if (isVibratorAvailable) {
+          Vibration.vibrate();
+        }
+
+        _validateQRCode(scannedCode);
+
+        // Handle the scanned data
+        print("Scanned Data: ${scanData.code}");
+      }
     });
   }
 

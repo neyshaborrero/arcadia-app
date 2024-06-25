@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/views/auth/reset_password.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../../routes/slide_right_route.dart';
@@ -13,6 +14,24 @@ class ForgetPasswordScreen extends StatefulWidget {
 
 class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  void _sendPasswordResetEmail() async {
+    try {
+      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
+      // _navigateWithSlideTransition(
+      //             context, const ResetPasswordScreen());
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'Password reset link sent! Please follow the emails instruction to reset your password.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +85,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           const SizedBox(height: 50),
           ElevatedButton(
             onPressed: () {
-              _navigateWithSlideTransition(
-                  context, const ResetPasswordScreen());
+              _sendPasswordResetEmail();
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
