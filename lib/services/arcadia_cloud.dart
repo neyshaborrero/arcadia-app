@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
@@ -232,13 +233,16 @@ class ArcadiaCloud {
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
       return UserActivity.fromJson(data, "idsir");
+    } else if (response.statusCode == 400) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
     } else {
       return null;
     }
   }
 
   //Activities
-  Future<List<UserActivity>?> fetchUserActivity(String token) async {
+  Future<List<UserActivity>?> fetchUserActivity1(String token) async {
     final url = Uri.parse(
         '${_firebaseService.arcadiaCloudAddress}/activity/getuseractivity');
 
@@ -264,6 +268,40 @@ class ArcadiaCloud {
         return UserActivity.fromJson(activityJson, activityJson['id']);
       }).toList();
       return activities;
+    } else {
+      // Handle error
+      print('Failed to load user activity');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchUserActivity(String token,
+      {String? startAfter}) async {
+    final url = Uri.parse(
+      '${_firebaseService.arcadiaCloudAddress}/activity/getuseractivity'
+      '?limit=10${startAfter != null ? '&startAfter=$startAfter' : ''}',
+    );
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<UserActivity> activities =
+          (data['activities'] as List<dynamic>).map((activityJson) {
+        return UserActivity.fromJson(activityJson, activityJson['id']);
+      }).toList();
+
+      return {
+        'activities': activities,
+        'lastKey': data['lastKey'],
+      };
     } else {
       // Handle error
       print('Failed to load user activity');
@@ -335,6 +373,28 @@ class ArcadiaCloud {
       // Handle error
       print('Failed to load news');
       return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> isGamertagAvailable(
+      String gamertag, String token) async {
+    final Uri url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/user/isgamertag?gamertag=$gamertag');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else if (response.statusCode == 400) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      return errorResponse;
+    } else {
+      throw Exception('Failed to check gamertag');
     }
   }
 }

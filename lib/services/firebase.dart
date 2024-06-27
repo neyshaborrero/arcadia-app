@@ -1,7 +1,9 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 class FirebaseService {
   final FirebaseRemoteConfig _remoteConfig;
+  final firebaseMessaging = FirebaseMessaging.instance;
 
   FirebaseService({required FirebaseRemoteConfig remoteConfig})
       : _remoteConfig = remoteConfig;
@@ -9,6 +11,33 @@ class FirebaseService {
   static FirebaseService createInstance() {
     final remoteConfig = FirebaseRemoteConfig.instance;
     return FirebaseService(remoteConfig: remoteConfig);
+  }
+
+  Future<void> initFirebaseNotifications() async {
+    NotificationSettings settings = await firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
+      print('User granted provisional permission');
+    } else {
+      print('User declined or has not accepted permission');
+    }
+  }
+
+  Future<bool> isNotificationEnabled() async {
+    NotificationSettings settings =
+        await firebaseMessaging.getNotificationSettings();
+    return settings.authorizationStatus == AuthorizationStatus.authorized;
   }
 
   Future<bool> initialize() async {

@@ -2,11 +2,16 @@ import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'src/notifiers/change_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,8 +19,25 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // const AndroidInitializationSettings initializationSettingsAndroid =
+  //     AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  // const InitializationSettings initializationSettings = InitializationSettings(
+  //   android: initializationSettingsAndroid,
+  // );
+
+  // await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+  //     onDidReceiveNotificationResponse: (NotificationResponse response) async {
+  //   // Handle notification tap
+  //   String? payload = response.payload;
+  //   if (payload != null) {
+  //     print('notification payload: $payload');
+  //     // Navigate to a specific screen based on the payload
+  //   }
+  // });
   final firebaseService = FirebaseService.createInstance();
   bool initialized = await firebaseService.initialize();
+  //FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(
     MultiProvider(
@@ -29,6 +51,11 @@ void main() async {
     ),
   );
 }
+
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   await Firebase.initializeApp();
+//   // Handle background message
+// }
 
 class MyApp extends StatelessWidget {
   final bool initialized;
@@ -60,9 +87,9 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(const Color(0xFFD20E0D)),
-            foregroundColor: MaterialStateProperty.all(Colors.white),
-            shape: MaterialStateProperty.all(
+            backgroundColor: WidgetStateProperty.all(const Color(0xFFD20E0D)),
+            foregroundColor: WidgetStateProperty.all(Colors.white),
+            shape: WidgetStateProperty.all(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -71,9 +98,9 @@ class MyApp extends StatelessWidget {
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(const Color(0xFF313131)),
-            foregroundColor: MaterialStateProperty.all(Colors.white),
-            shape: MaterialStateProperty.all(
+            backgroundColor: WidgetStateProperty.all(const Color(0xFF313131)),
+            foregroundColor: WidgetStateProperty.all(Colors.white),
+            shape: WidgetStateProperty.all(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),

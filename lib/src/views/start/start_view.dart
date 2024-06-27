@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../auth/create_account_view.dart';
 import '../auth/login_view.dart';
 import '../tickets/ticket_tiers_view.dart';
@@ -71,7 +72,8 @@ class StartScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 368),
               child: OutlinedButton(
                 onPressed: () {
-                  _navigateUpWithSlideTransition(context, const TicketTiers());
+                  _launchUrl();
+                  //_navigateUpWithSlideTransition(context, const TicketTiers());
                 },
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
@@ -92,14 +94,12 @@ class StartScreen extends StatelessWidget {
     );
   }
 
-  // Future<void> _launchURL() async {
-  //   final Uri url = Uri.parse('https://arcadia-example-app.bubbleapps.io/version-test');
-  //   // if (await canLaunchUrl(url)) {
-  //   //   await launchUrl(url, mode: LaunchMode.externalApplication);
-  //   // } else {
-  //   //   throw 'Could not launch $url';
-  //   // }
-  // }
+  Future<void> _launchUrl() async {
+    if (!await launchUrl(Uri.parse('https://prticket.sale/ARCADIA'),
+        mode: LaunchMode.inAppBrowserView)) {
+      throw Exception('Could not launch https://prticket.sale/ARCADIA');
+    }
+  }
 
   // Function to navigate with the slide transition
   void _navigateWithSlideTransition(BuildContext context, Widget page) {

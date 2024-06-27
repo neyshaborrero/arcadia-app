@@ -28,6 +28,9 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   final TextEditingController _dateOfBirthController = TextEditingController();
   String? _selectedGender;
   String? _selectedUserType;
+  final FocusNode _gamertagFocusNode = FocusNode();
+  String? _gamertagValidationMessage;
+  bool _isCheckingGamertag = false;
 
   final ImagePicker _picker = ImagePicker();
   XFile? _imageFile; // Used to hold the image file
@@ -43,6 +46,56 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
+
+    _gamertagFocusNode.addListener(() {
+      if (!_gamertagFocusNode.hasFocus) {
+        _checkGamertag();
+      }
+    });
+  }
+
+  Future<void> _checkGamertag() async {
+    setState(() {
+      _isCheckingGamertag = true;
+      _gamertagValidationMessage = null;
+    });
+
+    final String gamertag = _gamertagController.text;
+    if (gamertag.isEmpty) {
+      setState(() {
+        _gamertagValidationMessage = "Gamertag is required.";
+        _isCheckingGamertag = false;
+      });
+      return;
+    }
+
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final token = await user.getIdToken();
+
+      if (token == null) return;
+      final response = await _arcadiaCloud.isGamertagAvailable(gamertag, token);
+      if (response['success'] == true) {
+        setState(() {
+          _gamertagValidationMessage = null;
+        });
+      } else {
+        setState(() {
+          _gamertagValidationMessage = response['errors'][0]['message'];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _gamertagValidationMessage =
+            "Error checking gamertag. Please try again.";
+      });
+    } finally {
+      setState(() {
+        _isCheckingGamertag = false;
+      });
+    }
   }
 
   // Method to show the bottom sheet menu
@@ -145,6 +198,12 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
 
   Future<void> _saveUserProfile() async {
     if (_formKey.currentState?.validate() == true && _imageFile != null) {
+      if (_gamertagValidationMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_gamertagValidationMessage!)),
+        );
+        return;
+      }
       setState(() {
         _isLoading = true;
       });
@@ -331,29 +390,40 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                     )),
                 const SizedBox(height: 20),
                 TextFormField(
-                    controller: _gamertagController,
-                    decoration: const InputDecoration(
-                      labelText: 'Gamertag *',
-                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(
-                              10), // CSS border-radius: 10px 0px 0px 0px;
-                          topRight: Radius.circular(10),
-                          bottomLeft: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
-                        ),
-                        borderSide: BorderSide
-                            .none, // CSS opacity: 0; implies no border
+                  controller: _gamertagController,
+                  focusNode: _gamertagFocusNode,
+                  decoration: const InputDecoration(
+                    labelText: 'Gamertag *',
+                    contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10),
                       ),
-                      fillColor: Color(0xFF2C2B2B), // Use appropriate color
+                      borderSide: BorderSide.none,
                     ),
-                    keyboardType: TextInputType.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    )),
+                    fillColor: Color(0xFF2C2B2B),
+                    // suffixIcon: _isCheckingGamertag
+                    //     ? const CircularProgressIndicator()
+                    //     : null,
+                  ),
+                  keyboardType: TextInputType.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+                if (_gamertagValidationMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      _gamertagValidationMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 TextFormField(
                     controller: _dateOfBirthController,

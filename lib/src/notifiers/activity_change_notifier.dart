@@ -11,6 +11,12 @@ class UserActivityProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void addUserActivities(List<UserActivity> activity) {
+    _userActivities.addAll(activity);
+    // _userActivities.insert(0, activity);
+    notifyListeners();
+  }
+
   void setUserActivities(List<UserActivity> activities) {
     _userActivities = activities;
     notifyListeners();

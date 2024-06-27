@@ -4,6 +4,7 @@ import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -77,6 +78,10 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
           }
         }
       }
+    } on BadRequestException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_right_route.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
@@ -31,6 +32,10 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+
+    firebaseService.initFirebaseNotifications();
 
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -42,104 +47,6 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   List<String> tabTitles = ['Quests', 'News'];
-  // List<NewsArticle> newsArticleList = [
-  //   NewsArticle(
-  //       id: '1',
-  //       title: "¡Nuevos Lanzamientos!",
-  //       subtitle: "Descubre los juegos más esperados del mes.",
-  //       imageComplete: '',
-  //       imageIncomplete: '',
-  //       url: Uri.parse('https://twitter.com/YoSoyUnGamerTW.')),
-  //   NewsArticle(
-  //       id: '2',
-  //       title: "Secretos Revelados",
-  //       subtitle: "Los Easter Eggs más ingeniosos de los videojuegos.",
-  //       imageComplete: '',
-  //       imageIncomplete: '',
-  //       url: Uri.parse('https://www.linkedin.com/company/yosoyungamer')),
-  //   NewsArticle(
-  //       id: '3',
-  //       title: "La Evolución de los Juegos de Rol",
-  //       subtitle: "Descubre cómo los RPG han evolucionado.",
-  //       imageComplete: '',
-  //       imageIncomplete: '',
-  //       url: Uri.parse('https://yosoyungamer.shop/')),
-  //   NewsArticle(
-  //       id: '4',
-  //       title: "Entrevista Exclusiva",
-  //       subtitle: "Directamente de la mente maestra detras de...",
-  //       imageComplete: '',
-  //       imageIncomplete: '',
-  //       url: Uri.parse('https://www.patreon.com/yosoyungamer')),
-  //   NewsArticle(
-  //       id: '5',
-  //       title: "Personajes Legendarios",
-  //       subtitle: "Celebra a los heroés y villanos que han dejado una...",
-  //       imageComplete: '',
-  //       imageIncomplete: '',
-  //       url: Uri.parse('https://www.patreon.com/yosoyungamer')),
-  //   NewsArticle(
-  //       id: '6',
-  //       title: "Análisis Profundo",
-  //       subtitle: "Sumérgete en el mundo de la VR y descubre cómo...",
-  //       imageComplete: '',
-  //       imageIncomplete: '',
-  //       url:
-  //           Uri.parse('https://www.facebook.com/yosoyungamerfb/?locale=es_LA')),
-  // ];
-
-  // List<MissionDetails> questList = [
-  // NewsArticle(
-  //     id: 1,
-  //     title: "Check-in",
-  //     subtitle: "Win 30XP for checking in to ClaroPR",
-  //     imageComplete: 'assets/map_icon_1.png',
-  //     imageIncomplete: 'assets/map_icon_1_grey.png',
-  //     icon: const Icon(
-  //       Icons.location_on_outlined,
-  //       size: 35,
-  //     )),
-  // NewsArticle(
-  //     id: 2,
-  //     title: "Check-in",
-  //     subtitle: "Win 50XP for checking in to Kia Motors",
-  //     imageComplete: 'assets/map_icon_1.png',
-  //     imageIncomplete: 'assets/map_icon_1_grey.png',
-  //     icon: const Icon(
-  //       Icons.location_on_outlined,
-  //       size: 35,
-  //     )),
-  // NewsArticle(
-  //     id: 3,
-  //     title: "Check-in",
-  //     subtitle: "Win 30XP for checking in to TacoBell",
-  //     imageComplete: 'assets/map_icon_1.png',
-  //     imageIncomplete: 'assets/map_icon_1_grey.png',
-  //     icon: const Icon(
-  //       Icons.location_on_outlined,
-  //       size: 35,
-  //     )),
-  // NewsArticle(
-  //     id: 4,
-  //     title: "Purchase",
-  //     subtitle: "Win 100XP for every Taco Bell purchase",
-  //     imageComplete: 'assets/shopping_bag.png',
-  //     imageIncomplete: 'assets/shopping_bag.png',
-  //     icon: const Icon(
-  //       Icons.shopping_bag_outlined,
-  //       size: 35,
-  //     )),
-  // NewsArticle(
-  //     id: 5,
-  //     title: "Purchase",
-  //     subtitle: "Win 100XP for every Taco Bell purchase",
-  //     imageComplete: 'assets/shopping_bag.png',
-  //     imageIncomplete: 'assets/shopping_bag.png',
-  //     icon: const Icon(
-  //       Icons.shopping_bag_outlined,
-  //       size: 35,
-  //     )),
-  // ];
 
   @override
   Widget build(BuildContext context) {

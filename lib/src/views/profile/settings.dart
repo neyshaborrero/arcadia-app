@@ -5,6 +5,7 @@ import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,13 +25,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
   XFile? _imageFile; // Used to hold the image file
   late final ArcadiaCloud _arcadiaCloud;
   bool _isLoading = false;
+  bool _notificationsEnabled = false;
 
   @override
   void initState() {
     super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
+    _notificationsEnabled = await firebaseService.isNotificationEnabled();
+    setState(() {}); // Update the state to reflect changes
+  }
+
+  Future<void> _requestNotificationPermissions() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+      setState(() {
+        _notificationsEnabled = true;
+      });
+    } else {
+      print('User declined or has not accepted permission');
+      setState(() {
+        _notificationsEnabled = false;
+      });
+    }
+  }
+
+  void _toggleNotifications(bool value) {
+    if (value) {
+      _requestNotificationPermissions();
+    } else {
+      setState(() {
+        _notificationsEnabled = false;
+      });
+    }
   }
 
   // Method to show the bottom sheet menu
@@ -269,10 +309,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: const Text('Notifications',
                   style: TextStyle(color: Colors.white)),
               trailing: Switch(
-                value: true,
-                onChanged: (bool value) {
-                  // Implement your toggle functionality
-                },
+                value: _notificationsEnabled,
+                onChanged: _toggleNotifications,
                 activeColor: Colors.green,
               ),
             ),
