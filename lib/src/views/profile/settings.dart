@@ -13,6 +13,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -314,10 +315,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 activeColor: Colors.green,
               ),
             ),
-            _buildListTile('Privacy', context),
-            _buildListTile('Terms & Conditions', context),
-            _buildListTile('About', context),
-            _buildListTile('Contact', context),
+            _buildListTile('Privacy Policy', context,
+                'https://thorn-freesia-17c.notion.site/Privacy-Policy-2301f06eb14c4753b76e4ee23b15ff35'),
+            _buildListTile('Terms of Service', context,
+                'https://thorn-freesia-17c.notion.site/Terms-of-Service-e2ada600ffae48828b7f1c2aa4862443'),
+            _buildListTile('About', context,
+                'https://www.yosoyungamer.com/arcadia-battle-royale-2024/'),
+            _buildListTile('Contact', context, 'mailto:info@yosoyungamer.com'),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
@@ -333,11 +337,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  ListTile _buildListTile(String title, BuildContext context) {
+  Future<void> _launchUrl(url) async {
+    if (!await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView)) {
+      throw Exception('Could not launch https://prticket.sale/ARCADIA');
+    }
+  }
+
+  ListTile _buildListTile(String title, BuildContext context, String url) {
     return ListTile(
       title: Text(title, style: const TextStyle(color: Colors.white)),
       trailing: const Icon(Icons.arrow_forward, color: Colors.grey),
       onTap: () {
+        _launchUrl(url);
         // Implement navigation or functionality for each settings option
       },
     );

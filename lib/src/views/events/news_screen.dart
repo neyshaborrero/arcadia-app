@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -51,26 +52,28 @@ class _NewsScreenState extends State<NewsScreen> {
     return Column(
       children: <Widget>[
         Padding(
-            padding: const EdgeInsets.all(18.0), // Add padding around the image
-            child: Container(
-                decoration: BoxDecoration(
-                    borderRadius:
-                        BorderRadius.circular(10.0), // Rounded corners
-                    border: Border.all(color: Colors.grey) // Optional border
-                    ),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        // Define action on tap if necessary.
-                      },
-                      child: Image.asset(
-                        'assets/news_ad.png',
-                        fit: BoxFit
-                            .cover, // this will fill the height of the ListTile and clip the width
-                        width: MediaQuery.of(context).size.width,
-                      ),
-                    )))),
+          padding: const EdgeInsets.all(18.0), // Add padding around the image
+          child: AdsCarouselComponent(),
+          // child: Container(
+          //     decoration: BoxDecoration(
+          //         borderRadius:
+          //             BorderRadius.circular(10.0), // Rounded corners
+          //         border: Border.all(color: Colors.grey) // Optional border
+          //         ),
+          //     child: ClipRRect(
+          //         borderRadius: BorderRadius.circular(10.0),
+          //         child: GestureDetector(
+          //           onTap: () {
+          //             // Define action on tap if necessary.
+          //           },
+          //           child: Image.asset(
+          //             'assets/news_ad.png',
+          //             fit: BoxFit
+          //                 .cover, // this will fill the height of the ListTile and clip the width
+          //             width: MediaQuery.of(context).size.width,
+          //           ),
+          //         )))
+        ),
         Padding(
             padding:
                 const EdgeInsets.symmetric(vertical: 8.0, horizontal: 37.0),

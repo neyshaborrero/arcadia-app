@@ -241,40 +241,6 @@ class ArcadiaCloud {
     }
   }
 
-  //Activities
-  Future<List<UserActivity>?> fetchUserActivity1(String token) async {
-    final url = Uri.parse(
-        '${_firebaseService.arcadiaCloudAddress}/activity/getuseractivity');
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-        'x-api-key': _firebaseService.xApiKey,
-      },
-    );
-
-    if (response.statusCode == 200) {
-      // final Map<String, dynamic> data = json.decode(response.body);
-      // List<UserActivity> activities = [];
-      // data.forEach((key, value) {
-      //   activities.add(UserActivity.fromJson(value, key));
-      // });
-      // return activities;
-      final List<dynamic> data = json.decode(response.body);
-      List<UserActivity> activities = [];
-      activities = data.map((activityJson) {
-        return UserActivity.fromJson(activityJson, activityJson['id']);
-      }).toList();
-      return activities;
-    } else {
-      // Handle error
-      print('Failed to load user activity');
-      return null;
-    }
-  }
-
   Future<Map<String, dynamic>?> fetchUserActivity(String token,
       {String? startAfter}) async {
     final url = Uri.parse(
@@ -338,7 +304,9 @@ class ArcadiaCloud {
       return missions;
     } else {
       // Handle error
-      print('Failed to load arcadia missions');
+      print(
+        'Failed to load arcadia missions ${response.statusCode}',
+      );
       return null;
     }
   }

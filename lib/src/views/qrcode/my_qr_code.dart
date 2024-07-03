@@ -78,7 +78,7 @@ class _MyQRCodeState extends State<MyQRCode> {
           borderRadius: BorderRadius.circular(10), // Border radius
         ),
         child: QrImageView(
-          data: '123455',
+          data: userProfile!.qrcode,
           size: 206,
           embeddedImage: const AssetImage('assets/ysug.png'),
           // You can include embeddedImageStyle Property if you
@@ -91,9 +91,9 @@ class _MyQRCodeState extends State<MyQRCode> {
           ),
         ),
       ),
-      const Text(
-        '35624527',
-        style: TextStyle(
+      Text(
+        userProfile.qrcode,
+        style: const TextStyle(
           fontSize: 24.0,
           fontWeight:
               FontWeight.w700, // This corresponds to font-weight: 700 in CSS

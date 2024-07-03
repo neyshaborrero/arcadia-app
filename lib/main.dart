@@ -1,8 +1,8 @@
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +45,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ClickedState()),
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
         ChangeNotifierProvider(create: (_) => UserActivityProvider()),
+        ChangeNotifierProvider(create: (_) => AdsDetailsProvider()),
         Provider<FirebaseService>.value(value: firebaseService),
       ],
       child: MyApp(initialized: initialized),

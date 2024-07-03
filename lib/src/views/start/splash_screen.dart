@@ -1,6 +1,8 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
@@ -41,6 +43,34 @@ class _SplashScreenState extends State<SplashScreen> {
       } else {
         print(await user.getIdToken());
         String? token = await user.getIdToken();
+        Provider.of<AdsDetailsProvider>(context, listen: false).addAdsDetails([
+          AdsDetails(
+              id: "123456",
+              image:
+                  "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c",
+              url: "google.com"),
+          AdsDetails(
+              id: "123457",
+              image:
+                  "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c",
+              url: "google.com")
+        ]);
+
+        // Provider.of<AdsDetailsProvider>(context, listen: false).addAdsDetails([
+        //   AdsDetails(
+        //       id: '123456',
+        //       image:
+        //           'https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c',
+        //       url: 'google.com')
+        //   // {
+        //   //   "image":
+        //   //       "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c"
+        //   // } as AdsDetails,
+        //   // {
+        //   //   "image":
+        //   //       "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c"
+        //   // } as AdsDetails
+        // ]);
 
         if (token != null) {
           UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
