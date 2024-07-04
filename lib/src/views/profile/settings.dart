@@ -322,6 +322,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildListTile('About', context,
                 'https://www.yosoyungamer.com/arcadia-battle-royale-2024/'),
             _buildListTile('Contact', context, 'mailto:info@yosoyungamer.com'),
+            _buildListTile(
+                'Purchase Tickets', context, 'https://prticket.sale/ARCADIA'),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(

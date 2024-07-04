@@ -51,6 +51,6 @@ class DefaultFirebaseOptions {
     projectId: 'ysug-arcadia-46a15',
     databaseURL: 'https://ysug-arcadia-46a15-default-rtdb.firebaseio.com',
     storageBucket: 'ysug-arcadia-46a15.appspot.com',
-    iosBundleId: 'com.arcadia.app',
+    iosBundleId: 'com.ysug.arcadia',
   );
 }
