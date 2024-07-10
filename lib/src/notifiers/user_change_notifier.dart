@@ -5,6 +5,7 @@ class UserProfileProvider with ChangeNotifier {
   UserProfile? _userProfile;
 
   UserProfile? get userProfile => _userProfile;
+  String? get profileUrl => _userProfile?.profileImageUrl;
 
   void setUserProfile(UserProfile profile) {
     _userProfile = profile;

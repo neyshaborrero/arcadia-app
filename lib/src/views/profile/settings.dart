@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/src/components/picture_upload_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
@@ -76,38 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Method to show the bottom sheet menu
   void _showImagePickerMenu(BuildContext context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                    leading: const Icon(Icons.photo_camera),
-                    title: const Text('Take Photo'),
-                    onTap: () {
-                      _imgFromCamera();
-                      Navigator.of(context).pop();
-                    }),
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: const Text('Choose Photo'),
-                  onTap: () {
-                    _imgFromGallery();
-                    Navigator.of(context).pop();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.cancel),
-                  title: const Text('Cancel'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            ),
-          );
-        });
+    showUploadPictureDialog(context);
   }
 
   // Method to handle image selection from the camera
@@ -249,12 +219,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: FractionallySizedBox(
                         widthFactor: 1.0,
                         heightFactor: 1.0,
-                        // widthFactor: _imageFile != null
-                        //     ? 1.0
-                        //     : 0.6, // scales down the image to 80% of the CircleAvatar's size
-                        // heightFactor: _imageFile != null
-                        //     ? 1.0
-                        //     : 0.6, // scales down the image to 80% of the CircleAvatar's size
                         child: Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
@@ -268,12 +232,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       ? FileImage(File(_imageFile!.path))
                                       : const AssetImage('assets/hambopr.jpg')
                                           as ImageProvider,
-                              // image: AssetImage('assets/hambopr.jpg'),
-                              // image: _imageFile != null
-                              //     ? FileImage(File(_imageFile!.path))
-                              //         as ImageProvider // Use picked image
-                              //     : const AssetImage(
-                              //         'assets/player_default_prof_icon.png'), // Fallback to default asset image
                               fit: BoxFit
                                   .cover, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
                             ),

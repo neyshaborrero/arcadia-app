@@ -160,8 +160,21 @@ class ArcadiaCloud {
       String? gender,
       String? userType,
       String? token) async {
+    print(gamertag);
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/user/updateuser');
+
+    Map<String, dynamic> bodyCall = {
+      'lastUpdate': DateTime.now().toIso8601String(),
+    };
+
+    if (gamertag != null) bodyCall['gamertag'] = gamertag;
+    if (dob != null) bodyCall['dob'] = dob;
+    if (profileUrl != null) bodyCall['profileImageUrl'] = profileUrl;
+    if (fullName != null) bodyCall['fullName'] = fullName;
+    if (gender != null) bodyCall['gender'] = gender;
+    if (userType != null) bodyCall['userType'] = userType;
+
     final response = await http.put(
       url,
       headers: {
@@ -169,15 +182,7 @@ class ArcadiaCloud {
         'Authorization': 'Bearer $token',
         'x-api-key': _firebaseService.xApiKey,
       },
-      body: jsonEncode({
-        "gamertag": gamertag,
-        "dob": dob,
-        'profileImageUrl': profileUrl,
-        "fullName": fullName,
-        "gender": gender,
-        "userType": userType,
-        'lastUpdate': DateTime.now().toIso8601String(),
-      }),
+      body: jsonEncode(bodyCall),
     );
 
     if (response.statusCode == 200) {
@@ -211,7 +216,6 @@ class ArcadiaCloud {
       return UserProfile.fromJson(data);
     } else {
       // Handle error
-      print('Failed to load user profile');
       return null;
     }
   }

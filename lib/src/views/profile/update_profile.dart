@@ -1,13 +1,14 @@
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/components/picture_upload_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/views/start/home_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../../routes/slide_up_route.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,7 +31,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   String? _selectedUserType;
   final FocusNode _gamertagFocusNode = FocusNode();
   String? _gamertagValidationMessage;
-  bool _isCheckingGamertag = false;
+  UserProfile? profile;
 
   final ImagePicker _picker = ImagePicker();
   XFile? _imageFile; // Used to hold the image file
@@ -56,7 +57,6 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
 
   Future<void> _checkGamertag() async {
     setState(() {
-      _isCheckingGamertag = true;
       _gamertagValidationMessage = null;
     });
 
@@ -64,7 +64,6 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
     if (gamertag.isEmpty) {
       setState(() {
         _gamertagValidationMessage = "Gamertag is required.";
-        _isCheckingGamertag = false;
       });
       return;
     }
@@ -92,46 +91,13 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
             "Error checking gamertag. Please try again.";
       });
     } finally {
-      setState(() {
-        _isCheckingGamertag = false;
-      });
+      setState(() {});
     }
   }
 
   // Method to show the bottom sheet menu
   void _showImagePickerMenu(BuildContext context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                    leading: const Icon(Icons.photo_camera),
-                    title: const Text('Take Photo'),
-                    onTap: () {
-                      _imgFromCamera();
-                      Navigator.of(context).pop();
-                    }),
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: const Text('Choose Photo'),
-                  onTap: () {
-                    _imgFromGallery();
-                    Navigator.of(context).pop();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.cancel),
-                  title: const Text('Cancel'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            ),
-          );
-        });
+    showUploadPictureDialog(context);
   }
 
   // Method to handle image selection from the camera
@@ -197,7 +163,13 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   }
 
   Future<void> _saveUserProfile() async {
-    if (_formKey.currentState?.validate() == true && _imageFile != null) {
+    final profileProvider =
+        Provider.of<UserProfileProvider>(context, listen: false).userProfile;
+    print("validate ${_formKey.currentState?.validate()}");
+    if (_formKey.currentState?.validate() == true &&
+        (_imageFile != null ||
+            (profileProvider != null &&
+                profileProvider.profileImageUrl.isNotEmpty))) {
       if (_gamertagValidationMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_gamertagValidationMessage!)),
@@ -208,8 +180,8 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
         _isLoading = true;
       });
 
-      final String? downloadURL = await _uploadImageToFirebase();
-      if (downloadURL == null) return;
+      // final String? downloadURL = await _uploadImageToFirebase();
+      // if (downloadURL == null) return;
 
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
@@ -218,7 +190,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
         String? token = await user.getIdToken();
         final response = await _arcadiaCloud.updateUserToDB(
             _gamertagController.text,
-            downloadURL,
+            null,
             _dateOfBirthController.text,
             _fullNameController.text,
             _selectedGender!,
@@ -226,11 +198,14 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
             token);
         if (response['success']) {
           if (token != null) {
-            UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
+            profile = await _arcadiaCloud.fetchUserProfile(token);
 
             if (profile != null) {
               Provider.of<UserProfileProvider>(context, listen: false)
-                  .setUserProfile(profile);
+                  .setUserProfile(profile!);
+            } else {
+              profile = Provider.of<UserProfileProvider>(context, listen: false)
+                  .userProfile;
             }
 
             List<MissionDetails>? missions = await _fetchMissions(token);
@@ -296,75 +271,82 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Form(
             key: _formKey,
-            child: Column(
-              children: <Widget>[
-                Stack(
-                  alignment:
-                      Alignment.center, // Aligns the '+' icon over the avatar
+            child: Consumer<UserProfileProvider>(
+                builder: (context, userProfileProvider, _) {
+              final profile = userProfileProvider.profileUrl;
+              return Column(
+                children: <Widget>[
+                  Stack(
+                    alignment:
+                        Alignment.center, // Aligns the '+' icon over the avatar
 
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(
-                          2), // This value is the width of the border
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white, // Border color
-                          width: 4.0, // Border width
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(
+                            2), // This value is the width of the border
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white, // Border color
+                            width: 4.0, // Border width
+                          ),
                         ),
-                      ),
-                      child: CircleAvatar(
-                        radius: 60, // Adjust the radius to your preference
-                        backgroundColor: const Color(
-                            0xFF2C2B2B), // Background color for the avatar
-                        child: FractionallySizedBox(
-                          widthFactor: _imageFile != null
-                              ? 1.0
-                              : 0.6, // scales down the image to 80% of the CircleAvatar's size
-                          heightFactor: _imageFile != null
-                              ? 1.0
-                              : 0.6, // scales down the image to 80% of the CircleAvatar's size
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                image: _imageFile != null
-                                    ? FileImage(File(_imageFile!.path))
-                                        as ImageProvider // Use picked image
-                                    : const AssetImage(
-                                        'assets/player_default_prof_icon.png'), // Fallback to default asset image
-                                fit: BoxFit
-                                    .cover, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
+                        child: CircleAvatar(
+                          radius: 60, // Adjust the radius to your preference
+                          backgroundColor: const Color(
+                              0xFF2C2B2B), // Background color for the avatar
+                          child: FractionallySizedBox(
+                            widthFactor: _imageFile != null ||
+                                    profile!.isNotEmpty
+                                ? 1.0
+                                : 0.6, // scales down the image to 80% of the CircleAvatar's size
+                            heightFactor: _imageFile != null ||
+                                    profile!.isNotEmpty
+                                ? 1.0
+                                : 0.6, // scales down the image to 80% of the CircleAvatar's size
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  image: _imageFile != null
+                                      ? FileImage(File(_imageFile!.path))
+                                      : profile!.isNotEmpty
+                                          ? CachedNetworkImageProvider(profile)
+                                          : const AssetImage(
+                                                  'assets/player_default_prof_icon.png')
+                                              as ImageProvider, // Fallback to default asset image
+                                  fit: BoxFit
+                                      .cover, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 0, // Adjust the position as per your design
-                      right: 0, // Adjust the position as per your design
-                      child: GestureDetector(
-                        onTap: () => _showImagePickerMenu(context),
-                        child: Container(
-                          width: 46.0,
-                          height: 46.0,
-                          decoration: const BoxDecoration(
-                            color: Color(
-                                0xFFD20E0D), // Background color of the '+' icon circle
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.white,
+                      Positioned(
+                        bottom: 0, // Adjust the position as per your design
+                        right: 0, // Adjust the position as per your design
+                        child: GestureDetector(
+                          onTap: () => _showImagePickerMenu(context),
+                          child: Container(
+                            width: 46.0,
+                            height: 46.0,
+                            decoration: const BoxDecoration(
+                              color: Color(
+                                  0xFFD20E0D), // Background color of the '+' icon circle
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
                     controller: _fullNameController,
                     decoration: const InputDecoration(
                       labelText: 'Full Name *',
@@ -387,45 +369,55 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
-                    )),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _gamertagController,
-                  focusNode: _gamertagFocusNode,
-                  decoration: const InputDecoration(
-                    labelText: 'Gamertag *',
-                    contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _gamertagController,
+                    focusNode: _gamertagFocusNode,
+                    decoration: const InputDecoration(
+                      labelText: 'Gamertag *',
+                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10),
+                          bottomLeft: Radius.circular(10),
+                          bottomRight: Radius.circular(10),
+                        ),
+                        borderSide: BorderSide.none,
                       ),
-                      borderSide: BorderSide.none,
+                      fillColor: Color(0xFF2C2B2B),
                     ),
-                    fillColor: Color(0xFF2C2B2B),
-                    // suffixIcon: _isCheckingGamertag
-                    //     ? const CircularProgressIndicator()
-                    //     : null,
-                  ),
-                  keyboardType: TextInputType.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-                if (_gamertagValidationMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      _gamertagValidationMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                    keyboardType: TextInputType.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Required';
+                      }
+                      return null;
+                    },
                   ),
-                const SizedBox(height: 20),
-                TextFormField(
+                  if (_gamertagValidationMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        _gamertagValidationMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 14),
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+                  TextFormField(
                     controller: _dateOfBirthController,
                     decoration: const InputDecoration(
                       labelText: 'Date of Birth *',
@@ -451,111 +443,125 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
-                    )),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: 'Gender *',
-                    contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                    fillColor: Color(0xFF2C2B2B),
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(
-                            10), // CSS border-radius: 10px 0px 0px 0px;
-                        topRight: Radius.circular(10),
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10),
-                      ),
-                      borderSide:
-                          BorderSide.none, // CSS opacity: 0; implies no border
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Required';
+                      }
+                      return null;
+                    },
                   ),
-                  value: _selectedGender,
-                  items:
-                      <String>['Male', 'Female', 'Other', 'Prefer Not to Say']
-                          .map((String value) => DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              ))
-                          .toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedGender = newValue;
-                    });
-                  },
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: 'User Type *',
-                    contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                    fillColor: Color(0xFF2C2B2B),
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(
-                            10), // CSS border-radius: 10px 0px 0px 0px;
-                        topRight: Radius.circular(10),
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10),
-                      ),
-                      borderSide:
-                          BorderSide.none, // CSS opacity: 0; implies no border
-                    ),
-                  ),
-                  value: _selectedUserType,
-                  items: <String>['Player', 'Cosplayer', 'Operator']
-                      .map((String value) => DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          ))
-                      .toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedUserType = newValue;
-                    });
-                  },
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 50),
-                const Text(
-                  'Please verify your information carefully. Once submitted, your details cannot be edited later.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-                const SizedBox(height: 24),
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                        onPressed: _saveUserProfile,
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(50),
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Gender *',
+                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                      fillColor: Color(0xFF2C2B2B),
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(
+                              10), // CSS border-radius: 10px 0px 0px 0px;
+                          topRight: Radius.circular(10),
+                          bottomLeft: Radius.circular(10),
+                          bottomRight: Radius.circular(10),
                         ),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 48, vertical: 16),
-                          child: Text(
-                            'Create Account',
-                            style: TextStyle(fontSize: 18),
+                        borderSide: BorderSide
+                            .none, // CSS opacity: 0; implies no border
+                      ),
+                    ),
+                    value: _selectedGender,
+                    items:
+                        <String>['Male', 'Female', 'Other', 'Prefer Not to Say']
+                            .map((String value) => DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                ))
+                            .toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedGender = newValue;
+                      });
+                    },
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'User Type *',
+                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+                      fillColor: Color(0xFF2C2B2B),
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(
+                              10), // CSS border-radius: 10px 0px 0px 0px;
+                          topRight: Radius.circular(10),
+                          bottomLeft: Radius.circular(10),
+                          bottomRight: Radius.circular(10),
+                        ),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    value: _selectedUserType,
+                    items: <String>['Player', 'Cosplayer', 'Placeholder']
+                        .map((String value) => DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            ))
+                        .toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedUserType = newValue;
+                      });
+                    },
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 50),
+                  const Text(
+                    'Please verify your information carefully. Once submitted, your details cannot be edited later.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  const SizedBox(height: 24),
+                  _isLoading
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: _saveUserProfile,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(50),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 48, vertical: 16),
+                            child: Text(
+                              'Create Account',
+                              style: TextStyle(fontSize: 18),
+                            ),
                           ),
                         ),
-                      ),
-              ],
-            )),
+                ],
+              );
+            })),
       ),
     );
-  }
-
-  // Function to navigate with the slide transition
-  void _navigateWithSlideUpTransition(BuildContext context, Widget page) {
-    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
   }
 }

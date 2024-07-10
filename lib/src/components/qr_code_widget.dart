@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
@@ -93,6 +94,10 @@ class _QRScanState extends State<QRScan> {
                       ),
                     ),
                   ),
+                  AdsCarouselComponent(),
+                  const SizedBox(
+                    height: 40,
+                  )
                 ]))
     ]);
   }

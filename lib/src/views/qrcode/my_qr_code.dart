@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -99,6 +100,7 @@ class _MyQRCodeState extends State<MyQRCode> {
               FontWeight.w700, // This corresponds to font-weight: 700 in CSS
         ),
       ),
+      AdsCarouselComponent(),
     ]);
   }
 }

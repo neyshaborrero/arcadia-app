@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen>
                 FontWeight.w700, // This corresponds to font-weight: 700 in CSS
           ),
         ),
-        toolbarHeight: 60.0,
+        toolbarHeight: 40.0,
         bottom: _currentView == ViewType.events
             ? TabBar(
                 controller: _tabController,
