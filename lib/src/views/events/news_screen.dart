@@ -51,8 +51,8 @@ class _NewsScreenState extends State<NewsScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.all(18.0), // Add padding around the image
+        const Padding(
+          padding: EdgeInsets.all(18.0), // Add padding around the image
           child: AdsCarouselComponent(),
           // child: Container(
           //     decoration: BoxDecoration(
@@ -85,7 +85,10 @@ class _NewsScreenState extends State<NewsScreen> {
             )),
         Expanded(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(
+                  child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ))
               : Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Consumer<ClickedState>(

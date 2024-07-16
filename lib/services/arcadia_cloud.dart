@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
+import 'package:arcadia_mobile/src/structure/prize_details.dart';
 import 'package:arcadia_mobile/src/structure/response_detail.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
@@ -279,6 +281,62 @@ class ArcadiaCloud {
     }
   }
 
+  Future<List<AdsDetails>> fetchAds() async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/sponsor/getAds');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<AdsDetails> adsDetails = [];
+
+      data.forEach((key, value) {
+        adsDetails.add(AdsDetails.fromJson(key, value));
+      });
+
+      return adsDetails;
+    } else {
+      // Handle error
+      print('Failed to load ads');
+      return [];
+    }
+  }
+
+  Future<List<PrizeDetails>?> fetchArcadiaPrizes(String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/raffle/prizes');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': _firebaseService.xApiKey,
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<PrizeDetails> prizes =
+          (data['prizes'] as List<dynamic>).map((activityJson) {
+        return PrizeDetails.fromJson(activityJson, activityJson['id']);
+      }).toList();
+
+      return prizes;
+    } else {
+      // Handle error
+      print('Failed to load prizes ${response.body}');
+      return null;
+    }
+  }
+
   //Missions
   Future<List<MissionDetails>?> fetchArcadiaMissions(String token) async {
     final url = Uri.parse(
@@ -294,11 +352,6 @@ class ArcadiaCloud {
     );
 
     if (response.statusCode == 200) {
-      // final Map<String, dynamic> data = json.decode(response.body);
-      // List<MissionDetails> missions = [];
-      // data.forEach((key, value) {
-      //   missions.add(MissionDetails.fromJson(value, key));
-      // });
       final List<dynamic> data = json.decode(response.body);
       List<MissionDetails> missions = [];
       missions = data.map((missionJson) {

@@ -1,9 +1,7 @@
-import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../auth/create_account_view.dart';
 import '../auth/login_view.dart';
-import '../tickets/ticket_tiers_view.dart';
 import '../../routes/slide_right_route.dart';
 import '../../routes/slide_up_route.dart';
 
@@ -51,6 +49,7 @@ class StartScreen extends StatelessWidget {
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 368),
               child: OutlinedButton(
+                key: const ValueKey('createAccountButtonKey'),
                 onPressed: () {
                   _navigateWithSlideTransition(
                       context, const CreateAccountView());

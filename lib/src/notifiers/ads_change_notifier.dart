@@ -6,8 +6,21 @@ class AdsDetailsProvider with ChangeNotifier {
 
   List<AdsDetails> get adsDetails => _adsDetails;
 
-  void addAdsDetails(List<AdsDetails> activity) {
-    _adsDetails.addAll(activity);
-    notifyListeners();
+  void addAllAdsDetails(List<AdsDetails> ads) {
+    _adsDetails.addAll(ads);
+    // notifyListeners();
+  }
+
+  void addAdsDetails(AdsDetails ad) {
+    _adsDetails.add(ad);
+    // notifyListeners();
+  }
+
+  AdsDetails getSplashAd() {
+    return _adsDetails.firstWhere((element) => element.tier == 'legendary');
+  }
+
+  List<AdsDetails> getEpicAds() {
+    return _adsDetails.where((element) => element.tier == 'epic').toList();
   }
 }

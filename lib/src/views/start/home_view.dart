@@ -1,13 +1,17 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_right_route.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
-import 'package:arcadia_mobile/src/structure/news_article.dart';
+import 'package:arcadia_mobile/src/structure/prize_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
 import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/profile/settings.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
+import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../events/news_screen.dart';
@@ -23,10 +27,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
+  late final ArcadiaCloud _arcadiaCloud;
 
   ViewType _currentView = ViewType.events;
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Remove observer
+    // _controller.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -36,6 +48,8 @@ class _HomeScreenState extends State<HomeScreen>
         Provider.of<FirebaseService>(context, listen: false);
 
     firebaseService.initFirebaseNotifications();
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
+    _fetchPrizes();
 
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -44,6 +58,37 @@ class _HomeScreenState extends State<HomeScreen>
         });
       }
     });
+  }
+
+  Future<void> _fetchPrizes() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return;
+
+    final response = await _arcadiaCloud.fetchArcadiaPrizes(token);
+
+    if (response != null) {
+      List<PrizeDetails> prizeList = response;
+
+      Provider.of<PrizesChangeProvider>(context, listen: false)
+          .setPrizeList(prizeList);
+    } else {
+      print("failed to load prizes");
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // When the app is resumed, show the splash screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SplashScreen()),
+      );
+    }
   }
 
   List<String> tabTitles = ['Quests', 'News'];

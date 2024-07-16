@@ -1,0 +1,8 @@
+app_identifier("com.ysug.arcadia") # The bundle identifier of your app
+apple_id("dev@keepgoing.solutions") # Your Apple Developer Portal username
+
+itc_team_id("127168246") # App Store Connect Team ID
+team_id("25R2KUX3R2") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile

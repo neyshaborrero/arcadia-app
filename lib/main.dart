@@ -1,7 +1,10 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -19,25 +22,39 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // const AndroidInitializationSettings initializationSettingsAndroid =
-  //     AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  // const InitializationSettings initializationSettings = InitializationSettings(
-  //   android: initializationSettingsAndroid,
-  // );
-
-  // await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-  //     onDidReceiveNotificationResponse: (NotificationResponse response) async {
-  //   // Handle notification tap
-  //   String? payload = response.payload;
-  //   if (payload != null) {
-  //     print('notification payload: $payload');
-  //     // Navigate to a specific screen based on the payload
-  //   }
-  // });
   final firebaseService = FirebaseService.createInstance();
   bool initialized = await firebaseService.initialize();
-  //FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  late List<AdsDetails> splashAd;
+  // = AdsDetails(
+  //     tier: "legendary",
+  //     image:
+  //         "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
+  //     url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/");
+
+  if (initialized) {
+    late final ArcadiaCloud arcadiaCloud = ArcadiaCloud(firebaseService);
+    List<AdsDetails> adsList = await arcadiaCloud.fetchAds();
+
+    if (adsList.isNotEmpty) {
+      splashAd = adsList;
+    } else {
+      splashAd = [
+        (AdsDetails(
+            tier: "legendary",
+            image:
+                "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
+            url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/"))
+      ];
+    }
+  } else {
+    splashAd = [
+      (AdsDetails(
+          tier: "legendary",
+          image:
+              "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
+          url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/"))
+    ];
+  }
 
   runApp(
     MultiProvider(
@@ -46,24 +63,23 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
         ChangeNotifierProvider(create: (_) => UserActivityProvider()),
         ChangeNotifierProvider(create: (_) => AdsDetailsProvider()),
+        ChangeNotifierProvider(create: (_) => PrizesChangeProvider()),
         Provider<FirebaseService>.value(value: firebaseService),
       ],
-      child: MyApp(initialized: initialized),
+      child: MyApp(initialized: initialized, ads: splashAd),
     ),
   );
 }
 
-// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-//   await Firebase.initializeApp();
-//   // Handle background message
-// }
-
 class MyApp extends StatelessWidget {
   final bool initialized;
-  const MyApp({super.key, required this.initialized});
+  final List<AdsDetails> ads;
+  const MyApp({super.key, required this.initialized, required this.ads});
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<AdsDetailsProvider>(context, listen: false)
+        .addAllAdsDetails(ads);
     return MaterialApp(
       title: 'Arcadia Battle Royale 2024',
       theme: ThemeData(
@@ -131,6 +147,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
+      debugShowCheckedModeBanner: false,
       home: initialized ? const SplashScreen() : const ErrorScreen(),
     );
   }
@@ -152,7 +169,7 @@ class ErrorScreen extends StatelessWidget {
               maxWidth: 368,
             ),
             child: Image.asset(
-              'assets/2024_Logo-B.png',
+              'assets/no_connection.png',
               fit: BoxFit.cover,
             ),
           ),

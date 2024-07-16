@@ -136,7 +136,9 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
               minimumSize: const Size.fromHeight(50),
             ),
             child: _isLoading
-                ? const CircularProgressIndicator()
+                ? const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  )
                 : const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
                     child: Text(

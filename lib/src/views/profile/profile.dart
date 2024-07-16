@@ -242,7 +242,10 @@ class _ProfileViewState extends State<ProfileView> {
               const SizedBox(height: 20),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ))
                     : userActivities.isEmpty
                         ? _buildNoActivityWidget()
                         : ListView.builder(
@@ -252,7 +255,11 @@ class _ProfileViewState extends State<ProfileView> {
                               if (index == userActivities.length) {
                                 return _isLoadingMore
                                     ? const Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.white),
+                                        ),
                                       )
                                     : const SizedBox.shrink();
                               }

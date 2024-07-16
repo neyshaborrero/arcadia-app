@@ -1,0 +1,16 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Generate new localized screenshots"
+  lane :screenshot do
+    capture_screenshots(
+      devices: ["iPhone 8"],
+      languages: ["en-US", "de-DE"],
+      scheme: "Runner",
+      clear_previous_screenshots: true,
+      stop_after_first_error: false, # Prevent Fastlane from closing the simulator on errors
+      reinstall_app: false # Avoid reinstalling the app to keep the simulator open
+    )
+    sh "flutter drive --driver=test_driver/app.dart --target=integration_test/app_test.dart -d A83E4F7F-EFDD-4879-ADD0-EB4AF7F7A94E"
+  end
+end

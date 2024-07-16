@@ -543,7 +543,10 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                   ),
                   const SizedBox(height: 24),
                   _isLoading
-                      ? const CircularProgressIndicator()
+                      ? const CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
                       : ElevatedButton(
                           onPressed: _saveUserProfile,
                           style: ElevatedButton.styleFrom(

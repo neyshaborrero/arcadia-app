@@ -1,7 +1,9 @@
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
+import 'package:arcadia_mobile/src/views/events/raffle_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../notifiers/change_notifier.dart';
@@ -20,7 +22,7 @@ class QuestsView extends StatelessWidget {
                 const SizedBox(
                   height: 10,
                 ),
-                AdsCarouselComponent(),
+                const AdsCarouselComponent(),
                 const SizedBox(
                   height: 10,
                 ),
@@ -91,27 +93,34 @@ class QuestsView extends StatelessWidget {
                                     width: 2, // Width of the line
                                     color: Colors.white, // Color of the line
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'View Rewards',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelMedium,
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Row(children: [
-                                        Image.asset(
-                                          'assets/prize.png',
-                                          width: 45,
-                                          height: 45,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ])
-                                    ],
-                                  ),
+                                  GestureDetector(
+                                      onTap: () {
+                                        // Perform the desired action when the Column is tapped
+                                        _navigateUpWithSlideTransition(
+                                            context, const RaffleView());
+                                        // You can navigate to a new page, show a dialog, etc.
+                                      },
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'View Rewards',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelMedium,
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Row(children: [
+                                            Image.asset(
+                                              'assets/prize.png',
+                                              width: 45,
+                                              height: 45,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ])
+                                        ],
+                                      )),
                                 ],
                               ),
                             ),
@@ -218,5 +227,9 @@ class QuestsView extends StatelessWidget {
                   ),
               ],
             ));
+  }
+
+  void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
+    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
   }
 }

@@ -5,11 +5,15 @@ import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
+import 'package:arcadia_mobile/src/tools/is_tablet.dart';
+import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
-import 'home_view.dart'; // Import your Home screen
+import 'home_view.dart';
+// import 'package:video_player/video_player.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,16 +22,49 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with WidgetsBindingObserver {
   late final ArcadiaCloud _arcadiaCloud;
+  late AdsDetails ad;
+  // late VideoPlayerController _controller;
+  bool showIndicator = false;
 
   @override
   void initState() {
     super.initState();
+    ad = Provider.of<AdsDetailsProvider>(context, listen: false).getSplashAd();
+
+    // _controller = VideoPlayerController.asset('assets/arcadia_anime.mp4')
+    //   ..initialize().then((_) {
+    //     setState(() {
+    //       _controller.setLooping(true);
+    //       _controller.setVolume(0);
+    //       _controller.play();
+    //     });
+    //   });
+
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
     _checkAuthStatus();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Remove observer
+    // _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // When the app is resumed, show the splash screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SplashScreen()),
+      );
+    }
   }
 
   void _checkAuthStatus() async {
@@ -43,34 +80,6 @@ class _SplashScreenState extends State<SplashScreen> {
       } else {
         print(await user.getIdToken());
         String? token = await user.getIdToken();
-        Provider.of<AdsDetailsProvider>(context, listen: false).addAdsDetails([
-          AdsDetails(
-              id: "123456",
-              image:
-                  "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c",
-              url: "google.com"),
-          AdsDetails(
-              id: "123457",
-              image:
-                  "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c",
-              url: "google.com")
-        ]);
-
-        // Provider.of<AdsDetailsProvider>(context, listen: false).addAdsDetails([
-        //   AdsDetails(
-        //       id: '123456',
-        //       image:
-        //           'https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c',
-        //       url: 'google.com')
-        //   // {
-        //   //   "image":
-        //   //       "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c"
-        //   // } as AdsDetails,
-        //   // {
-        //   //   "image":
-        //   //       "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2Fnews_ad.png?alt=media&token=91fc471c-0e56-461b-a030-9f50d8cd1c6c"
-        //   // } as AdsDetails
-        // ]);
 
         if (token != null) {
           UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
@@ -105,21 +114,38 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTabletDevice = isTablet(context);
     return Scaffold(
       body: Container(
-          color: Color(0xFFE30D0D), // Background color
+          color: const Color(0xFFE30D0D), // Background color
           child: Stack(
             fit: StackFit.expand,
             children: [
               Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Image.asset(
-                  'assets/ad_splash.jpg',
-                  fit: BoxFit.contain,
+                FractionallySizedBox(
+                  widthFactor: isTabletDevice
+                      ? 0.7
+                      : 0.9, // 50% for tablets, 90% for other devices
+                  child: GestureDetector(
+                    onTap: () {
+                      launchURL(Uri.parse(ad.url)); // Launch the URL on tap
+                    },
+                    child: CachedNetworkImage(
+                      imageUrl: ad.image,
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 70),
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
+                if (showIndicator)
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
               ]),
             ],
           )),

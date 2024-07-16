@@ -94,7 +94,7 @@ class _QRScanState extends State<QRScan> {
                       ),
                     ),
                   ),
-                  AdsCarouselComponent(),
+                  const AdsCarouselComponent(),
                   const SizedBox(
                     height: 40,
                   )
@@ -161,6 +161,7 @@ class _QRScanState extends State<QRScan> {
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) async {
+      print(scanData);
       if (!isDialogShown) {
         setState(() {
           scannedCode = scanData.code;

@@ -298,7 +298,9 @@ class _CreateAccountViewState extends State<CreateAccountView> {
 
           const SizedBox(height: 50),
           _isLoading
-              ? const CircularProgressIndicator()
+              ? const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                )
               : ElevatedButton(
                   onPressed: _createUser,
                   style: ElevatedButton.styleFrom(
