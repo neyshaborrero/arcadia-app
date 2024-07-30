@@ -3,6 +3,7 @@ import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
+import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/events/raffle_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -225,6 +226,28 @@ class QuestsView extends StatelessWidget {
                                   },
                                 ))),
                   ),
+                if (clickedState.isVisible)
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 368),
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          launchURL(Uri.parse('https://prticket.sale/ARCADIA')),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50),
+                      ),
+                      child: const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                        child: Text(
+                          'Buy Tickets',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(
+                  height: 40,
+                )
               ],
             ));
   }

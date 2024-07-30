@@ -6,6 +6,7 @@ import 'package:arcadia_mobile/src/routes/slide_right_route.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
+import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
 import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/profile/settings.dart';
@@ -98,20 +99,27 @@ class _HomeScreenState extends State<HomeScreen>
     final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
     return Scaffold(
       appBar: AppBar(
-        actions: _currentView == ViewType.profile
-            ? <Widget>[
-                IconButton(
-                  icon: const Icon(
-                    Icons.settings_outlined,
-                    size: 32,
-                  ),
-                  onPressed: () {
-                    _navigateWithSlideTransition(
-                        context, const SettingsScreen());
-                  },
-                ),
-              ]
-            : null,
+        actions: <Widget>[
+          if (_currentView == ViewType.profile)
+            IconButton(
+              icon: const Icon(
+                Icons.settings_outlined,
+                size: 32,
+              ),
+              onPressed: () {
+                _navigateWithSlideTransition(context, const SettingsScreen());
+              },
+            ),
+          IconButton(
+            icon: const Icon(
+              Icons.confirmation_num_outlined,
+              size: 32,
+            ),
+            onPressed: () {
+              launchURL(Uri.parse('https://prticket.sale/ARCADIA'));
+            },
+          ),
+        ],
         backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
         centerTitle: true,
@@ -143,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen>
         builder: (context) {
           switch (_currentView) {
             case ViewType.profile:
-              return ProfileView();
+              return const ProfileView();
             case ViewType.events:
               return TabBarView(
                 controller: _tabController,
@@ -153,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
               );
             default:
-              return ProfileView();
+              return const ProfileView();
           }
         },
       ),

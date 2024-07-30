@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileView extends StatefulWidget {
+  const ProfileView({super.key});
+
   @override
   _ProfileViewState createState() => _ProfileViewState();
 }
@@ -323,7 +325,7 @@ class _ProfileViewState extends State<ProfileView> {
                             },
                           ),
               ),
-              AdsCarouselComponent()
+              const AdsCarouselComponent()
             ],
           ),
         ));
