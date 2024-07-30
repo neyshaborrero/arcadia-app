@@ -1,7 +1,7 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
-import 'package:arcadia_mobile/src/structure/user_profile.dart';
+import 'package:arcadia_mobile/src/views/profile/update_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/views/auth/forget_password.dart';
@@ -11,8 +11,6 @@ import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import '../auth/create_account_view.dart';
 import '../../routes/slide_right_route.dart';
-import '../../routes/slide_up_route.dart';
-//import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,9 +30,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    final firebaseService =
-        Provider.of<FirebaseService>(context, listen: false);
-    _arcadiaCloud = ArcadiaCloud(firebaseService);
+    _arcadiaCloud =
+        ArcadiaCloud(Provider.of<FirebaseService>(context, listen: false));
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   Future<void> _loginUser() async {
@@ -42,11 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('You wont be able to get in without email and password.')),
-      );
+      _showSnackbar('You won\'t be able to get in without email and password.');
       return;
     }
 
@@ -56,65 +56,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
+          email: email, password: password);
       final User? user = _firebaseAuth.currentUser;
       if (user != null) {
-        String? token = await user.getIdToken();
-        if (token != null) {
-          UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
-
-          if (profile != null) {
-            Provider.of<UserProfileProvider>(context, listen: false)
-                .setUserProfile(profile);
-          }
-
-          List<MissionDetails>? missions = await _fetchMissions(token);
-          if (missions != null) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                  builder: (context) => HomeScreen(missions: missions)),
-            );
-          }
-        }
+        await _handleUserLogin(user);
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      switch (e.code) {
-        case 'user-not-found':
-          errorMessage = 'No user found for that email.';
-          break;
-        case 'wrong-password':
-          errorMessage = 'Wrong password provided for that user.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'The email address is not valid.';
-          break;
-        case 'user-disabled':
-          errorMessage = 'The user account has been disabled.';
-          break;
-        case 'too-many-requests':
-          errorMessage = 'Too many login attempts. Please try again later.';
-          break;
-        case 'invalid-credential':
-          errorMessage = 'Invalid email and password. Please try again.';
-          break;
-        default:
-          errorMessage = 'An unexpected error occurred. Plase try again later.';
-          break;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+      _handleAuthException(e);
     } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('An unexpected error occurred. Please try again later.')),
-      );
+      _showSnackbar('An unexpected error occurred. Please try again later.');
     } finally {
       setState(() {
         _isLoading = false;
@@ -122,167 +72,216 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleUserLogin(User user) async {
+    try {
+      final token = await user.getIdToken();
+      if (token != null && token.isNotEmpty) {
+        final profile = await _arcadiaCloud.fetchUserProfile(token);
+        if (profile != null) {
+          Provider.of<UserProfileProvider>(context, listen: false)
+              .setUserProfile(profile);
+          if (!profile.profileComplete) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (context) => const UserProfileUpdateScreen()),
+            );
+            return;
+          }
+        }
+
+        final missions = await _fetchMissions(token);
+        if (missions != null) {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => HomeScreen(missions: missions)));
+        }
+      } else {
+        _showSnackbar('Invalid token. Please try again.');
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      _showSnackbar('An error occurred while fetching user data.');
+    }
+  }
+
   Future<List<MissionDetails>?> _fetchMissions(String token) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
+    try {
+      return await _arcadiaCloud.fetchArcadiaMissions(token);
+    } catch (e) {
+      print('Error fetching missions: $e');
+      return null;
+    }
+  }
 
-    final token = await user.getIdToken();
+  void _handleAuthException(FirebaseAuthException e) {
+    String errorMessage;
+    switch (e.code) {
+      case 'user-not-found':
+        errorMessage = 'No user found for that email.';
+        break;
+      case 'wrong-password':
+        errorMessage = 'Wrong password provided for that user.';
+        break;
+      case 'invalid-email':
+        errorMessage = 'The email address is not valid.';
+        break;
+      case 'user-disabled':
+        errorMessage = 'The user account has been disabled.';
+        break;
+      case 'too-many-requests':
+        errorMessage = 'Too many login attempts. Please try again later.';
+        break;
+      case 'invalid-credential':
+        errorMessage = 'Invalid email and password. Please try again.';
+        break;
+      default:
+        errorMessage = 'An unexpected error occurred. Please try again later.';
+        break;
+    }
+    _showSnackbar(errorMessage);
+  }
 
-    if (token == null) return null;
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
 
-    return await _arcadiaCloud.fetchArcadiaMissions(token);
+  void _navigateWithSlideRightTransition(BuildContext context, Widget page) {
+    Navigator.of(context).push(SlideRightRoute(page: page));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black, // Adjust the color as needed
+        backgroundColor: Colors.black,
         title: const Text(
           'Log In',
-          style: TextStyle(
-            fontSize: 24.0,
-            fontWeight:
-                FontWeight.w700, // This corresponds to font-weight: 700 in CSS
-          ),
+          style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w700),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0).add(
-            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          const SizedBox(height: 116),
-          // Email TextField
-          TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email address',
-                contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(
-                        10), // CSS border-radius: 10px 0px 0px 0px;
-                    topRight: Radius.circular(10),
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  borderSide:
-                      BorderSide.none, // CSS opacity: 0; implies no border
-                ),
-                fillColor: Color(0xFF2C2B2B), // Use appropriate color
-              ),
-              keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              )),
-          const SizedBox(height: 50),
-          // Password TextField
-          TextFormField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _passwordVisible = !_passwordVisible;
-                    });
-                  },
-                ),
-                contentPadding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-                fillColor: const Color(0xFF2C2B2B), // Use appropriate color
-                filled: true,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(
-                        10), // CSS border-radius: 10px 0px 0px 0px;
-                    topRight: Radius.circular(10),
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  borderSide:
-                      BorderSide.none, // CSS opacity: 0; implies no border
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double widthFactor = constraints.maxWidth > 600 ? 0.7 : 1;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0).add(EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom)),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: FractionallySizedBox(
+                widthFactor: widthFactor,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 116),
+                    _buildEmailTextField(),
+                    const SizedBox(height: 50),
+                    _buildPasswordTextField(),
+                    const SizedBox(height: 8),
+                    _buildForgotPasswordButton(),
+                    const SizedBox(height: 24),
+                    _buildLoginButton(),
+                    const SizedBox(height: 24),
+                    _buildSignUpText(),
+                  ],
                 ),
               ),
-              obscureText: !_passwordVisible,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              )),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () {
-              _navigateWithSlideTransition(
-                  context, const ForgetPasswordScreen());
-            },
-            child: const Text(
-              'Forgot password?',
-              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
-          ),
-          const SizedBox(height: 24),
-          _isLoading
-              ? const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                )
-              : ElevatedButton(
-                  onPressed: _loginUser,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                    child: Text(
-                      'Log in',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
-          const SizedBox(height: 24),
-          RichText(
-            text: TextSpan(
-              style: const TextStyle(
-                  color: Colors.white, fontSize: 16 // default text color
-                  ),
-              children: <TextSpan>[
-                const TextSpan(
-                  text: "Don't have an account? ",
-                ),
-                TextSpan(
-                  text: 'Sign Up',
-                  style: const TextStyle(
-                    color: Color(0xFFD20E0D), // text color for "Sign Up"
-                    fontWeight: FontWeight.bold,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const CreateAccountView()), // Replace with your sign-up screen widget
-                      );
-                    },
-                ),
-              ],
-            ),
-          ),
-        ]),
+          );
+        },
       ),
     );
   }
 
-  // Function to navigate with the slide transition
-  void _navigateWithSlideTransition(BuildContext context, Widget page) {
-    Navigator.of(context).push(SlideRightRoute(page: page));
+  Widget _buildEmailTextField() {
+    return TextFormField(
+      controller: _emailController,
+      decoration: const InputDecoration(
+        labelText: 'Email address',
+        contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+        filled: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderSide: BorderSide.none,
+        ),
+        fillColor: Color(0xFF2C2B2B),
+      ),
+      keyboardType: TextInputType.emailAddress,
+      style: const TextStyle(color: Colors.white, fontSize: 16),
+    );
   }
 
-  // Function to navigate with the slide transition
-  void _navigateWithSlideUpTransition(BuildContext context, Widget page) {
-    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
+  Widget _buildPasswordTextField() {
+    return TextFormField(
+      controller: _passwordController,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        suffixIcon: IconButton(
+          icon:
+              Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              _passwordVisible = !_passwordVisible;
+            });
+          },
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+        fillColor: const Color(0xFF2C2B2B),
+        filled: true,
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      obscureText: !_passwordVisible,
+      style: const TextStyle(color: Colors.white, fontSize: 16),
+    );
+  }
+
+  Widget _buildForgotPasswordButton() {
+    return TextButton(
+      onPressed: () => _navigateWithSlideRightTransition(
+          context, const ForgetPasswordScreen()),
+      child: const Text('Forgot password?',
+          style: TextStyle(color: Colors.white, fontSize: 16)),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return _isLoading
+        ? const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+        : ElevatedButton(
+            onPressed: _loginUser,
+            style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50)),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+              child: Text('Log in', style: TextStyle(fontSize: 18)),
+            ),
+          );
+  }
+
+  Widget _buildSignUpText() {
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+        children: [
+          const TextSpan(text: "Don't have an account? "),
+          TextSpan(
+            text: 'Sign Up',
+            style: const TextStyle(
+                color: Color(0xFFD20E0D), fontWeight: FontWeight.bold),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const CreateAccountView()));
+              },
+          ),
+        ],
+      ),
+    );
   }
 }

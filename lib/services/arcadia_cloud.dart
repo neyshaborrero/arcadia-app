@@ -161,8 +161,8 @@ class ArcadiaCloud {
       String? fullName,
       String? gender,
       String? userType,
-      String? token) async {
-    print(gamertag);
+      String? token,
+      bool isProfileComplete) async {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/user/updateuser');
 
@@ -176,6 +176,7 @@ class ArcadiaCloud {
     if (fullName != null) bodyCall['fullName'] = fullName;
     if (gender != null) bodyCall['gender'] = gender;
     if (userType != null) bodyCall['userType'] = userType;
+    bodyCall['profileComplete'] = isProfileComplete;
 
     final response = await http.put(
       url,
@@ -215,6 +216,7 @@ class ArcadiaCloud {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
+      print(data);
       return UserProfile.fromJson(data);
     } else {
       // Handle error

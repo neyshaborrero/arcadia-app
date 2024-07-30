@@ -36,11 +36,12 @@ class _UploadPictureDialogState extends State<UploadPictureDialog> {
       source: ImageSource.camera,
       imageQuality: 50,
     );
-
-    setState(() {
-      _imageFile = image;
-    });
-    _saveUserProfile();
+    if (image != null) {
+      setState(() {
+        _imageFile = image;
+      });
+      await _saveUserProfile();
+    }
   }
 
   Future<void> _imgFromGallery() async {
@@ -48,14 +49,15 @@ class _UploadPictureDialogState extends State<UploadPictureDialog> {
       source: ImageSource.gallery,
       imageQuality: 50,
     );
-
-    setState(() {
-      _imageFile = image;
-    });
-    _saveUserProfile();
+    if (image != null) {
+      setState(() {
+        _imageFile = image;
+      });
+      await _saveUserProfile();
+    }
   }
 
-  void _showImagePickerMenu(BuildContext context) {
+  void _showImagePickerMenu() {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -119,6 +121,7 @@ class _UploadPictureDialogState extends State<UploadPictureDialog> {
 
     final String? downloadURL = await _uploadImageToFirebase();
     if (downloadURL == null) {
+      _showSnackbar('Failed to upload image.');
       setState(() {
         _isLoading = false;
       });
@@ -136,22 +139,17 @@ class _UploadPictureDialogState extends State<UploadPictureDialog> {
     try {
       String? token = await user.getIdToken();
       final response = await _arcadiaCloud.updateUserToDB(
-          null, downloadURL, null, null, null, null, token);
+          null, downloadURL, null, null, null, null, token, false);
+
       if (response['success']) {
         Provider.of<UserProfileProvider>(context, listen: false)
             .updateProfileUrl(downloadURL);
       } else {
-        List<ErrorDetail> errors = response['errors'];
-        String errorMessage = errors.isNotEmpty
-            ? errors.map((e) => e.message).join(', ')
-            : 'An unknown error occurred';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
-        );
+        _handleErrors(response['errors']);
       }
     } catch (e) {
       print('Error saving user profile: $e');
+      _showSnackbar('Error saving user profile.');
     } finally {
       setState(() {
         _isLoading = false;
@@ -160,13 +158,31 @@ class _UploadPictureDialogState extends State<UploadPictureDialog> {
     }
   }
 
+  void _handleErrors(List<ErrorDetail> errors) {
+    String errorMessage = errors.isNotEmpty
+        ? errors.map((e) => e.message).join(', ')
+        : 'An unknown error occurred';
+    _showSnackbar(errorMessage);
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final dialogWidth = isTablet
+        ? MediaQuery.of(context).size.width * 0.5
+        : MediaQuery.of(context).size.width * 0.95;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(10),
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.95,
+        width: dialogWidth,
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: Colors.black,
@@ -204,25 +220,7 @@ class _UploadPictureDialogState extends State<UploadPictureDialog> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 15),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '• The photo must clearly show your face.',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '• No cartoon avatars or unrelated images.',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '• Ensure the image is not blurry.',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
+                    _buildGuidelines(),
                     const SizedBox(height: 40),
                     Text(
                       'Profile photos cannot be changed once checked-in to the event. Failure to follow these rules may result in account ban or termination.',
@@ -234,42 +232,61 @@ class _UploadPictureDialogState extends State<UploadPictureDialog> {
               ),
               const SizedBox(height: 16),
               _isLoading
-                  ? const SizedBox(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                  ? const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     )
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(48),
-                        backgroundColor: Colors.black,
-                      ),
-                      onPressed: _isLoading
-                          ? null
-                          : () => _showImagePickerMenu(context),
-                      child: ConstrainedBox(
-                        constraints:
-                            const BoxConstraints(minWidth: 250, maxWidth: 250),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD20E0D),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Center(
-                              child: Text(
-                                "Upload Photo",
-                                textAlign: TextAlign.center,
-                                style:
-                                    Theme.of(context).textTheme.headlineSmall,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
+                  : _buildUploadButton(context),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGuidelines() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildGuidelineItem('• The photo must clearly show your face.'),
+        _buildGuidelineItem('• No cartoon avatars or unrelated images.'),
+        _buildGuidelineItem('• Ensure the image is not blurry.'),
+      ],
+    );
+  }
+
+  Widget _buildGuidelineItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    );
+  }
+
+  Widget _buildUploadButton(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size.fromHeight(48),
+        backgroundColor: Colors.black,
+      ),
+      onPressed: _showImagePickerMenu,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 250, maxWidth: 250),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xFFD20E0D),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Center(
+              child: Text(
+                "Upload Photo",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
           ),
         ),
       ),

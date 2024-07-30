@@ -7,6 +7,7 @@ class UserProfile {
   final String userType;
   int tokens;
   final String qrcode;
+  final bool profileComplete;
 
   UserProfile(
       {required this.fullName,
@@ -16,7 +17,8 @@ class UserProfile {
       required this.profileImageUrl,
       required this.userType,
       required this.tokens,
-      required this.qrcode});
+      required this.qrcode,
+      required this.profileComplete});
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
@@ -27,7 +29,8 @@ class UserProfile {
         profileImageUrl: json['profileImageUrl'] ?? '',
         userType: json['userType'] ?? '',
         tokens: json['tokens'] ?? 0,
-        qrcode: json['qrcode'] ?? '');
+        qrcode: json['qrcode'] ?? '',
+        profileComplete: json['profileComplete'] ?? false);
   }
 
   String tokensToString() {

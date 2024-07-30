@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/picture_upload_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
@@ -7,12 +9,9 @@ import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/views/start/home_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 
 class UserProfileUpdateScreen extends StatefulWidget {
@@ -27,111 +26,183 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _gamertagController = TextEditingController();
   final TextEditingController _dateOfBirthController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
+  final FocusNode _gamertagFocusNode = FocusNode();
+
   String? _selectedGender;
   String? _selectedUserType;
-  final FocusNode _gamertagFocusNode = FocusNode();
   String? _gamertagValidationMessage;
-  UserProfile? profile;
-
-  final ImagePicker _picker = ImagePicker();
-  XFile? _imageFile; // Used to hold the image file
 
   late final ArcadiaCloud _arcadiaCloud;
   bool _isLoading = false;
 
   final _formKey = GlobalKey<FormState>();
+  final Debouncer _debouncer = Debouncer(milliseconds: 500);
+  final List<String> _cities = [
+    "Adjuntas",
+    "Aguada",
+    "Aguadilla",
+    "Aguas Buenas",
+    "Aibonito",
+    "Añasco",
+    "Arecibo",
+    "Arroyo",
+    "Barceloneta",
+    "Barranquitas",
+    "Bayamón",
+    "Cabo Rojo",
+    "Caguas",
+    "Camuy",
+    "Canóvanas",
+    "Carolina",
+    "Cataño",
+    "Cayey",
+    "Ceiba",
+    "Ciales",
+    "Cidra",
+    "Coamo",
+    "Comerío",
+    "Corozal",
+    "Culebra",
+    "Dorado",
+    "Fajardo",
+    "Florida",
+    "Guánica",
+    "Guayama",
+    "Guayanilla",
+    "Guaynabo",
+    "Gurabo",
+    "Hatillo",
+    "Hormigueros",
+    "Humacao",
+    "Isabela",
+    "Jayuya",
+    "Juana Díaz",
+    "Juncos",
+    "Lajas",
+    "Lares",
+    "Las Marías",
+    "Las Piedras",
+    "Loíza",
+    "Luquillo",
+    "Manatí",
+    "Maricao",
+    "Maunabo",
+    "Mayagüez",
+    "Moca",
+    "Morovis",
+    "Naguabo",
+    "Naranjito",
+    "Orocovis",
+    "Patillas",
+    "Peñuelas",
+    "Ponce",
+    "Quebradillas",
+    "Rincón",
+    "Río Grande",
+    "Sabana Grande",
+    "Salinas",
+    "San Germán",
+    "San Juan",
+    "San Lorenzo",
+    "San Sebastián",
+    "Santa Isabel",
+    "Toa Alta",
+    "Toa Baja",
+    "Trujillo Alto",
+    "Utuado",
+    "Vega Alta",
+    "Vega Baja",
+    "Vieques",
+    "Villalba",
+    "Yabucoa",
+    "Yauco"
+  ];
+
+  List<String> _filteredCities = [];
 
   @override
   void initState() {
     super.initState();
-    final firebaseService =
-        Provider.of<FirebaseService>(context, listen: false);
-    _arcadiaCloud = ArcadiaCloud(firebaseService);
+    _arcadiaCloud =
+        ArcadiaCloud(Provider.of<FirebaseService>(context, listen: false));
+    _gamertagFocusNode.addListener(_checkGamertagFocus);
+  }
 
-    _gamertagFocusNode.addListener(() {
-      if (!_gamertagFocusNode.hasFocus) {
-        _checkGamertag();
-      }
-    });
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _gamertagController.dispose();
+    _dateOfBirthController.dispose();
+    _cityController.dispose();
+    _gamertagFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _checkGamertagFocus() {
+    if (!_gamertagFocusNode.hasFocus) {
+      _debouncer.run(() => _checkGamertag());
+    }
   }
 
   Future<void> _checkGamertag() async {
-    setState(() {
-      _gamertagValidationMessage = null;
-    });
-
-    final String gamertag = _gamertagController.text;
+    final String gamertag = _gamertagController.text.trim();
     if (gamertag.isEmpty) {
-      setState(() {
-        _gamertagValidationMessage = "Gamertag is required.";
-      });
+      _updateGamertagValidationMessage("Gamertag is required.");
       return;
     }
 
     try {
       final User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        _updateGamertagValidationMessage("User is not logged in.");
+        return;
+      }
 
       final token = await user.getIdToken();
+      if (token == null) {
+        _updateGamertagValidationMessage(
+            "Unable to retrieve authentication token.");
+        return;
+      }
 
-      if (token == null) return;
       final response = await _arcadiaCloud.isGamertagAvailable(gamertag, token);
+
       if (response['success'] == true) {
-        setState(() {
-          _gamertagValidationMessage = null;
-        });
+        _updateGamertagValidationMessage(null);
       } else {
-        setState(() {
-          _gamertagValidationMessage = response['errors'][0]['message'];
-        });
+        _updateGamertagValidationMessage(
+            response['errors'] != null && response['errors'].isNotEmpty
+                ? response['errors'][0]['message']
+                : 'Unknown error occurred.');
       }
     } catch (e) {
-      setState(() {
-        _gamertagValidationMessage =
-            "Error checking gamertag. Please try again.";
-      });
-    } finally {
-      setState(() {});
+      _updateGamertagValidationMessage(
+          "Error checking gamertag. Please try again.");
     }
   }
 
-  // Method to show the bottom sheet menu
-  void _showImagePickerMenu(BuildContext context) {
+  void _updateGamertagValidationMessage(String? message) {
+    if (mounted) {
+      setState(() {
+        _gamertagValidationMessage = message;
+      });
+    }
+  }
+
+  void _showImagePickerMenu() {
     showUploadPictureDialog(context);
   }
 
-  // Method to handle image selection from the camera
-  Future<void> _imgFromCamera() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 50,
-    );
-
-    setState(() {
-      _imageFile = image;
-    });
-  }
-
-  // Method to handle image selection from the gallery
-  Future<void> _imgFromGallery() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
-
-    setState(() {
-      _imageFile = image;
-    });
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    DateTime initialDate = DateTime(1975, 4, 6);
+  Future<void> _selectDate() async {
+    final DateTime initialDate = DateTime(1975, 4, 6);
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
+
     if (picked != null && picked != DateTime.now()) {
       setState(() {
         _dateOfBirthController.text = DateFormat('dd/MM/yyyy').format(picked);
@@ -139,432 +210,425 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
     }
   }
 
-  // Method to upload the image to Firebase Storage and get the download URL
-  Future<String?> _uploadImageToFirebase() async {
-    if (_imageFile == null) return null;
+  Future<void> _saveUserProfile() async {
+    if (!_formKey.currentState!.validate()) {
+      _showSnackbar('Please fill all fields.');
+      return;
+    }
+
+    final UserProfileProvider userProfileProvider =
+        Provider.of<UserProfileProvider>(context, listen: false);
+    if (userProfileProvider.profileUrl == null ||
+        userProfileProvider.profileUrl!.isEmpty) {
+      _showSnackbar('Profile image is required.');
+      return;
+    }
+
+    if (_gamertagValidationMessage != null) {
+      _showSnackbar(_gamertagValidationMessage!);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       final User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw Exception("User is not authenticated");
-      }
-
-      final fileName = '${user.uid}_profile.jpg';
-      final storageRef =
-          FirebaseStorage.instance.ref().child('profile_pictures/$fileName');
-      final uploadTask = storageRef.putFile(File(_imageFile!.path));
-      final snapshot = await uploadTask.whenComplete(() {});
-      final downloadURL = await snapshot.ref.getDownloadURL();
-      return downloadURL;
-    } catch (e) {
-      print('Error uploading image: $e');
-      return null;
-    }
-  }
-
-  Future<void> _saveUserProfile() async {
-    final profileProvider =
-        Provider.of<UserProfileProvider>(context, listen: false).userProfile;
-    print("validate ${_formKey.currentState?.validate()}");
-    if (_formKey.currentState?.validate() == true &&
-        (_imageFile != null ||
-            (profileProvider != null &&
-                profileProvider.profileImageUrl.isNotEmpty))) {
-      if (_gamertagValidationMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_gamertagValidationMessage!)),
-        );
-        return;
-      }
-      setState(() {
-        _isLoading = true;
-      });
-
-      // final String? downloadURL = await _uploadImageToFirebase();
-      // if (downloadURL == null) return;
-
-      final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      try {
-        String? token = await user.getIdToken();
-        final response = await _arcadiaCloud.updateUserToDB(
-            _gamertagController.text,
-            null,
-            _dateOfBirthController.text,
-            _fullNameController.text,
-            _selectedGender!,
-            _selectedUserType!,
-            token);
-        if (response['success']) {
-          if (token != null) {
-            profile = await _arcadiaCloud.fetchUserProfile(token);
+      final token = await user.getIdToken();
+      if (token == null) {
+        _showSnackbar('Unable to retrieve authentication token.');
+        return;
+      }
 
-            if (profile != null) {
-              Provider.of<UserProfileProvider>(context, listen: false)
-                  .setUserProfile(profile!);
-            } else {
-              profile = Provider.of<UserProfileProvider>(context, listen: false)
-                  .userProfile;
-            }
+      final response = await _arcadiaCloud.updateUserToDB(
+        _gamertagController.text.trim(),
+        null,
+        _dateOfBirthController.text.trim(),
+        _fullNameController.text.trim(),
+        _selectedGender!,
+        _selectedUserType!,
+        token,
+        true,
+      );
 
-            List<MissionDetails>? missions = await _fetchMissions(token);
-            if (missions != null) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                    builder: (context) => HomeScreen(missions: missions)),
-              );
-            }
-          }
-        } else {
-          List<ErrorDetail> errors = response['errors'];
-          String errorMessage = errors.isNotEmpty
-              ? errors.map((e) => e.message).join(', ')
-              : 'An unknown error occurred';
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage)),
-          );
-        }
-      } catch (e) {
-        print('Error saving user profile: $e');
-      } finally {
+      if (response['success']) {
+        _handleSuccess(token);
+      } else {
+        _handleErrors(response['errors']);
+      }
+    } catch (e) {
+      print('Error saving user profile: $e');
+    } finally {
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please fill all fields and select an image.')),
+    }
+  }
+
+  Future<void> _handleSuccess(String token) async {
+    UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
+    if (profile != null) {
+      Provider.of<UserProfileProvider>(context, listen: false)
+          .setUserProfile(profile);
+    }
+
+    List<MissionDetails>? missions = await _fetchMissions(token);
+    if (missions != null && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomeScreen(missions: missions)),
       );
     }
   }
 
+  void _handleErrors(List<ErrorDetail> errors) {
+    final errorMessage = errors.isNotEmpty
+        ? errors.map((e) => e.message).join(', ')
+        : 'An unknown error occurred';
+    _showSnackbar(errorMessage);
+  }
+
   Future<List<MissionDetails>?> _fetchMissions(String token) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
+    try {
+      return await _arcadiaCloud.fetchArcadiaMissions(token);
+    } catch (e) {
+      print('Error fetching missions: $e');
+      return null;
+    }
+  }
 
-    final token = await user.getIdToken();
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
 
-    if (token == null) return null;
+  void _filterCities(String query) {
+    final suggestions = _cities.where((city) {
+      return city.toLowerCase().contains(query.toLowerCase());
+    }).toList();
 
-    return await _arcadiaCloud.fetchArcadiaMissions(token);
+    setState(() {
+      _filteredCities = suggestions;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final double avatarRadius = isTablet ? 90 : 60;
+    final double iconContainerSize = isTablet ? 66.0 : 46.0;
+    final double iconSize = isTablet ? 40.0 : 24.0;
+
     return Scaffold(
-      backgroundColor: Colors.black, // Adjust to match your color
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
           'Create Account',
-          style: TextStyle(
-            fontSize: 24.0,
-            fontWeight:
-                FontWeight.w700, // This corresponds to font-weight: 700 in CSS
-          ),
+          style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w700),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-            key: _formKey,
-            child: Consumer<UserProfileProvider>(
-                builder: (context, userProfileProvider, _) {
-              final profile = userProfileProvider.profileUrl;
-              return Column(
-                children: <Widget>[
-                  Stack(
-                    alignment:
-                        Alignment.center, // Aligns the '+' icon over the avatar
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final double widthFactor = constraints.maxWidth > 600 ? 0.7 : 1.0;
 
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(
-                            2), // This value is the width of the border
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white, // Border color
-                            width: 4.0, // Border width
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0).add(
+              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            ),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: FractionallySizedBox(
+                widthFactor: widthFactor,
+                child: Form(
+                  key: _formKey,
+                  child: Consumer<UserProfileProvider>(
+                    builder: (context, userProfileProvider, _) {
+                      final profileUrl = userProfileProvider.profileUrl;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          _buildProfileImage(context, profileUrl, avatarRadius,
+                              iconContainerSize, iconSize),
+                          const SizedBox(height: 20),
+                          _buildTextFormField(
+                            controller: _fullNameController,
+                            label: 'Full Name *',
+                            keyboardType: TextInputType.name,
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Required'
+                                : null,
                           ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 60, // Adjust the radius to your preference
-                          backgroundColor: const Color(
-                              0xFF2C2B2B), // Background color for the avatar
-                          child: FractionallySizedBox(
-                            widthFactor: _imageFile != null ||
-                                    profile!.isNotEmpty
-                                ? 1.0
-                                : 0.6, // scales down the image to 80% of the CircleAvatar's size
-                            heightFactor: _imageFile != null ||
-                                    profile!.isNotEmpty
-                                ? 1.0
-                                : 0.6, // scales down the image to 80% of the CircleAvatar's size
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: _imageFile != null
-                                      ? FileImage(File(_imageFile!.path))
-                                      : profile!.isNotEmpty
-                                          ? CachedNetworkImageProvider(profile)
-                                          : const AssetImage(
-                                                  'assets/player_default_prof_icon.png')
-                                              as ImageProvider, // Fallback to default asset image
-                                  fit: BoxFit
-                                      .cover, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
-                                ),
+                          const SizedBox(height: 20),
+                          _buildTextFormField(
+                            controller: _gamertagController,
+                            focusNode: _gamertagFocusNode,
+                            label: 'Gamertag *',
+                            keyboardType: TextInputType.name,
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Required'
+                                : null,
+                          ),
+                          if (_gamertagValidationMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                _gamertagValidationMessage!,
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 14),
                               ),
                             ),
+                          const SizedBox(height: 20),
+                          _buildTextFormField(
+                            controller: _dateOfBirthController,
+                            label: 'Date of Birth *',
+                            keyboardType: TextInputType.datetime,
+                            onTap: _selectDate,
+                            suffixIcon: const Icon(Icons.calendar_today,
+                                color: Colors.white),
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Required'
+                                : null,
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0, // Adjust the position as per your design
-                        right: 0, // Adjust the position as per your design
-                        child: GestureDetector(
-                          onTap: () => _showImagePickerMenu(context),
-                          child: Container(
-                            width: 46.0,
-                            height: 46.0,
-                            decoration: const BoxDecoration(
-                              color: Color(
-                                  0xFFD20E0D), // Background color of the '+' icon circle
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.white,
-                            ),
+                          const SizedBox(height: 20),
+                          _buildDropdownFormField(
+                            value: _selectedGender,
+                            label: 'Gender *',
+                            items: [
+                              'Male',
+                              'Female',
+                              'Other',
+                              'Prefer Not to Say'
+                            ],
+                            onChanged: (value) =>
+                                setState(() => _selectedGender = value),
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Required'
+                                : null,
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _fullNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name *',
-                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(
-                              10), // CSS border-radius: 10px 0px 0px 0px;
-                          topRight: Radius.circular(10),
-                          bottomLeft: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
-                        ),
-                        borderSide: BorderSide
-                            .none, // CSS opacity: 0; implies no border
-                      ),
-                      fillColor: Color(0xFF2C2B2B), // Use appropriate color
-                    ),
-                    keyboardType: TextInputType.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _gamertagController,
-                    focusNode: _gamertagFocusNode,
-                    decoration: const InputDecoration(
-                      labelText: 'Gamertag *',
-                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(10),
-                          topRight: Radius.circular(10),
-                          bottomLeft: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
-                        ),
-                        borderSide: BorderSide.none,
-                      ),
-                      fillColor: Color(0xFF2C2B2B),
-                    ),
-                    keyboardType: TextInputType.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      return null;
-                    },
-                  ),
-                  if (_gamertagValidationMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        _gamertagValidationMessage!,
-                        style: const TextStyle(color: Colors.red, fontSize: 14),
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _dateOfBirthController,
-                    decoration: const InputDecoration(
-                      labelText: 'Date of Birth *',
-                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(
-                              10), // CSS border-radius: 10px 0px 0px 0px;
-                          topRight: Radius.circular(10),
-                          bottomLeft: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
-                        ),
-                        borderSide: BorderSide
-                            .none, // CSS opacity: 0; implies no border
-                      ),
-                      fillColor: Color(0xFF2C2B2B), // Use appropriate color
-                      suffixIcon:
-                          Icon(Icons.calendar_today, color: Colors.white),
-                    ),
-                    keyboardType: TextInputType.datetime,
-                    onTap: () => _selectDate(context),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Gender *',
-                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                      fillColor: Color(0xFF2C2B2B),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(
-                              10), // CSS border-radius: 10px 0px 0px 0px;
-                          topRight: Radius.circular(10),
-                          bottomLeft: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
-                        ),
-                        borderSide: BorderSide
-                            .none, // CSS opacity: 0; implies no border
-                      ),
-                    ),
-                    value: _selectedGender,
-                    items:
-                        <String>['Male', 'Female', 'Other', 'Prefer Not to Say']
-                            .map((String value) => DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                ))
-                            .toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        _selectedGender = newValue;
-                      });
-                    },
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'User Type *',
-                      contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
-                      fillColor: Color(0xFF2C2B2B),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(
-                              10), // CSS border-radius: 10px 0px 0px 0px;
-                          topRight: Radius.circular(10),
-                          bottomLeft: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
-                        ),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    value: _selectedUserType,
-                    items: <String>['Player', 'Cosplayer', 'Placeholder']
-                        .map((String value) => DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            ))
-                        .toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        _selectedUserType = newValue;
-                      });
-                    },
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 50),
-                  const Text(
-                    'Please verify your information carefully. Once submitted, your details cannot be edited later.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  const SizedBox(height: 24),
-                  _isLoading
-                      ? const CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        )
-                      : ElevatedButton(
-                          onPressed: _saveUserProfile,
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(50),
+                          const SizedBox(height: 20),
+                          _buildDropdownFormField(
+                            value: _selectedUserType,
+                            label: 'User Type *',
+                            items: ['Player', 'Cosplayer', 'Placeholder'],
+                            onChanged: (value) =>
+                                setState(() => _selectedUserType = value),
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Required'
+                                : null,
                           ),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 48, vertical: 16),
-                            child: Text(
-                              'Create Account',
-                              style: TextStyle(fontSize: 18),
-                            ),
+                          const SizedBox(height: 20),
+                          _buildCitySearchField(),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Please verify your information carefully. Once submitted, your details cannot be edited later.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
-                        ),
-                ],
-              );
-            })),
+                          const SizedBox(height: 24),
+                          _isLoading
+                              ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white))
+                              : ElevatedButton(
+                                  onPressed: _saveUserProfile,
+                                  style: ElevatedButton.styleFrom(
+                                      minimumSize: const Size.fromHeight(50)),
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 48, vertical: 16),
+                                    child: Text('Create Account',
+                                        style: TextStyle(fontSize: 18)),
+                                  ),
+                                ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
+  }
+
+  Widget _buildProfileImage(BuildContext context, String? profileUrl,
+      double avatarRadius, double iconContainerSize, double iconSize) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 4.0),
+          ),
+          child: CircleAvatar(
+            radius: avatarRadius,
+            backgroundColor: const Color(0xFF2C2B2B),
+            child: FractionallySizedBox(
+              widthFactor:
+                  profileUrl != null && profileUrl.isNotEmpty ? 1.0 : 0.6,
+              heightFactor:
+                  profileUrl != null && profileUrl.isNotEmpty ? 1.0 : 0.6,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: profileUrl != null && profileUrl.isNotEmpty
+                        ? CachedNetworkImageProvider(profileUrl)
+                        : const AssetImage(
+                                'assets/player_default_prof_icon.png')
+                            as ImageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: _showImagePickerMenu,
+            child: Container(
+              width: iconContainerSize,
+              height: iconContainerSize,
+              decoration: const BoxDecoration(
+                color: Color(0xFFD20E0D),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.add, color: Colors.white, size: iconSize),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    FocusNode? focusNode,
+    VoidCallback? onTap,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      focusNode: focusNode,
+      decoration: InputDecoration(
+        labelText: label,
+        contentPadding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+        filled: true,
+        fillColor: const Color(0xFF2C2B2B),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderSide: BorderSide.none,
+        ),
+        suffixIcon: suffixIcon,
+      ),
+      keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white, fontSize: 16),
+      onTap: onTap,
+      validator: validator,
+    );
+  }
+
+  Widget _buildDropdownFormField({
+    required String? value,
+    required String label,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    String? Function(String?)? validator,
+  }) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: label,
+        contentPadding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+        filled: true,
+        fillColor: const Color(0xFF2C2B2B),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      value: value,
+      items: items.map((String item) {
+        return DropdownMenuItem<String>(
+          value: item,
+          child: Text(item),
+        );
+      }).toList(),
+      onChanged: onChanged,
+      style: const TextStyle(color: Colors.white, fontSize: 16),
+      validator: validator,
+    );
+  }
+
+  Widget _buildCitySearchField() {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _cityController,
+          decoration: const InputDecoration(
+            labelText: 'City',
+            contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
+            filled: true,
+            fillColor: Color(0xFF2C2B2B),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+          onChanged: _filterCities,
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Required' : null,
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          itemCount: _filteredCities.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(
+                _filteredCities[index],
+                style: const TextStyle(color: Colors.white),
+              ),
+              onTap: () {
+                setState(() {
+                  _cityController.text = _filteredCities[index];
+                  _filteredCities = [];
+                });
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class Debouncer {
+  final int milliseconds;
+  VoidCallback? action;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds});
+
+  void run(VoidCallback action) {
+    if (_timer != null) {
+      _timer!.cancel();
+    }
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
   }
 }

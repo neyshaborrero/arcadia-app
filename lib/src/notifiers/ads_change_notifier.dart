@@ -7,17 +7,27 @@ class AdsDetailsProvider with ChangeNotifier {
   List<AdsDetails> get adsDetails => _adsDetails;
 
   void addAllAdsDetails(List<AdsDetails> ads) {
+    _adsDetails.clear(); // Clear existing ads before adding new ones
     _adsDetails.addAll(ads);
-    // notifyListeners();
+    notifyListeners();
   }
 
   void addAdsDetails(AdsDetails ad) {
     _adsDetails.add(ad);
-    // notifyListeners();
+    notifyListeners();
   }
 
   AdsDetails getSplashAd() {
-    return _adsDetails.firstWhere((element) => element.tier == 'legendary');
+    try {
+      return _adsDetails.firstWhere((element) => element.tier == 'legendary');
+    } catch (e) {
+      // Return a default ad or handle the case when no 'legendary' ad is found
+      return AdsDetails(
+          tier: "legendary",
+          image:
+              "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
+          url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/");
+    }
   }
 
   List<AdsDetails> getEpicAds() {
