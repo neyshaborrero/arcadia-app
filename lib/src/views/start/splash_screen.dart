@@ -95,13 +95,11 @@ class _SplashScreenState extends State<SplashScreen>
             }
 
             List<MissionDetails>? missions = await _fetchMissions(token);
-            if (missions != null) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => HomeScreen(missions: missions),
-                ),
-              );
-            }
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => HomeScreen(missions: missions ?? []),
+              ),
+            );
           }
         } catch (e) {
           // Handle errors (e.g., network issues, token retrieval issues)
