@@ -32,12 +32,16 @@ class _ProfileViewState extends State<ProfileView> {
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
-    _fetchUserActivity();
+
+    _fetchUserActivity(Provider.of<UserActivityProvider>(context, listen: false)
+        .isProviderEmpty());
     _scrollController.addListener(_onScroll);
   }
 
-  Future<void> _fetchUserActivity({String? startAfter}) async {
+  Future<void> _fetchUserActivity(bool isActivityProviderEmpty,
+      {String? startAfter}) async {
     final User? user = FirebaseAuth.instance.currentUser;
+
     if (user == null) return;
 
     final token = await user.getIdToken();
@@ -82,7 +86,7 @@ class _ProfileViewState extends State<ProfileView> {
     if (_scrollController.position.pixels ==
             _scrollController.position.maxScrollExtent &&
         !_isLoadingMore) {
-      _fetchUserActivity(startAfter: _lastKey);
+      _fetchUserActivity(true, startAfter: _lastKey);
     }
   }
 

@@ -150,7 +150,7 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
         ),
       ),
       const Spacer(),
-      AdsCarouselComponent(),
+      const AdsCarouselComponent(),
       const SizedBox(
         height: 40,
       )

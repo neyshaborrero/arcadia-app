@@ -10,6 +10,7 @@ import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/profile/update_profile.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,7 @@ class _SplashScreenState extends State<SplashScreen>
   late final ArcadiaCloud _arcadiaCloud;
   late Future<AdsDetails> _splashAdFuture;
   bool showIndicator = false;
+  late Trace _splashScreenTrace;
 
   @override
   void initState() {
@@ -36,6 +38,10 @@ class _SplashScreenState extends State<SplashScreen>
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
+
+    _splashScreenTrace =
+        FirebasePerformance.instance.newTrace('splash_screen_trace');
+    _startSplashScreenTrace();
 
     _splashAdFuture = _initializeSplashAd();
     _checkAuthStatus();
@@ -55,6 +61,14 @@ class _SplashScreenState extends State<SplashScreen>
         MaterialPageRoute(builder: (context) => const SplashScreen()),
       );
     }
+  }
+
+  Future<void> _startSplashScreenTrace() async {
+    await _splashScreenTrace.start();
+  }
+
+  Future<void> _stopSplashScreenTrace() async {
+    await _splashScreenTrace.stop();
   }
 
   Future<AdsDetails> _initializeSplashAd() async {
@@ -81,6 +95,7 @@ class _SplashScreenState extends State<SplashScreen>
         try {
           String? token = await user.getIdToken();
           if (token != null) {
+            print(token);
             UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
             if (profile != null) {
               Provider.of<UserProfileProvider>(context, listen: false)
@@ -145,6 +160,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               );
             } else if (snapshot.hasError) {
+              _stopSplashScreenTrace();
               return const Center(
                 child: Text(
                   'Error loading ad',
@@ -152,6 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               );
             } else if (snapshot.hasData) {
+              _stopSplashScreenTrace();
               final ad = snapshot.data!;
               return Stack(
                 fit: StackFit.expand,
@@ -188,6 +205,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ],
               );
             } else {
+              _stopSplashScreenTrace();
               return const Center(
                 child: Text(
                   'No ad available',

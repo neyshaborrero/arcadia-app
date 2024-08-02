@@ -37,7 +37,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDPoih-EcEwUKVk3QKwtPk6EYOAU69rFpM',
-    appId: '1:375872375930:android:f78f740daa9dfed7d5ffc3',
+    appId: '1:375872375930:android:c1506fb54081c17ed5ffc3',
     messagingSenderId: '375872375930',
     projectId: 'ysug-arcadia-46a15',
     databaseURL: 'https://ysug-arcadia-46a15-default-rtdb.firebaseio.com',
@@ -46,11 +46,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAyD5Bn9ntE8y40MLREymEq3VP5OAfVWzY',
-    appId: '1:375872375930:ios:72810ec5e82addc2d5ffc3',
+    appId: '1:375872375930:ios:a530f50d0b7ffe75d5ffc3',
     messagingSenderId: '375872375930',
     projectId: 'ysug-arcadia-46a15',
     databaseURL: 'https://ysug-arcadia-46a15-default-rtdb.firebaseio.com',
     storageBucket: 'ysug-arcadia-46a15.appspot.com',
     iosBundleId: 'com.ysug.arcadia',
   );
+
 }

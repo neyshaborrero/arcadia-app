@@ -6,13 +6,15 @@ class NewsArticle {
   final String description;
   final String createdAt;
   final Uri? url;
+  final String qrId;
 
   NewsArticle(
       {required this.id,
       required this.title,
       required this.description,
       required this.createdAt,
-      this.url});
+      this.url,
+      required this.qrId});
 
   factory NewsArticle.fromJson(Map<String, dynamic> json, String id) {
     return NewsArticle(
@@ -21,6 +23,7 @@ class NewsArticle {
       description: json['description'],
       url: Uri.parse((json['url'])),
       title: json['title'],
+      qrId: json['qrid'],
     );
   }
 

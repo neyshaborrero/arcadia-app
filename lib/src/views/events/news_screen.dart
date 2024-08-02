@@ -1,6 +1,9 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
+import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +13,8 @@ import '../../structure/news_article.dart';
 import '../../notifiers/change_notifier.dart';
 
 class NewsScreen extends StatefulWidget {
+  const NewsScreen({super.key});
+
   @override
   _NewsScreenState createState() => _NewsScreenState();
 }
@@ -18,6 +23,7 @@ class _NewsScreenState extends State<NewsScreen> {
   late final ArcadiaCloud _arcadiaCloud;
   bool _isLoading = true;
   late List<NewsArticle> newsArticle;
+  Set<String> readNewsIds = {};
 
   @override
   void initState() {
@@ -25,7 +31,8 @@ class _NewsScreenState extends State<NewsScreen> {
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
-    _fetchNews();
+    //_fetchNews();
+    _fetchNewsAndReadStatus();
   }
 
   Future<void> _fetchNews() async {
@@ -47,6 +54,70 @@ class _NewsScreenState extends State<NewsScreen> {
     });
   }
 
+  Future<Map<String, dynamic>> _fetchReadNews() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return {};
+
+    final token = await user.getIdToken();
+
+    if (token == null) return {};
+
+    return await _arcadiaCloud.fetchReadNews(token);
+  }
+
+  Future<void> _fetchNewsAndReadStatus() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final token = await user.getIdToken();
+    if (token == null) return;
+
+    final List<NewsArticle>? news = await _arcadiaCloud.fetchNews(token);
+    final Map<String, dynamic> readNews = await _fetchReadNews();
+
+    setState(() {
+      if (news != null) {
+        newsArticle = news;
+      }
+
+      if (readNews.isNotEmpty) {
+        readNews.forEach((key, value) {
+          readNewsIds.add(value['id']);
+        });
+      }
+
+      // Mark the articles as read in the ClickedState
+      final clickedState = Provider.of<ClickedState>(context, listen: false);
+      for (var article in newsArticle) {
+        if (readNewsIds.contains(article.id)) {
+          clickedState.toggleClicked(article.id, initialState: true);
+        }
+      }
+
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _recordNews(String qrId, String newsId, bool earn) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return;
+
+    final UserActivity? userActivity =
+        await _arcadiaCloud.recordNews(earn, qrId, newsId, token);
+
+    if (userActivity != null) {
+      final userProfileProvider =
+          Provider.of<UserProfileProvider>(context, listen: false);
+      userProfileProvider.updateTokens(userActivity.value);
+      Provider.of<UserActivityProvider>(context, listen: false)
+          .addUserActivity(userActivity);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -54,25 +125,6 @@ class _NewsScreenState extends State<NewsScreen> {
         const Padding(
           padding: EdgeInsets.all(18.0), // Add padding around the image
           child: AdsCarouselComponent(),
-          // child: Container(
-          //     decoration: BoxDecoration(
-          //         borderRadius:
-          //             BorderRadius.circular(10.0), // Rounded corners
-          //         border: Border.all(color: Colors.grey) // Optional border
-          //         ),
-          //     child: ClipRRect(
-          //         borderRadius: BorderRadius.circular(10.0),
-          //         child: GestureDetector(
-          //           onTap: () {
-          //             // Define action on tap if necessary.
-          //           },
-          //           child: Image.asset(
-          //             'assets/news_ad.png',
-          //             fit: BoxFit
-          //                 .cover, // this will fill the height of the ListTile and clip the width
-          //             width: MediaQuery.of(context).size.width,
-          //           ),
-          //         )))
         ),
         Padding(
             padding:
@@ -145,8 +197,16 @@ class _NewsScreenState extends State<NewsScreen> {
                                         onTap: () async {
                                           try {
                                             _launchUrl(article.url);
-                                            clickedState
-                                                .toggleClicked(article.id);
+                                            _recordNews(
+                                                article.qrId,
+                                                article.id,
+                                                !clickedState
+                                                    .isClicked(article.id));
+                                            if (!clickedState
+                                                .isClicked(article.id)) {
+                                              clickedState
+                                                  .toggleClicked(article.id);
+                                            }
                                           } catch (e) {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(

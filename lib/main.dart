@@ -8,6 +8,7 @@ import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/views/start/error_view.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,13 @@ void main() async {
   bool initialized = await firebaseService.initialize();
   List<AdsDetails> splashAd = await loadSplashAds(initialized, firebaseService);
 
+  // Initialize Firebase Performance
+  FirebasePerformance performance = FirebasePerformance.instance;
+
+  // Start screen trace
+  Trace screenTrace = performance.newTrace('main_screen_trace');
+  await screenTrace.start();
+
   runApp(
     MultiProvider(
       providers: [
@@ -38,7 +46,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => PrizesChangeProvider()),
         Provider<FirebaseService>.value(value: firebaseService),
       ],
-      child: MyApp(initialized: initialized, ads: splashAd),
+      child: MyApp(
+          initialized: initialized, ads: splashAd, screenTrace: screenTrace),
     ),
   );
 }
@@ -73,13 +82,20 @@ List<AdsDetails> defaultAds() {
 class MyApp extends StatelessWidget {
   final bool initialized;
   final List<AdsDetails> ads;
-  const MyApp({super.key, required this.initialized, required this.ads});
+  final Trace screenTrace;
+  const MyApp(
+      {super.key,
+      required this.initialized,
+      required this.ads,
+      required this.screenTrace});
 
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AdsDetailsProvider>(context, listen: false)
           .addAllAdsDetails(ads);
+      // Stop screen trace after the first frame is rendered
+      screenTrace.stop();
     });
 
     return MaterialApp(

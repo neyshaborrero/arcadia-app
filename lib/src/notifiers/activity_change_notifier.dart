@@ -26,4 +26,8 @@ class UserActivityProvider with ChangeNotifier {
     _userActivities = [];
     notifyListeners();
   }
+
+  bool isProviderEmpty() {
+    return userActivities.isEmpty;
+  }
 }

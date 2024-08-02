@@ -424,4 +424,50 @@ class ArcadiaCloud {
       throw Exception('Failed to check gamertag');
     }
   }
+
+  Future<UserActivity?> recordNews(
+      bool earn, String qrId, String newsId, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/news/read'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({'newsId': newsId, 'qrId': qrId, 'earn': earn}),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return UserActivity.fromJson(data, "idsir");
+    } else if (response.statusCode == 400) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    } else {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchReadNews(String token) async {
+    final response = await http.get(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/user/reads'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // final Map<String, dynamic> data = json.decode(response.body);
+      return json.decode(response.body);
+    } else if (response.statusCode == 400) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    } else {
+      return {};
+    }
+  }
 }
