@@ -449,6 +449,25 @@ class ArcadiaCloud {
     }
   }
 
+  void recordAdView(
+      String view, String partnerId, String adId, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/sponsor/adview'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({'adId': adId, 'partnerId': partnerId, 'view': view}),
+    );
+
+    if (response.statusCode == 400) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    }
+  }
+
   Future<Map<String, dynamic>> fetchReadNews(String token) async {
     final response = await http.get(
       Uri.parse(

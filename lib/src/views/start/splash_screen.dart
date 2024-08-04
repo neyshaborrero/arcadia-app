@@ -5,6 +5,7 @@ import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/is_tablet.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/profile/update_profile.dart';
@@ -28,7 +29,6 @@ class _SplashScreenState extends State<SplashScreen>
   late final ArcadiaCloud _arcadiaCloud;
   late Future<AdsDetails> _splashAdFuture;
   bool showIndicator = false;
-  late Trace _splashScreenTrace;
 
   @override
   void initState() {
@@ -38,10 +38,6 @@ class _SplashScreenState extends State<SplashScreen>
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
-
-    _splashScreenTrace =
-        FirebasePerformance.instance.newTrace('splash_screen_trace');
-    _startSplashScreenTrace();
 
     _splashAdFuture = _initializeSplashAd();
     _checkAuthStatus();
@@ -61,14 +57,6 @@ class _SplashScreenState extends State<SplashScreen>
         MaterialPageRoute(builder: (context) => const SplashScreen()),
       );
     }
-  }
-
-  Future<void> _startSplashScreenTrace() async {
-    await _splashScreenTrace.start();
-  }
-
-  Future<void> _stopSplashScreenTrace() async {
-    await _splashScreenTrace.stop();
   }
 
   Future<AdsDetails> _initializeSplashAd() async {
@@ -143,6 +131,17 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
+  Future<void> _recordAdView(AdsDetails ad) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final token = await user.getIdToken();
+    if (token == null) return;
+
+    _arcadiaCloud.recordAdView(
+        ViewType.splash.toString().split('.').last, ad.partner, ad.id, token);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isTabletDevice = isTablet(context);
@@ -160,7 +159,6 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               );
             } else if (snapshot.hasError) {
-              _stopSplashScreenTrace();
               return const Center(
                 child: Text(
                   'Error loading ad',
@@ -168,8 +166,11 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               );
             } else if (snapshot.hasData) {
-              _stopSplashScreenTrace();
               final ad = snapshot.data!;
+
+              // Record the ad view
+              _recordAdView(ad);
+
               return Stack(
                 fit: StackFit.expand,
                 children: [
@@ -205,7 +206,6 @@ class _SplashScreenState extends State<SplashScreen>
                 ],
               );
             } else {
-              _stopSplashScreenTrace();
               return const Center(
                 child: Text(
                   'No ad available',

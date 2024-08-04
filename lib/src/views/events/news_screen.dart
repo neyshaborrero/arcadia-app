@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../structure/news_article.dart';
 import '../../notifiers/change_notifier.dart';
+import '../../structure/view_types.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -124,7 +125,9 @@ class _NewsScreenState extends State<NewsScreen> {
       children: <Widget>[
         const Padding(
           padding: EdgeInsets.all(18.0), // Add padding around the image
-          child: AdsCarouselComponent(),
+          child: AdsCarouselComponent(
+            viewType: ViewType.news,
+          ),
         ),
         Padding(
             padding:

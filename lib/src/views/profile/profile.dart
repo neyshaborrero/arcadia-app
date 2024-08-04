@@ -6,6 +6,7 @@ import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -329,7 +330,9 @@ class _ProfileViewState extends State<ProfileView> {
                             },
                           ),
               ),
-              const AdsCarouselComponent()
+              const AdsCarouselComponent(
+                viewType: ViewType.profile,
+              )
             ],
           ),
         ));

@@ -14,6 +14,8 @@ import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:vibration/vibration.dart';
 
+import '../structure/view_types.dart';
+
 class QRScan extends StatefulWidget {
   const QRScan({super.key});
 
@@ -94,7 +96,9 @@ class _QRScanState extends State<QRScan> {
                       ),
                     ),
                   ),
-                  const AdsCarouselComponent(),
+                  const AdsCarouselComponent(
+                    viewType: ViewType.qrscan,
+                  ),
                   const SizedBox(
                     height: 40,
                   )

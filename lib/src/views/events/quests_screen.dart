@@ -3,6 +3,7 @@ import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/events/raffle_view.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ class QuestsView extends StatelessWidget {
                 const SizedBox(
                   height: 10,
                 ),
-                const AdsCarouselComponent(),
+                const AdsCarouselComponent(viewType: ViewType.quest),
                 const SizedBox(
                   height: 10,
                 ),

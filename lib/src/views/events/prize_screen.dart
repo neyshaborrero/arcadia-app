@@ -3,6 +3,7 @@ import 'package:arcadia_mobile/src/components/prize_dialog.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/views/events/raffle_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,9 @@ class PrizeScreen extends StatelessWidget {
         const SizedBox(
           height: 10,
         ),
-        const AdsCarouselComponent(),
+        const AdsCarouselComponent(
+          viewType: ViewType.prize,
+        ),
         Text(
           'Entries unlock in Aracadia on Dec 7 & 8!',
           style: Theme.of(context).textTheme.titleMedium,

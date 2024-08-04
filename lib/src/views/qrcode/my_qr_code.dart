@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -107,7 +108,9 @@ class _MyQRCodeState extends State<MyQRCode> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const AdsCarouselComponent(),
+              const AdsCarouselComponent(
+                viewType: ViewType.qrprofile,
+              ),
             ],
           ),
         ),

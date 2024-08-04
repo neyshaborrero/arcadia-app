@@ -26,11 +26,12 @@ class AdsDetailsProvider with ChangeNotifier {
 
       if (legendaryAds.isEmpty) {
         return AdsDetails(
-          tier: "legendary",
-          image:
-              "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
-          url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/",
-        ); // Default ad
+            tier: "legendary",
+            image:
+                "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
+            url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/",
+            partner: "ysug",
+            id: "0000000"); // Default ad
       }
 
       final randomIndex = Random().nextInt(legendaryAds.length);
@@ -41,11 +42,16 @@ class AdsDetailsProvider with ChangeNotifier {
           tier: "legendary",
           image:
               "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
-          url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/");
+          url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/",
+          partner: "ysug",
+          id: "0000000");
     }
   }
 
   List<AdsDetails> getEpicAds() {
-    return _adsDetails.where((element) => element.tier == 'epic').toList();
+    List<AdsDetails> epicAds =
+        _adsDetails.where((element) => element.tier == 'epic').toList();
+    epicAds.shuffle(Random());
+    return epicAds;
   }
 }

@@ -71,11 +71,12 @@ Future<List<AdsDetails>> loadSplashAds(
 List<AdsDetails> defaultAds() {
   return [
     AdsDetails(
-      tier: "legendary",
-      image:
-          "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
-      url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/",
-    ),
+        tier: "legendary",
+        image:
+            "https://firebasestorage.googleapis.com/v0/b/ysug-arcadia-46a15.appspot.com/o/ads%2F2024_Logo-B.png?alt=media&token=fe68c904-1ae3-477e-956f-4f5655c44888",
+        url: "https://www.yosoyungamer.com/arcadia-battle-royale-2024/",
+        partner: "ysug",
+        id: '0000000'),
   ];
 }
 

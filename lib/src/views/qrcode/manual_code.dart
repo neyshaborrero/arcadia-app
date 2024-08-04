@@ -7,6 +7,7 @@ import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -150,7 +151,9 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
         ),
       ),
       const Spacer(),
-      const AdsCarouselComponent(),
+      const AdsCarouselComponent(
+        viewType: ViewType.manualcode,
+      ),
       const SizedBox(
         height: 40,
       )
