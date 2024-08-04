@@ -2,6 +2,7 @@ import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
+import 'package:arcadia_mobile/src/components/token_info.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
@@ -221,6 +222,7 @@ class _ProfileViewState extends State<ProfileView> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        //TokenInfo(tokens: userProfile?.tokens ?? 0)
                         Text(
                           'Tokens',
                           style: Theme.of(context).textTheme.labelMedium,
