@@ -98,6 +98,8 @@ class _SplashScreenState extends State<SplashScreen>
             }
 
             List<MissionDetails>? missions = await _fetchMissions(token);
+            missions = MissionDetails.sortByCompletedAndTitle(missions ?? []);
+
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (context) => HomeScreen(missions: missions ?? []),

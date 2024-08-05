@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen>
                 controller: _tabController,
                 children: [
                   QuestsView(missionList: widget.missions),
-                  NewsScreen()
+                  const NewsScreen()
                 ],
               );
             default:

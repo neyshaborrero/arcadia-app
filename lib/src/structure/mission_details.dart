@@ -56,4 +56,15 @@ class MissionDetails {
     final DateFormat formatter = DateFormat('M/d/yy');
     return formatter.format(date);
   }
+
+  static List<MissionDetails> sortByCompletedAndTitle(
+      List<MissionDetails> missions) {
+    missions.sort((a, b) {
+      if (a.completed != b.completed) {
+        return b.completed ? 0 : -1;
+      }
+      return a.title.compareTo(b.title);
+    });
+    return missions;
+  }
 }
