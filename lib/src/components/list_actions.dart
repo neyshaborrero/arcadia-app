@@ -10,6 +10,7 @@ class ListAction extends StatelessWidget {
   final bool isTablet;
   final bool isLargePhone;
   final bool isSmallPhone;
+  final Function(bool) onShowChildren;
 
   const ListAction({
     super.key,
@@ -18,6 +19,7 @@ class ListAction extends StatelessWidget {
     required this.isTablet,
     required this.isLargePhone,
     required this.isSmallPhone,
+    required this.onShowChildren,
   });
 
   @override
@@ -70,7 +72,7 @@ class ListAction extends StatelessWidget {
                             ? 35
                             : 29,
                     decoration: BoxDecoration(
-                      color: (Provider.of<ClickedState>(context)
+                      color: (Provider.of<ClickedState>(context, listen: false)
                                   .isClicked(mission.id) ||
                               mission.completed)
                           ? const Color(0XFF4aae50)
@@ -94,7 +96,7 @@ class ListAction extends StatelessWidget {
                             context,
                             mission.id,
                             false,
-                            (Provider.of<ClickedState>(context)
+                            (Provider.of<ClickedState>(context, listen: false)
                                     .isClicked(mission.id) ||
                                 mission.completed),
                             mission.title,
@@ -102,8 +104,7 @@ class ListAction extends StatelessWidget {
                             mission.imageComplete,
                             mission.imageIncomplete)
                         .then((result) {
-                      Provider.of<ClickedState>(context, listen: false)
-                          .showChildren(true);
+                      onShowChildren(true);
                       if (result != null && result == true) {
                         Provider.of<ClickedState>(context, listen: false)
                             .toggleClicked(mission.id);

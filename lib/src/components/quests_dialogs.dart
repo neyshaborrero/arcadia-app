@@ -1,5 +1,4 @@
 import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
-import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -50,28 +49,31 @@ Future<bool?> showActivityDialog(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Text(
-                            'Tokens Earned',
+                            isCompleted ? 'Tokens Earned' : 'Win Tokens',
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 12),
                           if (imageComplete != '')
                             Center(
                               child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color:
+                                      isCompleted ? Colors.white : Colors.white,
                                   shape: BoxShape.circle,
                                 ),
                                 child: isCompleted
                                     ? Image.network(imageComplete,
-                                        width: 93, height: 93)
+                                        width: 95, height: 95)
                                     : Image.network(imageIncomplete,
-                                        width: 93, height: 93),
+                                        width: 95, height: 95),
                               ),
                             ),
                           if (imageComplete != '') const SizedBox(height: 12),
                           Text(
                             subtitle,
                             style: Theme.of(context).textTheme.labelLarge,
+                            textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 5),
                           Text(

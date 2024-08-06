@@ -279,7 +279,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'https://thorn-freesia-17c.notion.site/Terms-of-Service-e2ada600ffae48828b7f1c2aa4862443'),
             _buildListTile('About', context,
                 'https://www.yosoyungamer.com/arcadia-battle-royale-2024/'),
-            _buildListTile('Contact', context, 'mailto:info@yosoyungamer.com'),
+            _buildListTile('Contact', context, 'https://wa.me/17873207511'),
             _buildListTile(
                 'Purchase Tickets', context, 'https://prticket.sale/ARCADIA'),
             Padding(
@@ -299,7 +299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _launchUrl(url) async {
     if (!await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView)) {
-      throw Exception('Could not launch https://prticket.sale/ARCADIA');
+      throw Exception('Could not launch $url');
     }
   }
 

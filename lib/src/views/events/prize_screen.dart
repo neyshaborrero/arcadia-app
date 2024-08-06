@@ -227,23 +227,23 @@ class PrizeScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Row(
+                            const SizedBox(height: 10),
+                            Column(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Transform.translate(
                                   offset: const Offset(
                                       0, -6), // Move the text 3 pixels up
                                   child: Text(
-                                    'Powered by:',
+                                    'Sponsored by:',
                                     style:
                                         Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
                                 CachedNetworkImage(
-                                  width: 60,
-                                  height: 40,
+                                  width: 80,
+                                  height: 60,
                                   imageUrl: prize.poweredBy,
                                   fit: BoxFit.fitWidth,
                                   errorWidget: (context, url, error) =>

@@ -72,6 +72,9 @@ class QuestsView extends StatelessWidget {
                     isTablet: isTablet,
                     isLargePhone: isLargePhone,
                     isSmallPhone: isSmallPhone,
+                    onShowChildren: (bool value) {
+                      clickedState.showChildren(value);
+                    },
                   ),
                   ListAction(
                     missions: sideQuests,
@@ -79,6 +82,9 @@ class QuestsView extends StatelessWidget {
                     isTablet: isTablet,
                     isLargePhone: isLargePhone,
                     isSmallPhone: isSmallPhone,
+                    onShowChildren: (bool value) {
+                      clickedState.showChildren(value);
+                    },
                   ),
                   const SizedBox(
                     height: 20, // Add some spacing to prevent overlap
