@@ -61,9 +61,10 @@ class MissionDetails {
       List<MissionDetails> missions) {
     missions.sort((a, b) {
       if (a.completed != b.completed) {
-        return b.completed ? 0 : -1;
+        return a.completed ? 1 : -1;
       }
-      return a.title.compareTo(b.title);
+      // If 'completed' status is the same, compare by 'value'
+      return a.value.compareTo(b.value);
     });
     return missions;
   }
