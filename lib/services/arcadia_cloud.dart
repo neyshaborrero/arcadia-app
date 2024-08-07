@@ -162,6 +162,7 @@ class ArcadiaCloud {
       String? gender,
       String? userType,
       String? token,
+      String? city,
       bool isProfileComplete) async {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/user/updateuser');
@@ -176,6 +177,7 @@ class ArcadiaCloud {
     if (fullName != null) bodyCall['fullName'] = fullName;
     if (gender != null) bodyCall['gender'] = gender;
     if (userType != null) bodyCall['userType'] = userType;
+    if (city != null) bodyCall['city'] = userType;
     bodyCall['profileComplete'] = isProfileComplete;
 
     final response = await http.put(
@@ -454,6 +456,25 @@ class ArcadiaCloud {
     final response = await http.post(
       Uri.parse(
           '${_firebaseService.arcadiaCloudAddress}/sponsor/adview'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({'adId': adId, 'partnerId': partnerId, 'view': view}),
+    );
+
+    if (response.statusCode == 400) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    }
+  }
+
+  void recordAdClick(
+      String view, String partnerId, String adId, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/sponsor/adclick'), // Replace with your actual endpoint
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token', // Add the Firebase ID token here

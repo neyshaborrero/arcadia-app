@@ -251,6 +251,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
         _selectedGender!,
         _selectedUserType!,
         token,
+        _cityController.text,
         true,
       );
 

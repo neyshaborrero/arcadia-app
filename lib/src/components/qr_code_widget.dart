@@ -111,6 +111,8 @@ class _QRScanState extends State<QRScan> {
     //   _isLoading = true;
     // });
 
+    print("VALIDATING $code");
+
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {

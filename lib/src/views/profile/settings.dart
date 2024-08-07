@@ -154,7 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       String? token = await user.getIdToken();
       final response = await _arcadiaCloud.updateUserToDB(
-          null, downloadURL, null, null, null, null, token, false);
+          null, downloadURL, null, null, null, null, token, null, false);
       if (response['success']) {
         // Update the UserProfileProvider
         final userProfileProvider =

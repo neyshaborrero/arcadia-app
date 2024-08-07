@@ -4,6 +4,7 @@ import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/is_tablet.dart';
+import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +70,22 @@ class _AdsCarouselComponentState extends State<AdsCarouselComponent> {
         viewType.toString().split('.').last, partnerId, adId, token);
   }
 
+  void _onAdTap(int index, Uri url, ViewType viewType) async {
+    if (user == null) return;
+
+    final token = await user?.getIdToken();
+
+    if (token == null) return;
+
+    final String partnerId = ads[index].partner;
+    final String adId = ads[index].id;
+
+    _arcadiaCloud.recordAdClick(
+        viewType.toString().split('.').last, partnerId, adId, token);
+
+    launchURL(url);
+  }
+
   @override
   Widget build(BuildContext context) {
     final double height = isTabletCarouselAds(context) ? 180.0 : 90.0;
@@ -100,31 +117,37 @@ class _AdsCarouselComponentState extends State<AdsCarouselComponent> {
               onPageChanged: (index, reason) =>
                   _onPageChanged(index, reason, widget.viewType),
             ),
-            items: ads.map((ad) {
+            items: ads.asMap().entries.map((entry) {
+              // items: ads.map((ad) {
+              int index = entry.key;
+              AdsDetails ad = entry.value;
               return Builder(
                 builder: (BuildContext context) {
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF000000),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: CachedNetworkImage(
-                        imageUrl: ad.image,
-                        fit: BoxFit.fitWidth,
-                        placeholder: (context, url) => const Center(
-                          child: CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                  return GestureDetector(
+                      onTap: () =>
+                          _onAdTap(index, Uri.parse(ad.url), widget.viewType),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF000000),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10.0),
+                          child: CachedNetworkImage(
+                            imageUrl: ad.image,
+                            fit: BoxFit.fitWidth,
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
                           ),
                         ),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
-                      ),
-                    ),
-                  );
+                      ));
                 },
               );
             }).toList(),

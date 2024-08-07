@@ -11,7 +11,6 @@ import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/profile/update_profile.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -144,6 +143,19 @@ class _SplashScreenState extends State<SplashScreen>
         ViewType.splash.toString().split('.').last, ad.partner, ad.id, token);
   }
 
+  Future<void> _recordAdClick(AdsDetails ad) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final token = await user.getIdToken();
+    if (token == null) return;
+
+    _arcadiaCloud.recordAdView(
+        ViewType.splash.toString().split('.').last, ad.partner, ad.id, token);
+
+    launchURL(Uri.parse(ad.url));
+  }
+
   @override
   Widget build(BuildContext context) {
     final isTabletDevice = isTablet(context);
@@ -183,7 +195,7 @@ class _SplashScreenState extends State<SplashScreen>
                         widthFactor: isTabletDevice ? 0.7 : 0.9,
                         child: GestureDetector(
                           onTap: () {
-                            launchURL(Uri.parse(ad.url));
+                            _recordAdClick(ad);
                           },
                           child: CachedNetworkImage(
                             imageUrl: ad.image,
