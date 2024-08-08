@@ -157,10 +157,6 @@ class _QRScanState extends State<QRScan> {
       setState(() {
         isScanning = true;
       });
-
-      // setState(() {
-      //   _isLoading = false;
-      // });
     }
   }
 

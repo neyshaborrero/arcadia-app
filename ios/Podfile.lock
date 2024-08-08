@@ -26,7 +26,7 @@ PODS:
   - Firebase/Storage (10.29.0):
     - Firebase/CoreOnly
     - FirebaseStorage (~> 10.29.0)
-  - firebase_analytics (11.1.0):
+  - firebase_analytics (11.2.1):
     - Firebase/Analytics (= 10.29.0)
     - firebase_core
     - Flutter
@@ -37,7 +37,7 @@ PODS:
   - firebase_core (3.3.0):
     - Firebase/CoreOnly (= 10.29.0)
     - Flutter
-  - firebase_crashlytics (4.0.2):
+  - firebase_crashlytics (4.0.4):
     - Firebase/Crashlytics (= 10.29.0)
     - firebase_core
     - Flutter
@@ -342,10 +342,10 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   device_info_plus: 97af1d7e84681a90d0693e63169a5d50e0839a0d
   Firebase: cec914dab6fd7b1bd8ab56ea07ce4e03dd251c2d
-  firebase_analytics: 2af56907c90fd1e20c60148cc4773f9762a4b50b
+  firebase_analytics: 04491d1ee74c8e7c2330c96afc54188a969b06ee
   firebase_auth: 64856c5bbfac0c8e75878004bd49c5af14978527
   firebase_core: 57aeb91680e5d5e6df6b888064be7c785f146efb
-  firebase_crashlytics: d5cb7281ab87a3e6e8c150be22baf806fea2aeb3
+  firebase_crashlytics: e3d3e0c99bad5aaab5908385133dea8ec344693f
   firebase_messaging: 790e4a3d1059ab255ef6965592294310426fb7b4
   firebase_performance: 8643e815a354ee94da1192cd69335a48a7b625a4
   firebase_remote_config: ceb03e20817d204db79d5ae95ec5918ed1826761

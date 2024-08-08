@@ -19,7 +19,7 @@ class PrizeScreen extends StatelessWidget {
     final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth >= 600;
-    final columnCount = isTablet ? 3 : 2;
+    final columnCount = isTablet ? 2 : 1;
 
     return Column(
       children: <Widget>[
@@ -163,11 +163,11 @@ class PrizeScreen extends StatelessWidget {
                               style: Theme.of(context).textTheme.labelLarge,
                             ),
                             const SizedBox(
-                              height: 5,
+                              height: 10,
                             ),
                             CachedNetworkImage(
-                              width: 100,
-                              height: 55,
+                              width: 280,
+                              height: 150,
                               imageUrl: prize.image,
                               fit: BoxFit.fitWidth,
                               placeholder: (context, url) => const Center(
@@ -214,21 +214,21 @@ class PrizeScreen extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: const Size(0, 0),
-                                fixedSize: const Size(120, 30),
+                                fixedSize: const Size(280, 45),
                                 textStyle:
                                     Theme.of(context).textTheme.labelSmall,
                               ),
                               child: const Text(
                                 'Details',
                                 style: TextStyle(
-                                  fontSize: 15.0,
+                                  fontSize: 18.0,
                                   fontWeight: FontWeight
                                       .w700, // This corresponds to font-weight: 700 in CSS
                                 ),
                               ),
                             ),
                             const SizedBox(height: 10),
-                            Column(
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -238,12 +238,13 @@ class PrizeScreen extends StatelessWidget {
                                   child: Text(
                                     'Sponsored by:',
                                     style:
-                                        Theme.of(context).textTheme.bodySmall,
+                                        Theme.of(context).textTheme.titleSmall,
                                   ),
                                 ),
+                                const SizedBox(width: 10),
                                 CachedNetworkImage(
-                                  width: 80,
-                                  height: 60,
+                                  width: 150,
+                                  height: 90,
                                   imageUrl: prize.poweredBy,
                                   fit: BoxFit.fitWidth,
                                   errorWidget: (context, url, error) =>

@@ -80,15 +80,35 @@ class ListAction extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: isTablet
-                            ? 35
-                            : isLargePhone
-                                ? 30
-                                : 24,
-                      ),
+                      child:
+                          mission.multiplier != null && mission.multiplier! > 1
+                              ? Text(
+                                  '${mission.multiplier}x',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: (Provider.of<ClickedState>(context,
+                                                  listen: false)
+                                              .isClicked(mission.id) ||
+                                          mission.completed)
+                                      ? Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(color: Colors.white)
+                                      : Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                              color: const Color(0xFF313131)),
+                                )
+                              : Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: isTablet
+                                      ? 35
+                                      : isLargePhone
+                                          ? 30
+                                          : 24,
+                                ),
                     ),
                   ),
                   onTap: () async {

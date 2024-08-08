@@ -104,14 +104,14 @@ void showPrizeDialog(
                           ),
                           const SizedBox(height: 15),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Transform.translate(
                                 offset: const Offset(
                                     0, 4), // Move the text 3 pixels up
                                 child: const Text(
-                                  'Powered by:',
+                                  'Sponsored by:',
                                   style: TextStyle(
                                     fontSize: 16.0,
                                     fontWeight: FontWeight
