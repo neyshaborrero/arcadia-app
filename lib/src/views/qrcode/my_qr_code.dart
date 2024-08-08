@@ -93,16 +93,16 @@ class _MyQRCodeState extends State<MyQRCode> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: QrImageView(
-                    data: userProfile!.qrcode,
-                    size: 206,
-                    embeddedImage: const AssetImage('assets/arcadia_icon.png'),
-                    embeddedImageStyle: const QrEmbeddedImageStyle(
-                      size: Size(54, 56),
-                    ),
-                    errorCorrectionLevel: QrErrorCorrectLevel.H),
+                  data: userProfile!.qrcode,
+                  size: 206,
+                  embeddedImage: const AssetImage('assets/ysug.png'),
+                  embeddedImageStyle: const QrEmbeddedImageStyle(
+                    size: Size(54, 56),
+                  ),
+                ),
               ),
               Text(
-                userProfile!.qrcode,
+                userProfile.qrcode,
                 style: const TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.w700,
