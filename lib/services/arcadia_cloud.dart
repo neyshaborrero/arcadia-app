@@ -177,7 +177,7 @@ class ArcadiaCloud {
     if (fullName != null) bodyCall['fullName'] = fullName;
     if (gender != null) bodyCall['gender'] = gender;
     if (userType != null) bodyCall['userType'] = userType;
-    if (city != null) bodyCall['city'] = city;
+    if (city != null) bodyCall['city'] = userType;
     bodyCall['profileComplete'] = isProfileComplete;
 
     final response = await http.put(

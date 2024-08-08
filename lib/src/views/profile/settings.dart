@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/src/components/picture_upload_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,7 +23,10 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final ImagePicker _picker = ImagePicker();
   XFile? _imageFile; // Used to hold the image file
+  late final ArcadiaCloud _arcadiaCloud;
+  bool _isLoading = false;
   bool _notificationsEnabled = false;
 
   @override
@@ -32,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _initialize() async {
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
     _notificationsEnabled = await firebaseService.isNotificationEnabled();
     setState(() {}); // Update the state to reflect changes
   }
@@ -73,6 +80,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showUploadPictureDialog(context);
   }
 
+  // Method to handle image selection from the camera
+  Future<void> _imgFromCamera() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 50,
+    );
+
+    setState(() {
+      _imageFile = image;
+      _saveUserProfile();
+    });
+  }
+
+  // Method to handle image selection from the gallery
+  Future<void> _imgFromGallery() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
+
+    setState(() {
+      _imageFile = image;
+      _saveUserProfile();
+    });
+  }
+
   // Method to log out the user
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
@@ -84,6 +117,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
         MaterialPageRoute(builder: (context) => const StartScreen()),
         ModalRoute.withName('/') // Replace with your sign-up screen widget
         ); // Redirect to the login screen
+  }
+
+  // Method to upload the image to Firebase Storage and get the download URL
+  Future<String?> _uploadImageToFirebase() async {
+    if (_imageFile == null) return null;
+
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final fileName = '${user.uid}_profile.jpg';
+      final storageRef =
+          FirebaseStorage.instance.ref().child('profile_pictures/$fileName');
+      final uploadTask = storageRef.putFile(File(_imageFile!.path));
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadURL = await snapshot.ref.getDownloadURL();
+      return downloadURL;
+    } catch (e) {
+      print('Error uploading image: $e');
+      return null;
+    }
+  }
+
+  Future<void> _saveUserProfile() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final String? downloadURL = await _uploadImageToFirebase();
+    if (downloadURL == null) return;
+
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      String? token = await user.getIdToken();
+      final response = await _arcadiaCloud.updateUserToDB(
+          null, downloadURL, null, null, null, null, token, null, false);
+      if (response['success']) {
+        // Update the UserProfileProvider
+        final userProfileProvider =
+            Provider.of<UserProfileProvider>(context, listen: false);
+        userProfileProvider.updateProfileUrl(downloadURL);
+      } else {
+        List<ErrorDetail> errors = response['errors'];
+        String errorMessage = errors.isNotEmpty
+            ? errors.map((e) => e.message).join(', ')
+            : 'An unknown error occurred';
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } catch (e) {
+      print('Error saving user profile: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
