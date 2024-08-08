@@ -7,7 +7,7 @@ import 'package:arcadia_mobile/src/tools/is_tablet.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider_plus/carousel_slider_plus.dart';
 import 'package:provider/provider.dart';
 
 class AdsCarouselComponent extends StatefulWidget {
