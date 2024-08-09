@@ -1,10 +1,15 @@
 import 'dart:io';
 
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/src/components/delete_account.dart';
 import 'package:arcadia_mobile/src/components/picture_upload_dialogs.dart';
+import 'package:arcadia_mobile/src/components/prize_dialog.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/views/auth/create_account_view.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,6 +27,10 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   XFile? _imageFile; // Used to hold the image file
   bool _notificationsEnabled = false;
+  late final ArcadiaCloud _arcadiaCloud;
+  late final FirebaseService _firebaseService;
+  late final String userToken;
+  late final User? user;
 
   @override
   void initState() {
@@ -30,10 +39,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _initialize() async {
-    final firebaseService =
-        Provider.of<FirebaseService>(context, listen: false);
-    _notificationsEnabled = await firebaseService.isNotificationEnabled();
-    setState(() {}); // Update the state to reflect changes
+    _firebaseService = Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(_firebaseService);
+    user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      userToken = (await user?.getIdToken())!;
+    }
+
+    _notificationsEnabled = await _firebaseService.isNotificationEnabled();
+
+    setState(() {});
   }
 
   Future<void> _requestNotificationPermissions() async {
@@ -191,13 +207,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'Purchase Tickets', context, 'https://prticket.sale/ARCADIA'),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  _logout();
-                },
-                child: const Text('Log Out'),
-              ),
+              child: SizedBox(
+                  height: 60.0,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _logout();
+                    },
+                    child: const Text('Log Out'),
+                  )),
             ),
+            const SizedBox(
+              height: 20,
+            ),
+            Center(
+                child: RichText(
+              text: TextSpan(
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                children: [
+                  const TextSpan(text: ""),
+                  TextSpan(
+                    text: 'Delete Account',
+                    style: const TextStyle(
+                        color: Color(0xFFD20E0D), fontWeight: FontWeight.bold),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () async {
+                        if (userProfile != null) {
+                          showDeleteAccount(
+                                  context,
+                                  userToken,
+                                  'Delete Account',
+                                  'Thinking about pulling the plug? Just hit "Yes" if you would like all your personal data be erased from the Arcadia Battle Royale app.',
+                                  userProfile.tokens,
+                                  _arcadiaCloud)
+                              .then((result) async {
+                            await FirebaseAuth.instance.signOut();
+
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                  builder: (context) => const StartScreen()),
+                              (Route<dynamic> route) =>
+                                  false, // Remove all previous routes
+                            );
+                          });
+                        }
+                      },
+                  ),
+                ],
+              ),
+            ))
           ],
         ),
       ),

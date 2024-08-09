@@ -154,6 +154,31 @@ class ArcadiaCloud {
     }
   }
 
+  Future<Map<String, dynamic>> deleteUser(String? token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/user/deleteuser');
+
+    print(token);
+
+    final response = await http.post(url, headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+      'x-api-key': _firebaseService.xApiKey,
+    });
+
+    if (response.statusCode == 200) {
+      return {'success': true};
+    } else {
+      // Error response
+      final Map<String, dynamic> res = json.decode(response.body);
+      ResponseDetail parsedResponse = ResponseDetail.fromJson(res);
+
+      List<ErrorDetail> errors = parsedResponse.errors;
+
+      return {'success': false, 'errors': errors};
+    }
+  }
+
   Future<Map<String, dynamic>> updateUserToDB(
       String? gamertag,
       String? profileUrl,
