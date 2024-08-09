@@ -252,6 +252,7 @@ class ArcadiaCloud {
   }
 
   Future<UserActivity?> validateQRCode(String qrCode, String token) async {
+    print("i got the call");
     final response = await http.post(
       Uri.parse(
           '${_firebaseService.arcadiaCloudAddress}/mission/validate'), // Replace with your actual endpoint

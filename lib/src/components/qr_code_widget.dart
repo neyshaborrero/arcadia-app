@@ -118,10 +118,12 @@ class _QRScanState extends State<QRScan> {
       if (user != null) {
         final String? token = await user.getIdToken();
         if (token != null) {
+          print("got token");
           final UserActivity? response =
               await _arcadiaCloud.validateQRCode(code, token);
 
           if (response != null) {
+            print("response what");
             final userProfileProvider =
                 Provider.of<UserProfileProvider>(context, listen: false);
             userProfileProvider.updateTokens(response.value);
@@ -140,6 +142,7 @@ class _QRScanState extends State<QRScan> {
                 response.imageComplete,
                 response.imageComplete);
           } else {
+            print("null");
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content: Text(
@@ -149,6 +152,7 @@ class _QRScanState extends State<QRScan> {
         }
       }
     } catch (e) {
+      print("null catch");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('We couldnt validate the QR Code, try another one.')),

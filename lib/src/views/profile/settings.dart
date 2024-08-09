@@ -240,14 +240,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   userProfile.tokens,
                                   _arcadiaCloud)
                               .then((result) async {
-                            await FirebaseAuth.instance.signOut();
+                            if (result == true) {
+                              await FirebaseAuth.instance.signOut();
 
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                  builder: (context) => const StartScreen()),
-                              (Route<dynamic> route) =>
-                                  false, // Remove all previous routes
-                            );
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (context) => const StartScreen()),
+                                (Route<dynamic> route) =>
+                                    false, // Remove all previous routes
+                              );
+                            }
                           });
                         }
                       },
