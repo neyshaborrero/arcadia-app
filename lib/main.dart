@@ -10,14 +10,13 @@ import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 import 'src/notifiers/change_notifier.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+//     FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -102,7 +102,7 @@ class _MyQRCodeState extends State<MyQRCode> {
                     errorCorrectionLevel: QrErrorCorrectLevel.H),
               ),
               Text(
-                userProfile!.qrcode,
+                userProfile.qrcode,
                 style: const TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.w700,
