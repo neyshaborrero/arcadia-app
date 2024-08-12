@@ -188,13 +188,12 @@ class ArcadiaCloud {
       String? userType,
       String? token,
       String? city,
-      bool isProfileComplete) async {
+      String? fcmToken,
+      bool? isProfileComplete) async {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/user/updateuser');
 
-    Map<String, dynamic> bodyCall = {
-      'lastUpdate': DateTime.now().toIso8601String(),
-    };
+    Map<String, dynamic> bodyCall = {};
 
     if (gamertag != null) bodyCall['gamertag'] = gamertag;
     if (dob != null) bodyCall['dob'] = dob;
@@ -203,7 +202,12 @@ class ArcadiaCloud {
     if (gender != null) bodyCall['gender'] = gender;
     if (userType != null) bodyCall['userType'] = userType;
     if (city != null) bodyCall['city'] = city;
-    bodyCall['profileComplete'] = isProfileComplete;
+    if (fcmToken != null) bodyCall['fcmToken'] = fcmToken;
+    if (isProfileComplete != null) {
+      bodyCall['profileComplete'] = isProfileComplete;
+    }
+
+    print("userData $bodyCall");
 
     final response = await http.put(
       url,

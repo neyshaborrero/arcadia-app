@@ -5,6 +5,7 @@ import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_right_route.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
+import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
@@ -31,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   late final ArcadiaCloud _arcadiaCloud;
+  late final UserProfile? userProfile;
 
   ViewType _currentView = ViewType.events;
 
@@ -48,17 +50,26 @@ class _HomeScreenState extends State<HomeScreen>
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
 
-    firebaseService.initFirebaseNotifications();
     _arcadiaCloud = ArcadiaCloud(firebaseService);
     _fetchPrizes();
 
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {
-          // Forces the AppBar to rebuild with the new title
-        });
-      }
-    });
+    print("here is the profile");
+
+    userProfile =
+        Provider.of<UserProfileProvider>(context, listen: false).userProfile;
+
+    print("profile $userProfile");
+    if (userProfile != null) {
+      firebaseService.initFirebaseNotifications(userProfile!);
+    }
+
+    // _tabController.addListener(() {
+    //   if (!_tabController.indexIsChanging) {
+    //     setState(() {
+    //       // Forces the AppBar to rebuild with the new title
+    //     });
+    //   }
+    // });
   }
 
   Future<void> _fetchPrizes() async {
@@ -96,7 +107,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
+    // final UserProfile? userProfile =
+    //     Provider.of<UserProfileProvider>(context).userProfile;
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -126,8 +138,8 @@ class _HomeScreenState extends State<HomeScreen>
         title: Text(
           _currentView == ViewType.events
               ? tabTitles[_tabController.index]
-              : userProfile != null && userProfile.profileImageUrl.isNotEmpty
-                  ? userProfile.gamertag
+              : userProfile != null && userProfile!.profileImageUrl.isNotEmpty
+                  ? userProfile!.gamertag
                   : 'hambopr',
           style: const TextStyle(
             fontSize: 24.0,

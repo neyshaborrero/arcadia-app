@@ -252,6 +252,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
         _selectedUserType!,
         token,
         _cityController.text,
+        null,
         true,
       );
 
