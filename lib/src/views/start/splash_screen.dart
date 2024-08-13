@@ -161,74 +161,85 @@ class _SplashScreenState extends State<SplashScreen>
     final isTabletDevice = isTablet(context);
 
     return Scaffold(
-      body: Container(
-        color: const Color(0xFFE30D0D),
-        child: FutureBuilder<AdsDetails>(
-          future: _splashAdFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              );
-            } else if (snapshot.hasError) {
-              return const Center(
-                child: Text(
-                  'Error loading ad',
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
-            } else if (snapshot.hasData) {
-              final ad = snapshot.data!;
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // CachedNetworkImage taking up 100% of the screen while fitting based on aspect ratio
+          FutureBuilder<AdsDetails>(
+            future: _splashAdFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return const Center(
+                  child: Text(
+                    'Error loading ad',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              } else if (snapshot.hasData) {
+                final ad = snapshot.data!;
 
-              // Record the ad view
-              _recordAdView(ad);
+                // Record the ad view
+                _recordAdView(ad);
 
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FractionallySizedBox(
-                        widthFactor: isTabletDevice ? 0.7 : 0.9,
-                        child: GestureDetector(
-                          onTap: () {
-                            _recordAdClick(ad);
-                          },
-                          child: CachedNetworkImage(
-                            imageUrl: ad.image,
-                            placeholder: (context, url) =>
-                                const CircularProgressIndicator(
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.error),
+                return Center(
+                  child: FractionallySizedBox(
+                    widthFactor: 1.0, // 100% of the screen width
+                    heightFactor: 1.0, // 100% of the screen height
+                    child: GestureDetector(
+                      onTap: () {
+                        _recordAdClick(ad);
+                      },
+                      child: CachedNetworkImage(
+                        imageUrl: ad.image,
+                        fit: BoxFit
+                            .contain, // Fit the image within the screen while preserving aspect ratio
+                        placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         ),
+                        errorWidget: (context, url, error) =>
+                            const Center(child: Icon(Icons.error)),
                       ),
-                      const SizedBox(height: 70),
-                      if (showIndicator)
-                        const CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                    ],
+                    ),
                   ),
-                ],
-              );
-            } else {
-              return const Center(
-                child: Text(
-                  'No ad available',
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
-            }
-          },
-        ),
+                );
+              } else {
+                return const Center(
+                  child: Text(
+                    'No ad available',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+            },
+          ),
+
+          Align(
+              alignment: Alignment.bottomCenter,
+              child: Image.asset(
+                'assets/arcadia_splash_portrait.png', // Replace with your image asset path
+                width: MediaQuery.of(context)
+                    .size
+                    .width, // Full screen width on non-tablets
+                fit: BoxFit.cover,
+              )),
+
+          // Optional: Loading indicator or other content
+          if (showIndicator)
+            const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+        ],
       ),
     );
   }
