@@ -296,7 +296,13 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
 
   Future<List<MissionDetails>?> _fetchMissions(String token) async {
     try {
-      return await _arcadiaCloud.fetchArcadiaMissions(token);
+      // Get the user's local datetime
+      final userLocalDatetime = DateTime.now().toIso8601String();
+
+      // Get the user's timezone name (using intl)
+      final userTimezone = DateFormat('z').format(DateTime.now());
+      return await _arcadiaCloud.fetchArcadiaMissions(
+          token, userLocalDatetime, userTimezone);
     } catch (e) {
       print('Error fetching missions: $e');
       return null;

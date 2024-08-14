@@ -372,9 +372,19 @@ class ArcadiaCloud {
   }
 
   //Missions
-  Future<List<MissionDetails>?> fetchArcadiaMissions(String token) async {
-    final url = Uri.parse(
-        '${_firebaseService.arcadiaCloudAddress}/mission/getmissions');
+  Future<List<MissionDetails>?> fetchArcadiaMissions(
+      String token, String? userDate, String? timeZone) async {
+    final baseUrl =
+        '${_firebaseService.arcadiaCloudAddress}/mission/getmissions';
+
+    // Add query parameters to the base URL
+    final url = Uri.parse(baseUrl).replace(queryParameters: {
+      if (userDate != null)
+        'date': userDate, // Add date as a query parameter if it's not null
+      if (timeZone != null)
+        'timeZone':
+            timeZone, // Add timeZone as a query parameter if it's not null
+    });
 
     final response = await http.get(
       url,

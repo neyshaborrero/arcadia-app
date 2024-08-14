@@ -13,6 +13,7 @@ import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'home_view.dart';
 
@@ -124,7 +125,13 @@ class _SplashScreenState extends State<SplashScreen>
       final token = await user.getIdToken();
       if (token == null) return null;
 
-      return await _arcadiaCloud.fetchArcadiaMissions(token);
+      // Get the user's local datetime
+      final userLocalDatetime = DateTime.now().toIso8601String();
+
+      // Get the user's timezone name (using intl)
+      final userTimezone = DateFormat('z').format(DateTime.now());
+      return await _arcadiaCloud.fetchArcadiaMissions(
+          token, userLocalDatetime, userTimezone);
     } catch (e) {
       // Handle network or token retrieval errors
       print('Error fetching missions: $e');

@@ -8,6 +8,7 @@ import 'package:arcadia_mobile/src/views/auth/forget_password.dart';
 import 'package:arcadia_mobile/src/views/start/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../auth/create_account_view.dart';
 import '../../routes/slide_right_route.dart';
@@ -105,7 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<List<MissionDetails>?> _fetchMissions(String token) async {
     try {
-      return await _arcadiaCloud.fetchArcadiaMissions(token);
+      // Get the user's local datetime
+      final userLocalDatetime = DateTime.now().toIso8601String();
+
+      // Get the user's timezone name (using intl)
+      final userTimezone = DateFormat('z').format(DateTime.now());
+      return await _arcadiaCloud.fetchArcadiaMissions(
+          token, userLocalDatetime, userTimezone);
     } catch (e) {
       print('Error fetching missions: $e');
       return null;
