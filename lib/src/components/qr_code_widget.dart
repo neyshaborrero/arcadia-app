@@ -133,14 +133,29 @@ class _QRScanState extends State<QRScan> {
                 .toggleClicked(response.qrcode);
 
             showActivityDialog(
-                context,
-                response.id,
-                true,
-                true,
-                response.title,
-                response.description,
-                response.imageComplete,
-                response.imageComplete);
+                    context,
+                    response.id,
+                    true,
+                    true,
+                    response.title,
+                    response.description,
+                    response.imageComplete,
+                    response.imageComplete,
+                    null)
+                .then((result) {
+              if (response.streak != null && response.streak! > 1) {
+                showActivityDialog(
+                    context,
+                    response.id,
+                    true,
+                    true,
+                    response.title,
+                    response.description,
+                    response.imageComplete,
+                    response.imageComplete,
+                    response.streak);
+              }
+            });
           } else {
             print("null");
             ScaffoldMessenger.of(context).showSnackBar(

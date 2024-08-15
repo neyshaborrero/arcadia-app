@@ -63,14 +63,31 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
                 .toggleClicked(response.qrcode);
 
             showActivityDialog(
-                context,
-                response.id,
-                true,
-                true,
-                response.title,
-                response.description,
-                response.imageComplete,
-                response.imageComplete);
+                    context,
+                    response.id,
+                    true,
+                    true,
+                    response.title,
+                    response.description,
+                    response.imageComplete,
+                    response.imageComplete,
+                    null)
+                .then((result) {
+              print("streak ${response.streak}");
+              if (response.streak != null && response.streak! > 1) {
+                showActivityDialog(
+                    context,
+                    response.id,
+                    true,
+                    true,
+                    response.title,
+                    response.description,
+                    response.imageComplete,
+                    response.imageComplete,
+                    response.streak);
+              }
+            });
+            ;
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

@@ -324,6 +324,7 @@ class _ProfileViewState extends State<ProfileView> {
                                         userActivity.description,
                                         userActivity.imageComplete,
                                         userActivity.imageIncomplete,
+                                        null,
                                       );
                                     },
                                   ),

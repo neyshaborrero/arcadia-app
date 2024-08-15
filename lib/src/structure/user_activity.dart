@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class UserActivity {
@@ -12,18 +11,21 @@ class UserActivity {
   final String qrcode;
   final int value;
   final String type;
+  final int? streak;
 
-  UserActivity(
-      {required this.id,
-      required this.createdAt,
-      required this.title,
-      required this.description,
-      required this.earnings,
-      required this.imageComplete,
-      required this.imageIncomplete,
-      required this.qrcode,
-      required this.value,
-      required this.type});
+  UserActivity({
+    required this.id,
+    required this.createdAt,
+    required this.title,
+    required this.description,
+    required this.earnings,
+    required this.imageComplete,
+    required this.imageIncomplete,
+    required this.qrcode,
+    required this.value,
+    required this.type,
+    this.streak,
+  });
 
   factory UserActivity.fromJson(Map<String, dynamic> json, String id) {
     return UserActivity(
@@ -37,6 +39,7 @@ class UserActivity {
       title: json['title'],
       type: json['type'],
       value: json['value'],
+      streak: json['streak'] ?? 1,
     );
   }
 

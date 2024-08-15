@@ -2,7 +2,7 @@ import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:arcadia_mobile/src/routes/slide_up_route.dart'; // Update with the actual path to your QRCodeScreen class
+import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 
 Future<bool?> showActivityDialog(
   BuildContext context,
@@ -13,119 +13,48 @@ Future<bool?> showActivityDialog(
   String description,
   String imageComplete,
   String imageIncomplete,
+  int? streak, // Added streak parameter
 ) {
   final clickedState = Provider.of<ClickedState>(context, listen: false);
-  clickedState.showChildren(showChildren); // Hide children
+  clickedState.showChildren(showChildren);
+
   return showDialog<bool>(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
+      final screenSize = MediaQuery.of(context).size;
+
       return Dialog(
         backgroundColor: Colors.black,
-        child: SingleChildScrollView(
+        child: SizedBox(
+          width: screenSize.width * 0.9, // 90% of screen width
+          height: (streak != null && streak > 1)
+              ? screenSize.height * 0.6
+              : screenSize.height * 0.5, // 60% of screen height
           child: DecoratedBox(
             decoration: const BoxDecoration(
               color: Colors.black, // Background color
-            ), // Padding from all sides
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
-                mainAxisSize:
-                    MainAxisSize.min, // Makes the column wrap its content
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Flexible(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD20E0D),
-                        borderRadius: BorderRadius.circular(
-                          10.0,
-                        ), // Background color of the circle
-                      ),
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize
-                            .min, // Use MainAxisSize.min to wrap content in the column.
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            isCompleted ? 'Tokens Earned' : 'Win Tokens',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 12),
-                          if (imageComplete != '')
-                            Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(10.0),
-                                decoration: BoxDecoration(
-                                  color:
-                                      isCompleted ? Colors.white : Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: isCompleted
-                                    ? Image.network(imageComplete,
-                                        width: 95, height: 95)
-                                    : Image.network(imageIncomplete,
-                                        width: 95, height: 95),
-                              ),
-                            ),
-                          if (imageComplete != '') const SizedBox(height: 12),
-                          Text(
-                            subtitle,
-                            style: Theme.of(context).textTheme.labelLarge,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            description,
-                            style: Theme.of(context).textTheme.labelMedium,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
+                  _buildMissionContent(
+                    context,
+                    isCompleted,
+                    subtitle,
+                    description,
+                    imageComplete,
+                    imageIncomplete,
+                    streak,
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
-                      backgroundColor: Colors.black,
-                    ),
-                    onPressed: () {
-                      if (isCompleted) {
-                        Navigator.of(context).pop(); // Close the dialog first
-                      } else {
-                        Navigator.of(context).pop(); // Close the dialog first
-                        _navigateUpWithSlideTransition(
-                            context, const QRCodeScreen());
-                      } // Close the dialog
-                    },
-                    child: ConstrainedBox(
-                      constraints:
-                          const BoxConstraints(minWidth: 225, maxWidth: 225),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD20E0D),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: isCompleted
-                              ? Text(
-                                  "Close",
-                                  textAlign: TextAlign.center,
-                                  style:
-                                      Theme.of(context).textTheme.headlineSmall,
-                                )
-                              : Text(
-                                  "Scan QR",
-                                  textAlign: TextAlign.center,
-                                  style:
-                                      Theme.of(context).textTheme.headlineSmall,
-                                ),
-                        ),
-                      ),
-                    ),
+                  _buildActionButton(
+                    context,
+                    isCompleted,
+                    streak,
                   ),
                 ],
               ),
@@ -134,6 +63,257 @@ Future<bool?> showActivityDialog(
         ),
       );
     },
+  );
+}
+
+Widget _buildMissionContent(
+  BuildContext context,
+  bool isCompleted,
+  String subtitle,
+  String description,
+  String imageComplete,
+  String imageIncomplete,
+  int? streak,
+) {
+  return Flexible(
+    child: Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFD20E0D),
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          _buildTitle(context, isCompleted, streak),
+          const SizedBox(height: 12),
+          _buildImageDisplay(
+              isCompleted, imageComplete, imageIncomplete, streak),
+          if (streak == null || streak <= 1) ...[
+            const SizedBox(height: 12),
+            Text(
+              subtitle,
+              style: Theme.of(context).textTheme.labelLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 5),
+            Text(
+              description,
+              style: Theme.of(context).textTheme.labelMedium,
+              textAlign: TextAlign.center,
+            ),
+          ],
+          if (streak != null && streak > 1) ...[
+            const SizedBox(height: 16),
+            _buildStreakDisplay(context, streak),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildTitle(BuildContext context, bool isCompleted, int? streak) {
+  if (streak != null && streak > 1) return const SizedBox.shrink();
+  return Text(
+    isCompleted ? 'Tokens Earned' : 'Win Tokens',
+    style: Theme.of(context).textTheme.titleLarge,
+  );
+}
+
+Widget _buildImageDisplay(
+  bool isCompleted,
+  String imageComplete,
+  String imageIncomplete,
+  int? streak,
+) {
+  if (streak != null && streak > 1) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(10.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Image.asset('assets/fire.png', width: 95, height: 95),
+      ),
+    );
+  }
+
+  if (imageComplete.isNotEmpty) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(10.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: Image.network(
+          isCompleted ? imageComplete : imageIncomplete,
+          width: 95,
+          height: 95,
+        ),
+      ),
+    );
+  }
+
+  return const SizedBox.shrink();
+}
+
+Widget _buildStreakDisplay(BuildContext context, int streak) {
+  return Column(
+    children: [
+      Text(
+        '$streak',
+        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              color: Colors.white,
+            ),
+      ),
+      Text(
+        'Day Streak!',
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+            ),
+      ),
+      const SizedBox(height: 10),
+      Stack(
+        alignment: Alignment.center,
+        children: [
+          // The horizontal line behind the checkmarks
+          Positioned(
+            top:
+                15, // Adjust this value to control the vertical alignment of the line
+            left: MediaQuery.of(context).size.width *
+                0.1, // Adjust start position
+            right:
+                MediaQuery.of(context).size.width * 0.1, // Adjust end position
+            child: Container(
+              height: 4,
+              color: const Color(0xFFD9D9D9),
+            ),
+          ),
+          // The row with the checkmarks
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(5, (index) {
+              final isCurrentStreak = index + 1 == streak;
+              return Flexible(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: index < streak
+                              ? const Color(0xFF4BAE4F)
+                              : const Color(0XFFD9D9D9)),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    FittedBox(
+                      child: isCurrentStreak
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4BAE4F),
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/tokenization.png',
+                                    width: 18,
+                                    height: 18,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${index + 1}x',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Text(
+                              '${index + 1}x',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      Text(
+        'Complete a quest every day to build your streak and earn rewards.',
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Colors.white,
+            ),
+        textAlign: TextAlign.center,
+      ),
+    ],
+  );
+}
+
+Widget _buildActionButton(
+  BuildContext context,
+  bool isCompleted,
+  int? streak,
+) {
+  final buttonText = isCompleted
+      ? (streak != null && streak > 1 ? "Close" : "Next")
+      : "Scan QR";
+
+  return Column(
+    children: [
+      ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size.fromHeight(48),
+          backgroundColor: Colors.black,
+        ),
+        onPressed: () {
+          if (isCompleted) {
+            Navigator.of(context).pop();
+          } else {
+            Navigator.of(context).pop();
+            _navigateUpWithSlideTransition(context, const QRCodeScreen());
+          }
+        },
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 225, maxWidth: 225),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: const Color(0xFFD20E0D),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                buttonText,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
   );
 }
 

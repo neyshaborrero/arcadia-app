@@ -122,7 +122,8 @@ class ListAction extends StatelessWidget {
                             mission.title,
                             mission.description,
                             mission.imageComplete,
-                            mission.imageIncomplete)
+                            mission.imageIncomplete,
+                            null)
                         .then((result) {
                       onShowChildren(true);
                       if (result != null && result == true) {

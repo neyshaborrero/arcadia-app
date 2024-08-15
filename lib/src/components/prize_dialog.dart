@@ -104,8 +104,8 @@ void showPrizeDialog(
                           ),
                           const SizedBox(height: 15),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Transform.translate(
                                 offset: const Offset(
@@ -121,8 +121,8 @@ void showPrizeDialog(
                               ),
                               const SizedBox(width: 10),
                               CachedNetworkImage(
-                                width: 80,
-                                height: 45,
+                                width: 100,
+                                height: 60,
                                 imageUrl: poweredby,
                                 fit: BoxFit.fitWidth,
                                 errorWidget: (context, url, error) =>
