@@ -134,6 +134,11 @@ class FirebaseService {
         print('Remote config not updated');
       }
 
+      // Optionally check if remote config contains critical values and return true if they are set, even if not updated
+      if (_remoteConfig.getString('x-api-key') != null) {
+        return true;
+      }
+
       return updated;
     } catch (e) {
       print('Error fetching remote config: $e');

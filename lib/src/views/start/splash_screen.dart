@@ -195,25 +195,28 @@ class _SplashScreenState extends State<SplashScreen>
                 _recordAdView(ad);
 
                 return Center(
-                  child: FractionallySizedBox(
-                    widthFactor: 1.0, // 100% of the screen width
-                    heightFactor: 1.0, // 100% of the screen height
-                    child: GestureDetector(
-                      onTap: () {
-                        _recordAdClick(ad);
-                      },
-                      child: CachedNetworkImage(
-                        imageUrl: ad.image,
-                        fit: BoxFit
-                            .contain, // Fit the image within the screen while preserving aspect ratio
-                        placeholder: (context, url) => const Center(
-                          child: CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                  child: Transform.translate(
+                    offset: const Offset(0, -20), // Move 10 pixels up
+                    child: FractionallySizedBox(
+                      widthFactor: 1.0, // 100% of the screen width
+                      heightFactor: 1.0, // 100% of the screen height
+                      child: GestureDetector(
+                        onTap: () {
+                          //_recordAdClick(ad);
+                        },
+                        child: CachedNetworkImage(
+                          imageUrl: ad.image,
+                          fit: BoxFit
+                              .contain, // Fit the image within the screen while preserving aspect ratio
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
                           ),
+                          errorWidget: (context, url, error) =>
+                              const Center(child: Icon(Icons.error)),
                         ),
-                        errorWidget: (context, url, error) =>
-                            const Center(child: Icon(Icons.error)),
                       ),
                     ),
                   ),
