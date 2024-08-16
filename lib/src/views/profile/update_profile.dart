@@ -300,7 +300,8 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
       final userLocalDatetime = DateTime.now().toIso8601String();
 
       // Get the user's timezone name (using intl)
-      final userTimezone = DateFormat('z').format(DateTime.now());
+      // final userTimezone = DateFormat('z').format(DateTime.now());
+      const userTimezone = 'EST';
       return await _arcadiaCloud.fetchArcadiaMissions(
           token, userLocalDatetime, userTimezone);
     } catch (e) {

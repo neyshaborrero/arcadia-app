@@ -13,7 +13,6 @@ import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'home_view.dart';
 
@@ -129,7 +128,8 @@ class _SplashScreenState extends State<SplashScreen>
       final userLocalDatetime = DateTime.now().toIso8601String();
 
       // Get the user's timezone name (using intl)
-      final userTimezone = DateFormat('z').format(DateTime.now());
+      // final userTimezone = DateFormat('z').format(DateTime.now());
+      const userTimezone = "EST";
       return await _arcadiaCloud.fetchArcadiaMissions(
           token, userLocalDatetime, userTimezone);
     } catch (e) {
