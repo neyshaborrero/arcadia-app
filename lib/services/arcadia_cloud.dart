@@ -3,6 +3,7 @@ import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
+import 'package:arcadia_mobile/src/structure/location.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
@@ -255,8 +256,8 @@ class ArcadiaCloud {
     }
   }
 
-  Future<UserActivity?> validateQRCode(String qrCode, String token) async {
-    print("i got the call");
+  Future<UserActivity?> validateQRCode(
+      String qrCode, String token, AppLocation location) async {
     final response = await http.post(
       Uri.parse(
           '${_firebaseService.arcadiaCloudAddress}/mission/validate'), // Replace with your actual endpoint
@@ -267,6 +268,8 @@ class ArcadiaCloud {
       },
       body: jsonEncode({
         'qrcode': qrCode,
+        'latitude': location.latitude,
+        'longitude': location.longitude
       }),
     );
 

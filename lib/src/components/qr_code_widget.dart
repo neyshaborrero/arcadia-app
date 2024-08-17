@@ -6,7 +6,9 @@ import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
+import 'package:arcadia_mobile/src/structure/location.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
+import 'package:arcadia_mobile/src/tools/location.dart';
 import 'package:arcadia_mobile/src/views/qrcode/manual_code.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -77,8 +79,16 @@ class _QRScanState extends State<QRScan> {
                       ],
                     ),
                   ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Text(
+                    "Arcadia needs to access your location when completing quests. Make sure you approve your location to Arcadia.",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                   Padding(
-                    padding: const EdgeInsets.all(30.0),
+                    padding: const EdgeInsets.all(10.0),
                     child: Center(
                       child: ElevatedButton(
                         onPressed: () => setState(() => isManual = !isManual),
@@ -107,64 +117,65 @@ class _QRScanState extends State<QRScan> {
   }
 
   Future<void> _validateQRCode(code) async {
-    // setState(() {
-    //   _isLoading = true;
-    // });
-
-    print("VALIDATING $code");
-
     try {
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final String? token = await user.getIdToken();
-        if (token != null) {
-          print("got token");
-          final UserActivity? response =
-              await _arcadiaCloud.validateQRCode(code, token);
+      AppLocation? location = await getCurrentLocation();
+      if (location != null) {
+        final User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final String? token = await user.getIdToken();
+          if (token != null) {
+            final UserActivity? response =
+                await _arcadiaCloud.validateQRCode(code, token, location);
 
-          if (response != null) {
-            print("response what");
-            final userProfileProvider =
-                Provider.of<UserProfileProvider>(context, listen: false);
-            userProfileProvider.updateTokens(response.value);
-            Provider.of<UserActivityProvider>(context, listen: false)
-                .addUserActivity(response);
-            Provider.of<ClickedState>(context, listen: false)
-                .toggleClicked(response.qrcode);
+            if (response != null) {
+              final userProfileProvider =
+                  Provider.of<UserProfileProvider>(context, listen: false);
+              userProfileProvider.updateTokens(response.value);
+              Provider.of<UserActivityProvider>(context, listen: false)
+                  .addUserActivity(response);
+              Provider.of<ClickedState>(context, listen: false)
+                  .toggleClicked(response.qrcode);
 
-            showActivityDialog(
-                    context,
-                    response.id,
-                    true,
-                    true,
-                    response.title,
-                    response.description,
-                    response.imageComplete,
-                    response.imageComplete,
-                    null)
-                .then((result) {
-              if (response.streak != null && response.streak! > 1) {
-                showActivityDialog(
-                    context,
-                    response.id,
-                    true,
-                    true,
-                    response.title,
-                    response.description,
-                    response.imageComplete,
-                    response.imageComplete,
-                    response.streak);
-              }
-            });
-          } else {
-            print("null");
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text(
-                      'We couldnt validate the QR Code, try another one.')),
-            );
+              showActivityDialog(
+                      context,
+                      response.id,
+                      true,
+                      true,
+                      response.title,
+                      response.description,
+                      response.imageComplete,
+                      response.imageComplete,
+                      null)
+                  .then((result) {
+                if (response.streak != null && response.streak! > 1) {
+                  showActivityDialog(
+                      context,
+                      response.id,
+                      true,
+                      true,
+                      response.title,
+                      response.description,
+                      response.imageComplete,
+                      response.imageComplete,
+                      response.streak);
+                }
+              });
+            } else {
+              print("null");
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text(
+                        'We couldnt validate the QR Code, try another one.')),
+              );
+            }
           }
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text('We couldn\'t validate the QR Code, try another one.')),
+        );
       }
     } catch (e) {
       print("null catch");
@@ -182,7 +193,6 @@ class _QRScanState extends State<QRScan> {
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) async {
-      print(scanData);
       if (!isDialogShown) {
         setState(() {
           scannedCode = scanData.code;
@@ -197,9 +207,6 @@ class _QRScanState extends State<QRScan> {
         }
 
         _validateQRCode(scannedCode);
-
-        // Handle the scanned data
-        print("Scanned Data: ${scanData.code}");
       }
     });
   }

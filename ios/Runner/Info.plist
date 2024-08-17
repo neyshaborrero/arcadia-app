@@ -22,6 +22,13 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>Arcadia needs your location to scan your missions. The app makes sure that you are in the right location to pass the mission</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Arcadia needs your location to scan your missions. The app makes sure that you are in the right location to pass the mission</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>Arcadia needs your location to scan your missions. The app makes sure that you are in the right location to pass the mission</string>
+
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
