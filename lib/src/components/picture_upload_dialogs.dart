@@ -212,7 +212,7 @@ class _UploadPictureDialogState extends State<UploadPictureDialog> {
                       'assets/upload_instructions.png',
                       width: 233,
                       height: 158,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 12),
                     Text(

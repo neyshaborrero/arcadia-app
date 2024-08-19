@@ -7,6 +7,7 @@ import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/views/start/error_view.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
+import 'package:arcadia_mobile/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
@@ -136,74 +137,5 @@ ThemeData _buildThemeData(BuildContext context) {
     labelLargeFontSize = 16.0;
   }
 
-  return ThemeData(
-    textTheme: TextTheme(
-      titleLarge: TextStyle(
-        fontSize: titleFontSize,
-        fontWeight: FontWeight.w700,
-      ),
-      labelSmall: TextStyle(
-        fontSize: labelSmallFontSize,
-        fontWeight: FontWeight.w500,
-      ),
-      labelMedium: TextStyle(
-        fontSize: labelMediumFontSize,
-        fontWeight: FontWeight.w500,
-      ),
-      labelLarge: TextStyle(
-        fontSize: labelLargeFontSize,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
-    scaffoldBackgroundColor: const Color(0xFF000000),
-    brightness: Brightness.dark,
-    primaryColor: const Color(0xFFD20E0D),
-    inputDecorationTheme: const InputDecorationTheme(
-      floatingLabelStyle:
-          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.grey), // border color when focused
-      ),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(const Color(0xFFD20E0D)),
-        foregroundColor: WidgetStateProperty.all(Colors.white),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(const Color(0xFF313131)),
-        foregroundColor: WidgetStateProperty.all(Colors.white),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    ),
-    tabBarTheme: const TabBarTheme(
-      labelStyle: TextStyle(
-        fontSize: 20.0,
-        fontWeight: FontWeight.w400,
-      ),
-      unselectedLabelStyle: TextStyle(
-        fontSize: 20.0,
-      ),
-      labelColor: Color(0xFFD20E0D),
-      indicator: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFD20E0D),
-            width: 2.0,
-          ),
-        ),
-      ),
-    ),
-  );
+  return buildThemeData(context);
 }

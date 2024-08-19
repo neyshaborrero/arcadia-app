@@ -106,6 +106,7 @@ class _AdsCarouselComponentState extends State<AdsCarouselComponent> {
         } else {
           return CarouselSlider(
             options: CarouselOptions(
+              scrollPhysics: const NeverScrollableScrollPhysics(),
               height: height,
               autoPlay: ads.length > 1,
               autoPlayInterval: const Duration(seconds: 8),
@@ -124,8 +125,9 @@ class _AdsCarouselComponentState extends State<AdsCarouselComponent> {
               return Builder(
                 builder: (BuildContext context) {
                   return GestureDetector(
-                      onTap: () =>
-                          _onAdTap(index, Uri.parse(ad.url), widget.viewType),
+                      onTap: () => (ad.url.isNotEmpty)
+                          ? _onAdTap(index, Uri.parse(ad.url), widget.viewType)
+                          : null,
                       child: Container(
                         width: MediaQuery.of(context).size.width,
                         margin: const EdgeInsets.symmetric(horizontal: 5.0),

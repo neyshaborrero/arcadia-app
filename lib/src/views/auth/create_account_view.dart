@@ -146,9 +146,10 @@ class _CreateAccountViewState extends State<CreateAccountView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Create Account',
-          style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.headlineSmall,
+          //style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.black,
       ),

@@ -13,7 +13,7 @@ Future<bool?> showActivityDialog(
   String description,
   String imageComplete,
   String imageIncomplete,
-  int? streak, // Added streak parameter
+  int? streak,
 ) {
   final clickedState = Provider.of<ClickedState>(context, listen: false);
   clickedState.showChildren(showChildren);
@@ -22,49 +22,54 @@ Future<bool?> showActivityDialog(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
-      final screenSize = MediaQuery.of(context).size;
-
       return Dialog(
         backgroundColor: Colors.black,
-        child: SizedBox(
-          width: screenSize.width * 0.9, // 90% of screen width
-          height: (streak != null && streak > 1)
-              ? screenSize.height * 0.6
-              : screenSize.height * 0.5, // 60% of screen height
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
-              color: Colors.black, // Background color
-            ),
+        // child: SizedBox(
+        //   width: screenSize.width * 0.9, // 90% of screen width
+        //   height: (streak != null && streak > 1)
+        //       ? screenSize.height * 0.6
+        //       : screenSize.height * 0.5, // 60% or 50% of screen height
+        //   child: DecoratedBox(
+        //     decoration: const BoxDecoration(
+        //       color: Colors.black, // Background color
+        //     ),
+        child: IntrinsicHeight(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildMissionContent(
-                    context,
-                    isCompleted,
-                    subtitle,
-                    description,
-                    imageComplete,
-                    imageIncomplete,
-                    streak,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildActionButton(
-                    context,
-                    isCompleted,
-                    streak,
-                  ),
-                ],
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: _buildMissionContent(
+                  context,
+                  isCompleted,
+                  subtitle,
+                  description,
+                  imageComplete,
+                  imageIncomplete,
+                  streak,
+                ),
               ),
-            ),
+              const SizedBox(
+                height: 10,
+              ),
+              _buildActionButton(
+                context,
+                isCompleted,
+                streak,
+              ),
+            ],
           ),
-        ),
+        )),
       );
     },
   );
 }
+//       );
+//     },
+//   );
+// }
 
 Widget _buildMissionContent(
   BuildContext context,
@@ -75,41 +80,43 @@ Widget _buildMissionContent(
   String imageIncomplete,
   int? streak,
 ) {
-  return Flexible(
-    child: Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFD20E0D),
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          _buildTitle(context, isCompleted, streak),
+  return Container(
+    decoration: BoxDecoration(
+      color: const Color(0xFFD20E0D), // Background color
+      borderRadius: BorderRadius.circular(10.0), // Adjust the radius as needed
+    ),
+    padding: const EdgeInsets.all(16.0), // Add padding
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        _buildTitle(context, isCompleted, streak),
+        const SizedBox(height: 12),
+        _buildImageDisplay(isCompleted, imageComplete, imageIncomplete, streak),
+        if (streak == null || streak <= 1) ...[
           const SizedBox(height: 12),
-          _buildImageDisplay(
-              isCompleted, imageComplete, imageIncomplete, streak),
-          if (streak == null || streak <= 1) ...[
-            const SizedBox(height: 12),
-            Text(
+          Flexible(
+            // This will make the text wrap within the available space
+            child: Text(
               subtitle,
               style: Theme.of(context).textTheme.labelLarge,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 5),
-            Text(
+          ),
+          const SizedBox(height: 5),
+          Flexible(
+            child: Text(
               description,
               style: Theme.of(context).textTheme.labelMedium,
               textAlign: TextAlign.center,
             ),
-          ],
-          if (streak != null && streak > 1) ...[
-            const SizedBox(height: 16),
-            _buildStreakDisplay(context, streak),
-          ],
+          ),
         ],
-      ),
+        if (streak != null && streak > 1) ...[
+          const SizedBox(height: 16),
+          _buildStreakDisplay(context, streak),
+        ],
+      ],
     ),
   );
 }
@@ -276,9 +283,7 @@ Widget _buildActionButton(
   bool isCompleted,
   int? streak,
 ) {
-  final buttonText = isCompleted
-      ? (streak != null && streak > 1 ? "Close" : "Next")
-      : "Scan QR";
+  final buttonText = isCompleted ? "Close" : "Scan QR";
 
   return Column(
     children: [

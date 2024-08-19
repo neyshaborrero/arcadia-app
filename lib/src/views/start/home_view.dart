@@ -219,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 icon: Image.asset(
                                   _currentView == ViewType.profile
                                       ? 'assets/player_default_prof_red.png'
-                                      : 'assets/player_default_prof_icon.png',
+                                      : 'assets/headphone.png',
                                   width: MediaQuery.of(context).size.width *
                                       0.1, // 10% of screen width
                                   height: MediaQuery.of(context).size.height *

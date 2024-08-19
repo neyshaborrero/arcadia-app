@@ -51,7 +51,16 @@ class AdsDetailsProvider with ChangeNotifier {
   List<AdsDetails> getEpicAds() {
     List<AdsDetails> epicAds =
         _adsDetails.where((element) => element.tier == 'epic').toList();
-    epicAds.shuffle(Random());
+    _fisherYatesShuffle(epicAds, Random());
     return epicAds;
+  }
+
+  void _fisherYatesShuffle(List list, Random random) {
+    for (int i = list.length - 1; i > 0; i--) {
+      int j = random.nextInt(i + 1); // Get a random index
+      var temp = list[i];
+      list[i] = list[j];
+      list[j] = temp;
+    }
   }
 }

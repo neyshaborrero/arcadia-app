@@ -94,12 +94,6 @@ class PrizeScreen extends StatelessWidget {
                             color: Colors.white, // Color of the line
                           ),
                           GestureDetector(
-                            onTap: () {
-                              // Perform the desired action when the Column is tapped
-                              _navigateUpWithSlideTransition(
-                                  context, const RaffleView());
-                              // You can navigate to a new page, show a dialog, etc.
-                            },
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [

@@ -3,10 +3,8 @@ import 'dart:io';
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/src/components/delete_account.dart';
 import 'package:arcadia_mobile/src/components/picture_upload_dialogs.dart';
-import 'package:arcadia_mobile/src/components/prize_dialog.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
-import 'package:arcadia_mobile/src/views/auth/create_account_view.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
@@ -71,6 +69,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _notificationsEnabled = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'To enable notifications go to your settings to start receiving latest Arcadia notifications.')),
+      );
     }
   }
 
@@ -78,9 +81,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (value) {
       _requestNotificationPermissions();
     } else {
-      setState(() {
-        _notificationsEnabled = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'To disable notifications go to your settings to stop receiving latest Arcadia notifications.')),
+      );
     }
   }
 
@@ -256,7 +261,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
-            ))
+            )),
+            const SizedBox(
+              height: 20,
+            ),
           ],
         ),
       ),
