@@ -7,6 +7,7 @@ import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
+import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/tools/location.dart';
 import 'package:arcadia_mobile/src/views/qrcode/manual_code.dart';
@@ -149,40 +150,50 @@ class _QRScanState extends State<QRScan> {
                   .then((result) {
                 if (response.streak != null && response.streak! > 1) {
                   showActivityDialog(
-                      context,
-                      response.id,
-                      true,
-                      true,
-                      response.title,
-                      response.description,
-                      response.imageComplete,
-                      response.imageComplete,
-                      response.streak);
+                          context,
+                          response.id,
+                          true,
+                          true,
+                          response.title,
+                          response.description,
+                          response.imageComplete,
+                          response.imageComplete,
+                          response.streak)
+                      .then((result) {
+                    Navigator.of(context).pop();
+                  });
+                } else {
+                  Navigator.of(context).pop();
                 }
               });
             } else {
-              print("null");
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                     content: Text(
                         'We couldnt validate the QR Code, try another one.')),
               );
+
+              await Future.delayed(const Duration(seconds: 5));
+              Navigator.of(context).pop();
             }
           }
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content:
-                  Text('We couldn\'t validate the QR Code, try another one.')),
-        );
       }
+    } on BadRequestException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+
+      await Future.delayed(const Duration(seconds: 5));
+      Navigator.of(context).pop();
     } catch (e) {
-      print("null catch");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('We couldnt validate the QR Code, try another one.')),
       );
+
+      await Future.delayed(const Duration(seconds: 5));
+      Navigator.of(context).pop();
     } finally {
       setState(() {
         isScanning = true;

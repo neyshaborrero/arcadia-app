@@ -269,7 +269,8 @@ class ArcadiaCloud {
       body: jsonEncode({
         'qrcode': qrCode,
         'latitude': location.latitude,
-        'longitude': location.longitude
+        'longitude': location.longitude,
+        'userLocalDatetime': DateTime.now().toIso8601String()
       }),
     );
 
@@ -278,6 +279,7 @@ class ArcadiaCloud {
       return UserActivity.fromJson(data, "idsir");
     } else if (response.statusCode == 400) {
       final Map<String, dynamic> errorResponse = json.decode(response.body);
+      print(errorResponse['errors'][0]['message']);
       throw BadRequestException(errorResponse['errors'][0]['message']);
     } else {
       return null;

@@ -493,8 +493,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                   image: DecorationImage(
                     image: profileUrl != null && profileUrl.isNotEmpty
                         ? CachedNetworkImageProvider(profileUrl)
-                        : const AssetImage(
-                                'assets/player_default_prof_icon.png')
+                        : const AssetImage('assets/headphone.png')
                             as ImageProvider,
                     fit: BoxFit.cover,
                   ),
@@ -532,6 +531,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
     Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
+    bool isDateField = keyboardType == TextInputType.datetime;
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
@@ -548,6 +548,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
       ),
       keyboardType: keyboardType,
       style: const TextStyle(color: Colors.white, fontSize: 16),
+      readOnly: isDateField,
       onTap: onTap,
       validator: validator,
     );
@@ -571,6 +572,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
           borderSide: BorderSide.none,
         ),
       ),
+      dropdownColor: const Color(0xFFD20E0D),
       value: value,
       items: items.map((String item) {
         return DropdownMenuItem<String>(
@@ -604,24 +606,29 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
           validator: (value) =>
               value == null || value.isEmpty ? 'Required' : null,
         ),
-        ListView.builder(
-          shrinkWrap: true,
-          itemCount: _filteredCities.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(
-                _filteredCities[index],
-                style: const TextStyle(color: Colors.white),
-              ),
-              onTap: () {
-                setState(() {
-                  _cityController.text = _filteredCities[index];
-                  _filteredCities = [];
-                });
+        if (_filteredCities.isNotEmpty)
+          Container(
+            color: const Color(0xFFD20E0D), // Set the background color to red
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _filteredCities.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(
+                    _filteredCities[index],
+                    style: const TextStyle(
+                        color: Colors.white), // Set text color to white
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _cityController.text = _filteredCities[index];
+                      _filteredCities = [];
+                    });
+                  },
+                );
               },
-            );
-          },
-        ),
+            ),
+          ),
       ],
     );
   }

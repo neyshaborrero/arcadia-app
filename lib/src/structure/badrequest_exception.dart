@@ -3,5 +3,5 @@ class BadRequestException implements Exception {
   BadRequestException(this.message);
 
   @override
-  String toString() => 'BadRequestException: $message';
+  String toString() => message;
 }

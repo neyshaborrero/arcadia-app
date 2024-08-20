@@ -12,6 +12,7 @@ class UserActivity {
   final int value;
   final String type;
   final int? streak;
+  final String? qType;
 
   UserActivity({
     required this.id,
@@ -25,6 +26,7 @@ class UserActivity {
     required this.value,
     required this.type,
     this.streak,
+    this.qType,
   });
 
   factory UserActivity.fromJson(Map<String, dynamic> json, String id) {
@@ -40,6 +42,7 @@ class UserActivity {
       type: json['type'],
       value: json['value'],
       streak: json['streak'] ?? 1,
+      qType: json['qType'],
     );
   }
 

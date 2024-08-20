@@ -273,6 +273,7 @@ class _ProfileViewState extends State<ProfileView> {
                                     : const SizedBox.shrink();
                               }
                               final userActivity = userActivities[index];
+                              print(userActivity.qType);
                               return Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 5.0),
@@ -299,15 +300,20 @@ class _ProfileViewState extends State<ProfileView> {
                                           .textTheme
                                           .labelMedium,
                                     ),
-                                    leading: userActivity.type == "checkin"
+                                    leading: userActivity.qType == "checkin"
                                         ? const Icon(
                                             Icons.location_on_outlined,
                                             size: 35,
                                           )
-                                        : const Icon(
-                                            Icons.shopping_bag_outlined,
-                                            size: 35,
-                                          ),
+                                        : userActivity.qType == "activity"
+                                            ? const Icon(
+                                                Icons.star_border_outlined,
+                                                size: 35,
+                                              )
+                                            : const Icon(
+                                                Icons.shopping_bag_outlined,
+                                                size: 35,
+                                              ),
                                     trailing: Text(
                                       userActivity.getFormattedDate(),
                                       style: Theme.of(context)

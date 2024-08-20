@@ -22,11 +22,11 @@ class _MyQRCodeState extends State<MyQRCode> {
     // Determine the avatar radius based on screen size
     double avatarRadius;
     if (screenHeight > 800) {
-      avatarRadius = screenHeight / 6; // Larger screens
+      avatarRadius = screenHeight / 8; // Larger screens
     } else if (screenHeight > 600) {
-      avatarRadius = screenHeight / 7; // Medium screens
+      avatarRadius = screenHeight / 9; // Medium screens
     } else {
-      avatarRadius = screenHeight / 8; // Smaller screens
+      avatarRadius = screenHeight / 10; // Smaller screens
     }
 
     return Scaffold(

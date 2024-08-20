@@ -3,14 +3,13 @@ import 'dart:io';
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/src/components/delete_account.dart';
 import 'package:arcadia_mobile/src/components/picture_upload_dialogs.dart';
-import 'package:arcadia_mobile/src/components/prize_dialog.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
-import 'package:arcadia_mobile/src/views/auth/create_account_view.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
@@ -27,6 +26,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   XFile? _imageFile; // Used to hold the image file
   bool _notificationsEnabled = false;
+  bool _locationEnabled = false;
   late final ArcadiaCloud _arcadiaCloud;
   late final FirebaseService _firebaseService;
   late final String userToken;
@@ -47,7 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       userToken = (await user?.getIdToken())!;
     }
 
-    _notificationsEnabled = await _firebaseService.isNotificationEnabled();
+    _notificationsEnabled = await Geolocator.isLocationServiceEnabled();
 
     setState(() {});
   }
@@ -71,6 +71,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _notificationsEnabled = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'To enable notifications go to your settings to start receiving latest Arcadia notifications.')),
+      );
     }
   }
 
@@ -78,9 +83,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (value) {
       _requestNotificationPermissions();
     } else {
-      setState(() {
-        _notificationsEnabled = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'To disable notifications go to your settings to stop receiving latest Arcadia notifications.')),
+      );
+    }
+  }
+
+  void _toggleLocation(bool value) {
+    if (value) {
+      _requestNotificationPermissions();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'To disable notifications go to your settings to stop receiving latest Arcadia notifications.')),
+      );
     }
   }
 
@@ -196,6 +215,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 activeColor: Colors.green,
               ),
             ),
+            ListTile(
+              title:
+                  const Text('Location', style: TextStyle(color: Colors.white)),
+              trailing: Switch(
+                value: _locationEnabled,
+                onChanged: _toggleNotifications,
+                activeColor: Colors.green,
+              ),
+            ),
             _buildListTile('Privacy Policy', context,
                 'https://thorn-freesia-17c.notion.site/Privacy-Policy-2301f06eb14c4753b76e4ee23b15ff35'),
             _buildListTile('Terms of Service', context,
@@ -256,7 +284,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
-            ))
+            )),
+            const SizedBox(
+              height: 20,
+            ),
           ],
         ),
       ),
