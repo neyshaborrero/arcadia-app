@@ -47,7 +47,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       userToken = (await user?.getIdToken())!;
     }
 
-    _notificationsEnabled = await Geolocator.isLocationServiceEnabled();
+    _notificationsEnabled = await _firebaseService.isNotificationEnabled();
+    _locationEnabled = await Geolocator.isLocationServiceEnabled();
 
     setState(() {});
   }
@@ -93,12 +94,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _toggleLocation(bool value) {
     if (value) {
-      _requestNotificationPermissions();
+      //_requestNotificationPermissions();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text(
-                'To disable notifications go to your settings to stop receiving latest Arcadia notifications.')),
+                'To disable location go to your settings to stop sharing your location in Arcadia app.')),
       );
     }
   }
@@ -220,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Text('Location', style: TextStyle(color: Colors.white)),
               trailing: Switch(
                 value: _locationEnabled,
-                onChanged: _toggleNotifications,
+                onChanged: _toggleLocation,
                 activeColor: Colors.green,
               ),
             ),

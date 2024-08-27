@@ -30,90 +30,99 @@ class _MyQRCodeState extends State<MyQRCode> {
     }
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 4.0,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 4.0,
+                    ),
                   ),
-                ),
-                child: CircleAvatar(
-                  radius: avatarRadius,
-                  backgroundColor: const Color(0xFF2C2B2B),
-                  child: FractionallySizedBox(
-                    widthFactor: 1.0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: userProfile != null &&
-                                  userProfile.profileImageUrl.isNotEmpty
-                              ? CachedNetworkImageProvider(
-                                  userProfile.profileImageUrl)
-                              : const AssetImage('assets/hambopr.jpg')
-                                  as ImageProvider,
-                          fit: BoxFit.cover,
+                  child: CircleAvatar(
+                    radius: avatarRadius,
+                    backgroundColor: const Color(0xFF2C2B2B),
+                    child: FractionallySizedBox(
+                      widthFactor: 1.0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: userProfile != null &&
+                                    userProfile.profileImageUrl.isNotEmpty
+                                ? CachedNetworkImageProvider(
+                                    userProfile.profileImageUrl)
+                                : const AssetImage('assets/hambopr.jpg')
+                                    as ImageProvider,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(
-                height: 14,
-              ),
-              Text(
-                userProfile != null && userProfile.gamertag.isNotEmpty
-                    ? userProfile.gamertag
-                    : '[gamertag]',
-                style: const TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.w700,
+                const SizedBox(height: 14),
+                Text(
+                  userProfile != null && userProfile.gamertag.isNotEmpty
+                      ? userProfile.gamertag
+                      : '[gamertag]',
+                  style: const TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 21, horizontal: 31),
-                child: Container(
-                  height: 2,
-                  width: MediaQuery.of(context).size.width,
-                  color: Colors.white,
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 21, horizontal: 31),
+                  child: Container(
+                    height: 2,
+                    width: MediaQuery.of(context).size.width,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: QrImageView(
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: QrImageView(
                     data: userProfile!.qrcode,
                     size: 206,
                     embeddedImage: const AssetImage('assets/arcadia_icon.png'),
                     embeddedImageStyle: const QrEmbeddedImageStyle(
                       size: Size(54, 56),
                     ),
-                    errorCorrectionLevel: QrErrorCorrectLevel.H),
-              ),
-              Text(
-                userProfile.qrcode,
-                style: const TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.w700,
+                    errorCorrectionLevel: QrErrorCorrectLevel.H,
+                  ),
                 ),
-              ),
-              const AdsCarouselComponent(
-                viewType: ViewType.qrprofile,
-              ),
-            ],
+                Text(
+                  userProfile.qrcode,
+                  style: const TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(
+                    height:
+                        100), // Spacer to prevent overlap with the bottom widget
+              ],
+            ),
           ),
-        ),
+          const Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: AdsCarouselComponent(
+              viewType: ViewType.qrprofile,
+            ),
+          ),
+        ],
       ),
     );
   }
