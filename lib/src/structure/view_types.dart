@@ -7,5 +7,7 @@ enum ViewType {
   quest,
   manualcode,
   qrprofile,
-  splash
+  splash,
+  eventView,
+  voteScreen
 }

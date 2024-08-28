@@ -8,6 +8,7 @@ import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
 import 'package:arcadia_mobile/src/structure/response_detail.dart';
+import 'package:arcadia_mobile/src/structure/survey_details.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:http/http.dart' as http;
@@ -345,6 +346,65 @@ class ArcadiaCloud {
       // Handle error
       print('Failed to load ads');
       return [];
+    }
+  }
+
+  Future<List<SurveyDetails>> fetchSurveys(String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/survey/active');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      List<SurveyDetails> surveyDetails = [];
+
+      for (var value in data) {
+        surveyDetails.add(SurveyDetails.fromJson(value['id'], value));
+      }
+
+      return surveyDetails;
+    } else {
+      // Handle error
+      print('Failed to load surveys');
+      return [];
+    }
+  }
+
+  Future<bool> submitSurveyAnswer(
+      String surveyId, List<String> answers, String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/survey/answer');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: json.encode({
+        'surveyId': surveyId,
+        'answers': answers,
+      }),
+    );
+
+    print(response.statusCode);
+
+    if (response.statusCode == 200) {
+      print('Survey answered successfully');
+      return true;
+    } else {
+      // Handle error
+      print('Failed to submit survey answer');
+      return false;
     }
   }
 

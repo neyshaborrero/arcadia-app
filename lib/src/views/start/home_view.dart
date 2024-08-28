@@ -8,6 +8,7 @@ import 'package:arcadia_mobile/src/structure/prize_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
+import 'package:arcadia_mobile/src/views/events/event_screen.dart';
 import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
 import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/profile/settings.dart';
@@ -46,14 +47,12 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
 
     _arcadiaCloud = ArcadiaCloud(firebaseService);
     _fetchPrizes();
-
-    print("here is the profile");
 
     userProfile =
         Provider.of<UserProfileProvider>(context, listen: false).userProfile;
@@ -63,13 +62,13 @@ class _HomeScreenState extends State<HomeScreen>
       firebaseService.initFirebaseNotifications(userProfile!);
     }
 
-    // _tabController.addListener(() {
-    //   if (!_tabController.indexIsChanging) {
-    //     setState(() {
-    //       // Forces the AppBar to rebuild with the new title
-    //     });
-    //   }
-    // });
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          // Forces the AppBar to rebuild with the new title
+        });
+      }
+    });
   }
 
   Future<void> _fetchPrizes() async {
@@ -103,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  List<String> tabTitles = ['Quests', 'News'];
+  List<String> tabTitles = ['Quests', 'Event', 'News'];
 
   @override
   Widget build(BuildContext context) {
@@ -154,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen>
                 indicatorSize: TabBarIndicatorSize.tab,
                 tabs: const [
                   Tab(text: 'Quests'),
+                  Tab(text: 'Event'),
                   Tab(text: 'News'),
                 ],
               )
@@ -169,6 +169,7 @@ class _HomeScreenState extends State<HomeScreen>
                 controller: _tabController,
                 children: [
                   QuestsView(missionList: widget.missions),
+                  const EventView(),
                   const NewsScreen()
                 ],
               );

@@ -113,6 +113,8 @@ flutter:
     - assets/tokenization_redeem.png
     - assets/arcadia_splash_portrait.png
     - assets/fire.png
+    - assets/game_controller_pink.png
+    - assets/game_controller_white.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
