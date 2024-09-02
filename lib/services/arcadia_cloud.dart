@@ -378,6 +378,30 @@ class ArcadiaCloud {
     }
   }
 
+  Future<SurveyDetails?> fetchSurveyDetails(
+      String token, String surveyId) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/survey/active?surveyId=$surveyId');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return SurveyDetails.fromJson(surveyId, jsonData);
+    } else {
+      // Handle error
+      print('Failed to load survey');
+      return null;
+    }
+  }
+
   Future<bool> submitSurveyAnswer(
       String surveyId, List<String> answers, String token) async {
     final url =
@@ -395,8 +419,6 @@ class ArcadiaCloud {
         'answers': answers,
       }),
     );
-
-    print(response.statusCode);
 
     if (response.statusCode == 200) {
       print('Survey answered successfully');

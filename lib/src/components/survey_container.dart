@@ -4,9 +4,9 @@ import 'package:arcadia_mobile/src/views/events/vote_screen.dart';
 import 'package:flutter/material.dart';
 
 class SurveyContainer extends StatefulWidget {
-  final SurveyDetails surveyDetails;
+  SurveyDetails surveyDetails;
 
-  const SurveyContainer({super.key, required this.surveyDetails});
+  SurveyContainer({super.key, required this.surveyDetails});
 
   @override
   _SurveyContainerState createState() => _SurveyContainerState();
@@ -21,7 +21,7 @@ class _SurveyContainerState extends State<SurveyContainer> {
     });
   }
 
-  void _navigateToVoteScreen(BuildContext context) {
+  Future<void> _navigateToVoteScreen(BuildContext context) async {
     // Clone the survey details so that we can modify it without affecting the original data.
     SurveyDetails surveyDetailsToPass = widget.surveyDetails;
 
@@ -43,14 +43,24 @@ class _SurveyContainerState extends State<SurveyContainer> {
       );
     }
 
-    _navigateUpWithSlideTransition(
-      context,
-      VoteScreen(
+    // Navigate to the VoteScreen and await the result
+    final updatedSurvey = await Navigator.of(context).push<SurveyDetails>(
+      MaterialPageRoute(
+        builder: (context) => VoteScreen(
           surveyDetails: surveyDetailsToPass,
           onVoteComplete: _handleVoteCompletion,
           showResults:
-              (widget.surveyDetails.userHasAnswered || hasReachedMaxVotes)),
+              (widget.surveyDetails.userHasAnswered || hasReachedMaxVotes),
+        ),
+      ),
     );
+
+    // If updatedSurvey is not null, update the state with the new data
+    if (updatedSurvey != null) {
+      setState(() {
+        widget.surveyDetails = updatedSurvey;
+      });
+    }
   }
 
   @override
@@ -145,8 +155,4 @@ class _SurveyContainerState extends State<SurveyContainer> {
       ),
     );
   }
-}
-
-void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
-  Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
 }

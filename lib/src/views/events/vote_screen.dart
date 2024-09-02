@@ -1,10 +1,14 @@
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/vote_dialog.dart';
 import 'package:arcadia_mobile/src/structure/survey_answers.dart';
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class VoteScreen extends StatefulWidget {
   final SurveyDetails surveyDetails;
@@ -25,26 +29,57 @@ class VoteScreen extends StatefulWidget {
 class _VoteScreenState extends State<VoteScreen> {
   Map<String, bool> voteStatus = {};
   int totalVotes = 0;
+  late SurveyDetails updatedSurveyDetails;
 
   @override
   void initState() {
     super.initState();
+    // Initialize the vote status for each answer
+    updatedSurveyDetails = widget.surveyDetails;
     // Initialize the vote status for each answer
     for (var answer in widget.surveyDetails.answers) {
       voteStatus[answer.answerId] = false;
     }
   }
 
-  void _handleVoteSuccess(String answerId) {
+  void _handleVoteSuccess(String answerId) async {
     setState(() {
       voteStatus[answerId] = true;
       totalVotes += 1;
-
-      if (totalVotes >= widget.surveyDetails.maxVotesPerUser) {
-        widget.onVoteComplete(true); // Notify the parent widget
-        Navigator.of(context).pop(); // Close the screen when max votes reached
-      }
     });
+
+    if (totalVotes >= widget.surveyDetails.maxVotesPerUser) {
+      widget.onVoteComplete(true); // Notify the parent widget
+      final updatedSurvey =
+          await _fetchUpdatedResults(); // Fetch updated results
+      Navigator.of(context).pop(updatedSurvey);
+    }
+  }
+
+  Future<SurveyDetails?> _fetchUpdatedResults() async {
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final token = await user.getIdToken();
+
+      if (token == null) return null;
+
+      final firebaseService =
+          Provider.of<FirebaseService>(context, listen: false);
+
+      final ArcadiaCloud arcadiaCloud;
+      arcadiaCloud = ArcadiaCloud(firebaseService);
+
+      final SurveyDetails? newSurveyDetails =
+          await arcadiaCloud.fetchSurveyDetails(token, widget.surveyDetails.id);
+
+      return newSurveyDetails;
+    } catch (error) {
+      // Handle any errors that occur during the API call
+      print('Failed to fetch updated survey results: $error');
+    }
+    return null;
   }
 
   @override
