@@ -249,7 +249,8 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
         _dateOfBirthController.text.trim(),
         _fullNameController.text.trim(),
         _selectedGender!,
-        _selectedUserType!,
+        null,
+        // _selectedUserType!,
         token,
         _cityController.text,
         null,
@@ -420,17 +421,17 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                                 ? 'Required'
                                 : null,
                           ),
-                          const SizedBox(height: 20),
-                          _buildDropdownFormField(
-                            value: _selectedUserType,
-                            label: 'User Type *',
-                            items: ['Player', 'Cosplayer', 'Placeholder'],
-                            onChanged: (value) =>
-                                setState(() => _selectedUserType = value),
-                            validator: (value) => value == null || value.isEmpty
-                                ? 'Required'
-                                : null,
-                          ),
+                          // const SizedBox(height: 20),
+                          // _buildDropdownFormField(
+                          //   value: _selectedUserType,
+                          //   label: 'User Type *',
+                          //   items: ['Player', 'Cosplayer', 'Placeholder'],
+                          //   onChanged: (value) =>
+                          //       setState(() => _selectedUserType = value),
+                          //   validator: (value) => value == null || value.isEmpty
+                          //       ? 'Required'
+                          //       : null,
+                          // ),
                           const SizedBox(height: 20),
                           _buildCitySearchField(),
                           const SizedBox(height: 20),

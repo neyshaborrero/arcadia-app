@@ -113,9 +113,11 @@ class _NewsScreenState extends State<NewsScreen> {
     if (userActivity != null) {
       final userProfileProvider =
           Provider.of<UserProfileProvider>(context, listen: false);
-      userProfileProvider.updateTokens(userActivity.value);
-      Provider.of<UserActivityProvider>(context, listen: false)
-          .addUserActivity(userActivity);
+      if (earn) {
+        userProfileProvider.updateTokens(userActivity.value);
+        Provider.of<UserActivityProvider>(context, listen: false)
+            .addUserActivity(userActivity);
+      }
     }
   }
 

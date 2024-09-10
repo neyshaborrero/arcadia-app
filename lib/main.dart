@@ -7,6 +7,7 @@ import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/views/start/error_view.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
+import 'package:arcadia_mobile/src/views/start/update_app_view.dart';
 import 'package:arcadia_mobile/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_performance/firebase_performance.dart';
@@ -35,6 +36,13 @@ void main() async {
   // Start screen trace
   Trace screenTrace = performance.newTrace('main_screen_trace');
   await screenTrace.start();
+
+  // Perform the version check
+  bool isLatestVersion = await firebaseService.checkForUpdate();
+  if (!isLatestVersion) {
+    runApp(const UpdateRequiredApp());
+    return;
+  }
 
   runApp(
     MultiProvider(

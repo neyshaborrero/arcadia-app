@@ -178,6 +178,12 @@ class _QRScanState extends State<QRScan> {
             }
           }
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Enable location sharing for Arcadia to be able to scan QR Codes.')),
+        );
       }
     } on BadRequestException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

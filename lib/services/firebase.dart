@@ -4,6 +4,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class FirebaseService {
   final FirebaseRemoteConfig _remoteConfig;
@@ -116,6 +117,46 @@ class FirebaseService {
     final NotificationSettings settings =
         await firebaseMessaging.getNotificationSettings();
     return settings.authorizationStatus == AuthorizationStatus.authorized;
+  }
+
+  Future<bool> checkForUpdate() async {
+    final remoteConfig = FirebaseRemoteConfig.instance;
+
+    await remoteConfig.setConfigSettings(
+      RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 10),
+        minimumFetchInterval: Duration.zero,
+      ),
+    );
+
+    await remoteConfig.fetchAndActivate();
+
+    String latestVersion = remoteConfig.getString('latest_version');
+
+    print("latest version, $latestVersion");
+
+    // Get current app version
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String currentVersion = packageInfo.version;
+
+    print("current version, $currentVersion");
+
+    return !_isVersionLower(currentVersion, latestVersion);
+  }
+
+  bool _isVersionLower(String currentVersion, String latestVersion) {
+    // Split versions into parts and compare each part
+    List<int> currentParts = currentVersion.split('.').map(int.parse).toList();
+    List<int> latestParts = latestVersion.split('.').map(int.parse).toList();
+
+    for (int i = 0; i < currentParts.length; i++) {
+      if (currentParts[i] < latestParts[i]) {
+        return true;
+      } else if (currentParts[i] > latestParts[i]) {
+        return false;
+      }
+    }
+    return false;
   }
 
   Future<bool> initialize() async {

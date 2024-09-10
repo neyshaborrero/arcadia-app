@@ -46,6 +46,15 @@ class ListAction extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF2c2b2b),
                   borderRadius: BorderRadius.circular(10.0),
+                  border:
+                      (mission.multiplier != null && mission.multiplier! > 1) &&
+                              !mission.completed &&
+                              !Provider.of<ClickedState>(context, listen: false)
+                                  .isClicked(mission.id)
+                          ? Border.all(
+                              color: const Color(0xFFD20E0D).withOpacity(0.85),
+                              width: 2.0)
+                          : null,
                 ),
                 child: ListTile(
                   title: Text(
@@ -80,35 +89,37 @@ class ListAction extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child:
-                          mission.multiplier != null && mission.multiplier! > 1
-                              ? Text(
-                                  '${mission.multiplier}x',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: (Provider.of<ClickedState>(context,
-                                                  listen: false)
-                                              .isClicked(mission.id) ||
-                                          mission.completed)
-                                      ? Theme.of(context)
-                                          .textTheme
-                                          .labelSmall
-                                          ?.copyWith(color: Colors.white)
-                                      : Theme.of(context)
-                                          .textTheme
-                                          .labelSmall
-                                          ?.copyWith(
-                                              color: const Color(0xFF313131)),
-                                )
-                              : Icon(
-                                  Icons.check,
-                                  color: Colors.white,
-                                  size: isTablet
-                                      ? 35
-                                      : isLargePhone
-                                          ? 30
-                                          : 24,
-                                ),
+                      child: (mission.multiplier != null &&
+                                  mission.multiplier! > 1) &&
+                              !mission.completed &&
+                              !Provider.of<ClickedState>(context, listen: false)
+                                  .isClicked(mission.id)
+                          ? Text(
+                              '${mission.multiplier}x',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: (Provider.of<ClickedState>(context,
+                                              listen: false)
+                                          .isClicked(mission.id) ||
+                                      mission.completed)
+                                  ? Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(color: Colors.white)
+                                  : Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(color: Colors.white),
+                            )
+                          : Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: isTablet
+                                  ? 35
+                                  : isLargePhone
+                                      ? 30
+                                      : 24,
+                            ),
                     ),
                   ),
                   onTap: () async {
