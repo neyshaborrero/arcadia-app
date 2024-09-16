@@ -8,7 +8,6 @@ import 'package:arcadia_mobile/src/views/auth/forget_password.dart';
 import 'package:arcadia_mobile/src/views/start/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../auth/create_account_view.dart';
 import '../../routes/slide_right_route.dart';

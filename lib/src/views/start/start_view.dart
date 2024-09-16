@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../auth/create_account_view.dart';
 import '../auth/login_view.dart';
-import '../../routes/slide_right_route.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});

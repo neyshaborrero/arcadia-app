@@ -178,6 +178,12 @@ class _QRScanState extends State<QRScan> {
             }
           }
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Enable location sharing for Arcadia to be able to scan QR Codes.')),
+        );
       }
     } on BadRequestException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -201,6 +207,23 @@ class _QRScanState extends State<QRScan> {
     }
   }
 
+  // Function to extract 'userqr' value from the scanned URL
+  String? _getUserQRFromLink(String? scannedCode) {
+    if (scannedCode != null && scannedCode.isNotEmpty) {
+      try {
+        // Parse the scanned deep link URL
+        final uri = Uri.parse(scannedCode);
+
+        // Retrieve the 'userqr' parameter from the query parameters
+        return uri.queryParameters['userqr'];
+      } catch (e) {
+        print('Error parsing QR code URL: $e');
+        return null;
+      }
+    }
+    return null;
+  }
+
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) async {
@@ -211,13 +234,21 @@ class _QRScanState extends State<QRScan> {
           isDialogShown = true;
         });
 
+        // Vibrate the device if the vibrator is available
         bool isVibratorAvailable = await Vibration.hasVibrator() ?? false;
-        print("vibrating $isVibratorAvailable");
         if (isVibratorAvailable) {
           Vibration.vibrate();
         }
 
-        _validateQRCode(scannedCode);
+        // Extract the value of 'userqr' from the deep link
+        final userQR = _getUserQRFromLink(scannedCode);
+
+        // Pass the extracted userQR value to the validation function
+        if (userQR != null) {
+          _validateQRCode(userQR);
+        } else {
+          print('Invalid QR code or missing userqr parameter.');
+        }
       }
     });
   }

@@ -57,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen>
     userProfile =
         Provider.of<UserProfileProvider>(context, listen: false).userProfile;
 
-    print("profile $userProfile");
     if (userProfile != null) {
       firebaseService.initFirebaseNotifications(userProfile!);
     }
@@ -108,211 +107,224 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     // final UserProfile? userProfile =
     //     Provider.of<UserProfileProvider>(context).userProfile;
-    return Scaffold(
-      appBar: AppBar(
-        actions: <Widget>[
-          if (_currentView == ViewType.profile)
-            IconButton(
-              icon: const Icon(
-                Icons.settings_outlined,
-                size: 32,
-              ),
-              onPressed: () {
-                _navigateWithSlideTransition(context, const SettingsScreen());
-              },
-            ),
-          IconButton(
-            icon: const Icon(
-              Icons.confirmation_num_outlined,
-              size: 32,
-            ),
-            onPressed: () {
-              launchURL(Uri.parse('https://prticket.sale/ARCADIA'));
-            },
-          ),
-        ],
-        backgroundColor: Colors.black,
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: Text(
-          _currentView == ViewType.events
-              ? tabTitles[_tabController.index]
-              : userProfile != null && userProfile!.profileImageUrl.isNotEmpty
-                  ? userProfile!.gamertag
-                  : 'hambopr',
-          style: const TextStyle(
-            fontSize: 24.0,
-            fontWeight:
-                FontWeight.w700, // This corresponds to font-weight: 700 in CSS
-          ),
-        ),
-        toolbarHeight: 40.0,
-        bottom: _currentView == ViewType.events
-            ? TabBar(
-                controller: _tabController,
-                indicatorSize: TabBarIndicatorSize.tab,
-                tabs: const [
-                  Tab(text: 'Quests'),
-                  Tab(text: 'Event'),
-                  Tab(text: 'News'),
-                ],
-              )
-            : null,
-      ),
-      body: Builder(
-        builder: (context) {
-          switch (_currentView) {
-            case ViewType.profile:
-              return const ProfileView();
-            case ViewType.events:
-              return TabBarView(
-                controller: _tabController,
-                children: [
-                  QuestsView(missionList: widget.missions),
-                  const EventView(),
-                  const NewsScreen()
-                ],
-              );
-            default:
-              return const ProfileView();
-          }
-        },
-      ),
-      bottomNavigationBar: Container(
-          height: MediaQuery.of(context).size.height *
-              0.12, // 10% of screen height, // You can define the height you want
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.5),
-                spreadRadius: 1,
-                blurRadius: 5,
+    return PopScope(
+        canPop: false,
+        child: Scaffold(
+          appBar: AppBar(
+            actions: <Widget>[
+              if (_currentView == ViewType.profile)
+                IconButton(
+                  icon: const Icon(
+                    Icons.settings_outlined,
+                    size: 32,
+                  ),
+                  onPressed: () {
+                    _navigateWithSlideTransition(
+                        context, const SettingsScreen());
+                  },
+                ),
+              IconButton(
+                icon: const Icon(
+                  Icons.confirmation_num_outlined,
+                  size: 32,
+                ),
+                onPressed: () {
+                  launchURL(Uri.parse('https://prticket.sale/ARCADIA'));
+                },
               ),
             ],
+            backgroundColor: Colors.black,
+            automaticallyImplyLeading: false,
+            centerTitle: true,
+            title: Text(
+              _currentView == ViewType.events
+                  ? tabTitles[_tabController.index]
+                  : userProfile != null &&
+                          userProfile!.profileImageUrl.isNotEmpty
+                      ? userProfile!.gamertag
+                      : 'hambopr',
+              style: const TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight
+                    .w700, // This corresponds to font-weight: 700 in CSS
+              ),
+            ),
+            toolbarHeight: 40.0,
+            bottom: _currentView == ViewType.events
+                ? TabBar(
+                    controller: _tabController,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    tabs: const [
+                      Tab(text: 'Quests'),
+                      Tab(text: 'Event'),
+                      Tab(text: 'News'),
+                    ],
+                  )
+                : null,
           ),
-          child: Container(
+          body: Builder(
+            builder: (context) {
+              switch (_currentView) {
+                case ViewType.profile:
+                  return const ProfileView();
+                case ViewType.events:
+                  return TabBarView(
+                    controller: _tabController,
+                    children: [
+                      QuestsView(missionList: widget.missions),
+                      const EventView(),
+                      const NewsScreen()
+                    ],
+                  );
+                default:
+                  return const ProfileView();
+              }
+            },
+          ),
+          bottomNavigationBar: Container(
+              height: MediaQuery.of(context).size.height *
+                  0.12, // 10% of screen height, // You can define the height you want
               decoration: BoxDecoration(
-                color: Colors.black, // Background color of BottomAppBar
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.red.withOpacity(0.5),
-                    offset: const Offset(0, -2), // Direction of the shadow
-                    spreadRadius:
-                        0, // Negative spread radius to create the inner shadow effect
-                    blurRadius: 10, // Blur radius
+                    color: Colors.black.withOpacity(0.5),
+                    spreadRadius: 1,
+                    blurRadius: 5,
                   ),
                 ],
               ),
-              child: BottomAppBar(
-                  color: Colors.transparent, // Adjust color to match your theme
-                  elevation: 0,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Expanded(
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                icon: Image.asset(
-                                  _currentView == ViewType.profile
-                                      ? 'assets/player_default_prof_red.png'
-                                      : 'assets/headphone.png',
-                                  width: MediaQuery.of(context).size.width *
-                                      0.1, // 10% of screen width
-                                  height: MediaQuery.of(context).size.height *
-                                      0.3, // 5% of screen height
-                                  fit: BoxFit.contain,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _currentView = ViewType.profile;
-                                  });
-                                },
-                              ),
-                            ),
-                            Expanded(
-                                child: Text(
-                              'Profile',
-                              style: TextStyle(
-                                  color: _currentView == ViewType.profile
-                                      ? const Color(0xFFD20E0D)
-                                      : Colors.white,
-                                  fontSize: MediaQuery.of(context).size.width *
-                                      0.03), // Adjust text size relative to screen width
-                            )),
-                          ]),
-                      const SizedBox(
-                          width: 48), // Space for the floating action button
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Expanded(
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                icon: Image.asset(
-                                  _currentView == ViewType.events
-                                      ? 'assets/calendar_red.png'
-                                      : 'assets/calendar_white.png',
-                                  width: MediaQuery.of(context).size.width *
-                                      0.1, // 10% of screen width
-                                  height: MediaQuery.of(context).size.height *
-                                      0.3, // 5% of screen height
-                                  fit: BoxFit.contain,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _currentView = ViewType.events;
-                                  });
-                                },
-                              ),
-                            ),
-                            Expanded(
-                                child: (Text(
-                              'Event',
-                              style: TextStyle(
-                                color: _currentView == ViewType.events
-                                    ? const Color(0xFFD20E0D)
-                                    : Colors.white,
-                                fontSize: MediaQuery.of(context).size.width *
-                                    0.03, // Adjust text size relative to screen width
-                              ),
-                            )))
-                          ]),
+              child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black, // Background color of BottomAppBar
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.5),
+                        offset: const Offset(0, -2), // Direction of the shadow
+                        spreadRadius:
+                            0, // Negative spread radius to create the inner shadow effect
+                        blurRadius: 10, // Blur radius
+                      ),
                     ],
-                  )))),
-      floatingActionButton: Container(
-        width: 63,
-        height: 63,
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 4), // changes position of shadow
+                  ),
+                  child: BottomAppBar(
+                      color: Colors
+                          .transparent, // Adjust color to match your theme
+                      elevation: 0,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Expanded(
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: Image.asset(
+                                      _currentView == ViewType.profile
+                                          ? 'assets/headphone_red.png'
+                                          : 'assets/headphone.png',
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1, // 10% of screen width
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.3, // 5% of screen height
+                                      fit: BoxFit.contain,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _currentView = ViewType.profile;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                    child: Text(
+                                  'Profile',
+                                  style: TextStyle(
+                                      color: _currentView == ViewType.profile
+                                          ? const Color(0xFFD20E0D)
+                                          : Colors.white,
+                                      fontSize: MediaQuery.of(context)
+                                              .size
+                                              .width *
+                                          0.03), // Adjust text size relative to screen width
+                                )),
+                              ]),
+                          const SizedBox(
+                              width:
+                                  48), // Space for the floating action button
+                          Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Expanded(
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: Image.asset(
+                                      _currentView == ViewType.events
+                                          ? 'assets/calendar_red.png'
+                                          : 'assets/calendar_white.png',
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1, // 10% of screen width
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.3, // 5% of screen height
+                                      fit: BoxFit.contain,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _currentView = ViewType.events;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                    child: (Text(
+                                  'Event',
+                                  style: TextStyle(
+                                    color: _currentView == ViewType.events
+                                        ? const Color(0xFFD20E0D)
+                                        : Colors.white,
+                                    fontSize: MediaQuery.of(context)
+                                            .size
+                                            .width *
+                                        0.03, // Adjust text size relative to screen width
+                                  ),
+                                )))
+                              ]),
+                        ],
+                      )))),
+          floatingActionButton: Container(
+            width: 63,
+            height: 63,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(0, 4), // changes position of shadow
+                ),
+              ],
             ),
-          ],
-        ),
-        child: FloatingActionButton(
-          shape: const CircleBorder(),
-          onPressed: () {
-            _navigateUpWithSlideTransition(context, const QRCodeScreen());
-          },
-          backgroundColor: const Color(0xFFD20E0D),
-          elevation: 5.0, // Default elevation for FAB shadow
-          child: const Icon(
-            Icons.qr_code_scanner,
-            size: 36.0,
+            child: FloatingActionButton(
+              shape: const CircleBorder(),
+              onPressed: () {
+                _navigateUpWithSlideTransition(context, const QRCodeScreen());
+              },
+              backgroundColor: const Color(0xFFD20E0D),
+              elevation: 5.0, // Default elevation for FAB shadow
+              child: const Icon(
+                Icons.qr_code_scanner,
+                size: 36.0,
+              ),
+            ),
           ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    );
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+        ));
   }
 }
 

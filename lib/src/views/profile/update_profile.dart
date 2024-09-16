@@ -25,13 +25,16 @@ class UserProfileUpdateScreen extends StatefulWidget {
 class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _gamertagController = TextEditingController();
+  final TextEditingController _referrerCodeController = TextEditingController();
   final TextEditingController _dateOfBirthController = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
   final FocusNode _gamertagFocusNode = FocusNode();
+  final FocusNode _referralCodeFocusNode = FocusNode();
 
   String? _selectedGender;
   String? _selectedUserType;
   String? _gamertagValidationMessage;
+  String? _referralCodeValidationMessage;
 
   late final ArcadiaCloud _arcadiaCloud;
   bool _isLoading = false;
@@ -127,6 +130,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
     _arcadiaCloud =
         ArcadiaCloud(Provider.of<FirebaseService>(context, listen: false));
     _gamertagFocusNode.addListener(_checkGamertagFocus);
+    _referralCodeFocusNode.addListener(_checkReferralCodeFocus);
   }
 
   @override
@@ -142,6 +146,12 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   void _checkGamertagFocus() {
     if (!_gamertagFocusNode.hasFocus) {
       _debouncer.run(() => _checkGamertag());
+    }
+  }
+
+  void _checkReferralCodeFocus() {
+    if (!_referralCodeFocusNode.hasFocus) {
+      _debouncer.run(() => _checkReferralCode());
     }
   }
 
@@ -182,10 +192,57 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
     }
   }
 
+  Future<void> _checkReferralCode() async {
+    final String referralCode = _referrerCodeController.text.trim();
+    print("check referral code");
+    if (referralCode.isEmpty) {
+      return;
+    }
+
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _updateReferralCodeValidationMessage("User is not logged in.");
+        return;
+      }
+
+      final token = await user.getIdToken();
+      if (token == null) {
+        _updateReferralCodeValidationMessage(
+            "Unable to retrieve authentication token.");
+        return;
+      }
+
+      print("checking referral");
+
+      final response = await _arcadiaCloud.isUserReferral(referralCode, token);
+
+      if (response['success'] == true) {
+        _updateReferralCodeValidationMessage(null);
+      } else {
+        _updateReferralCodeValidationMessage(
+            response['errors'] != null && response['errors'].isNotEmpty
+                ? response['errors'][0]['message']
+                : 'Unknown error occurred.');
+      }
+    } catch (e) {
+      _updateReferralCodeValidationMessage(
+          "Error checking player invite code. Please try again.");
+    }
+  }
+
   void _updateGamertagValidationMessage(String? message) {
     if (mounted) {
       setState(() {
         _gamertagValidationMessage = message;
+      });
+    }
+  }
+
+  void _updateReferralCodeValidationMessage(String? message) {
+    if (mounted) {
+      setState(() {
+        _referralCodeValidationMessage = message;
       });
     }
   }
@@ -233,23 +290,24 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
       _isLoading = true;
     });
 
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final token = await user.getIdToken();
+    if (token == null) {
+      _showSnackbar('Unable to retrieve authentication token.');
+      return;
+    }
+
     try {
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      final token = await user.getIdToken();
-      if (token == null) {
-        _showSnackbar('Unable to retrieve authentication token.');
-        return;
-      }
-
       final response = await _arcadiaCloud.updateUserToDB(
         _gamertagController.text.trim(),
         null,
         _dateOfBirthController.text.trim(),
         _fullNameController.text.trim(),
         _selectedGender!,
-        _selectedUserType!,
+        null,
+        // _selectedUserType!,
         token,
         _cityController.text,
         null,
@@ -264,6 +322,8 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
     } catch (e) {
       print('Error saving user profile: $e');
     } finally {
+      _arcadiaCloud.postReferral(_referrerCodeController.text.trim(),
+          "-O6OamAXFaRQy1RiuCXF", "-O6wPqs2Hd34PYBnn90i", token);
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -421,16 +481,32 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                                 : null,
                           ),
                           const SizedBox(height: 20),
-                          _buildDropdownFormField(
-                            value: _selectedUserType,
-                            label: 'User Type *',
-                            items: ['Player', 'Cosplayer', 'Placeholder'],
-                            onChanged: (value) =>
-                                setState(() => _selectedUserType = value),
-                            validator: (value) => value == null || value.isEmpty
-                                ? 'Required'
-                                : null,
+                          // _buildDropdownFormField(
+                          //   value: _selectedUserType,
+                          //   label: 'User Type *',
+                          //   items: ['Player', 'Cosplayer', 'Placeholder'],
+                          //   onChanged: (value) =>
+                          //       setState(() => _selectedUserType = value),
+                          //   validator: (value) => value == null || value.isEmpty
+                          //       ? 'Required'
+                          //       : null,
+                          // ),
+                          _buildTextFormField(
+                            controller: _referrerCodeController,
+                            focusNode: _referralCodeFocusNode,
+                            label: 'Player Invite Code',
+                            keyboardType: TextInputType.name,
+                            validator: null,
                           ),
+                          if (_referralCodeValidationMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                _referralCodeValidationMessage!,
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 14),
+                              ),
+                            ),
                           const SizedBox(height: 20),
                           _buildCitySearchField(),
                           const SizedBox(height: 20),
@@ -592,7 +668,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
         TextFormField(
           controller: _cityController,
           decoration: const InputDecoration(
-            labelText: 'City',
+            labelText: 'City *',
             contentPadding: EdgeInsets.fromLTRB(16, 18, 16, 18),
             filled: true,
             fillColor: Color(0xFF2C2B2B),
