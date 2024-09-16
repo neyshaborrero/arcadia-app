@@ -472,6 +472,55 @@ class ArcadiaCloud {
     }
   }
 
+  Future<Map<String, dynamic>> isUserReferral(String code, String token) async {
+    final Uri url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/referral/isUserReferral?code=$code');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else if (response.statusCode == 400) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      return errorResponse;
+    } else {
+      throw Exception('Failed to check user referral code');
+    }
+  }
+
+  void postReferral(String code, String rewardIdReferrer,
+      String rewardIdReferee, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/referral/redeemUserReferral'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({
+        'code': code,
+        'rewardIdReferrer': rewardIdReferrer,
+        'rewardIdReferee': rewardIdReferee
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      print("referral data, $data");
+    } else if (response.statusCode == 400) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      print("referral data $errorResponse");
+      //throw BadRequestException(errorResponse['errors'][0]['message']);
+    }
+  }
+
   Future<UserActivity?> recordNews(
       bool earn, String qrId, String newsId, String token) async {
     final response = await http.post(

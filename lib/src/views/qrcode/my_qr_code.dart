@@ -19,6 +19,10 @@ class _MyQRCodeState extends State<MyQRCode> {
     final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // Generate the referral deep link using the user's ID
+    final deepLink =
+        'https://arcadia-deeplink.web.app?userqr=${userProfile!.qrcode}'; // Change this URL based on your server setup
+
     // Determine the avatar radius based on screen size
     double avatarRadius;
     if (screenHeight > 800) {
@@ -92,7 +96,8 @@ class _MyQRCodeState extends State<MyQRCode> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: QrImageView(
-                    data: userProfile!.qrcode,
+                    //data: userProfile!.qrcode,
+                    data: deepLink,
                     size: 206,
                     embeddedImage: const AssetImage('assets/arcadia_icon.png'),
                     embeddedImageStyle: const QrEmbeddedImageStyle(
