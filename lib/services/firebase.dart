@@ -97,7 +97,6 @@ class FirebaseService {
     try {
       await arcadiaCloud.updateUserToDB(
           null, null, null, null, null, null, idToken, null, fcmToken, null);
-      print('User data updated with new FCM token');
     } catch (e) {
       print("Failed to update user in database: $e");
     }

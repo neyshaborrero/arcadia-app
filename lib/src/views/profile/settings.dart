@@ -63,12 +63,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
       setState(() {
         _notificationsEnabled = true;
       });
     } else {
-      print('User declined or has not accepted permission');
       setState(() {
         _notificationsEnabled = false;
       });

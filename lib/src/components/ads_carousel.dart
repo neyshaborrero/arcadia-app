@@ -4,6 +4,7 @@ import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/is_tablet.dart';
+import 'package:arcadia_mobile/src/tools/loading.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -139,12 +140,9 @@ class _AdsCarouselComponentState extends State<AdsCarouselComponent> {
                           child: CachedNetworkImage(
                             imageUrl: ad.image,
                             fit: BoxFit.fitWidth,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            ),
+                            placeholder: (context, url) =>
+                                buildShimmerAdContainer(
+                                    height, context), // Shimmer as placeholder
                             errorWidget: (context, url, error) =>
                                 const Icon(Icons.error),
                           ),

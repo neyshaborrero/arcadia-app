@@ -2,15 +2,13 @@ import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/survey_container.dart';
-import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
-import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
+import 'package:arcadia_mobile/src/tools/loading.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../notifiers/change_notifier.dart';
 import 'package:arcadia_mobile/src/tools/is_tablet.dart';
 
 class EventView extends StatefulWidget {
@@ -37,10 +35,17 @@ class _EventViewState extends State<EventView> {
     _surveyDetailsFuture = _fetchSurveys();
   }
 
+  // Callback to be triggered when a vote is completed with the surveyId
+  void _onVoteComplete(String surveyId) {
+    // Re-fetch the survey details to update the UI with new percentages
+    setState(() {
+      _surveyDetailsFuture = _fetchSurveyDetails(surveyId);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool tablet = isTablet(context);
-    final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
 
     return Scaffold(
       body: Column(
@@ -65,7 +70,13 @@ class _EventViewState extends State<EventView> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
+                          // Show shimmer effect while loading
+                          return ListView.builder(
+                            itemCount: 6, // Number of shimmer loading cards
+                            itemBuilder: (context, index) {
+                              return buildShimmerSurveyContainer();
+                            },
+                          );
                         } else if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
                         } else if (!snapshot.hasData ||
@@ -77,7 +88,13 @@ class _EventViewState extends State<EventView> {
                             itemCount: surveyDetailsList.length,
                             itemBuilder: (context, index) {
                               return SurveyContainer(
-                                  surveyDetails: surveyDetailsList[index]);
+                                surveyDetails: surveyDetailsList[index],
+                                onVoteComplete: (String surveyId) {
+                                  // Handle the vote completion, such as re-fetching the survey details
+                                  _onVoteComplete(
+                                      surveyId); // This can re-fetch updated survey data
+                                },
+                              );
                             },
                           );
                         }
@@ -128,6 +145,20 @@ class _EventViewState extends State<EventView> {
     if (token == null) return [];
 
     final List<SurveyDetails> surveys = await _arcadiaCloud.fetchSurveys(token);
+    return surveys;
+  }
+
+  // Method to fetch the specific survey details (this will include updated percentages)
+  Future<List<SurveyDetails>> _fetchSurveyDetails(String surveyId) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return [];
+
+    final token = await user.getIdToken();
+
+    if (token == null) return [];
+
+    final List<SurveyDetails> surveys =
+        await _arcadiaCloud.fetchSurveyDetails(token, surveyId);
     return surveys;
   }
 }

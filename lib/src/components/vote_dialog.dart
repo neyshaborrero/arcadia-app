@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/tools/loading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -77,15 +78,13 @@ Widget _buildVoteContent(
             ),
             child: image != null
                 ? CachedNetworkImage(
-                    width: 95,
-                    height: 95,
+                    width: 180,
+                    height: 180,
                     imageUrl: image,
                     fit: BoxFit.contain,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
+                    placeholder: (context, url) {
+                      return buildLoadingImageSkeleton(95);
+                    },
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.error),
                   )

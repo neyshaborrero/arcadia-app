@@ -3,6 +3,7 @@ import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/survey_vote_status_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/views/start/error_view.dart';
@@ -52,6 +53,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserActivityProvider()),
         ChangeNotifierProvider(create: (_) => AdsDetailsProvider()),
         ChangeNotifierProvider(create: (_) => PrizesChangeProvider()),
+        ChangeNotifierProvider(create: (_) => VoteStatusNotifier()),
         Provider<FirebaseService>.value(value: firebaseService),
       ],
       child: MyApp(

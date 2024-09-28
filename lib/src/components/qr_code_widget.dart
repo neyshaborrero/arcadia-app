@@ -214,8 +214,13 @@ class _QRScanState extends State<QRScan> {
         // Parse the scanned deep link URL
         final uri = Uri.parse(scannedCode);
 
-        // Retrieve the 'userqr' parameter from the query parameters
-        return uri.queryParameters['userqr'];
+        // Check if the parsed URI has a valid scheme (http or https) and is not null
+        if ((uri.scheme == 'http' || uri.scheme == 'https')) {
+          // Retrieve the 'userqr' parameter from the query parameters, if available
+          return uri.queryParameters['userqr'];
+        } else {
+          return scannedCode;
+        }
       } catch (e) {
         print('Error parsing QR code URL: $e');
         return null;

@@ -1,12 +1,12 @@
-import 'package:arcadia_mobile/services/arcadia_cloud.dart';
-import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/vote_dialog.dart';
+import 'package:arcadia_mobile/src/notifiers/survey_vote_status_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/survey_answers.dart';
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
+import 'package:arcadia_mobile/src/tools/loading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,59 +27,43 @@ class VoteScreen extends StatefulWidget {
 }
 
 class _VoteScreenState extends State<VoteScreen> {
-  Map<String, bool> voteStatus = {};
   int totalVotes = 0;
-  late SurveyDetails updatedSurveyDetails;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the vote status for each answer
-    updatedSurveyDetails = widget.surveyDetails;
-    // Initialize the vote status for each answer
-    for (var answer in widget.surveyDetails.answers) {
-      voteStatus[answer.answerId] = false;
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeIfEmpty();
+    });
   }
 
-  void _handleVoteSuccess(String answerId) async {
+  void _handleVoteSuccess(String answerId) {
+    final voteStatusNotifier =
+        Provider.of<VoteStatusNotifier>(context, listen: false);
+
     setState(() {
-      voteStatus[answerId] = true;
-      totalVotes += 1;
+      voteStatusNotifier.updateVoteStatus(answerId, true);
     });
 
-    if (totalVotes >= widget.surveyDetails.maxVotesPerUser) {
-      widget.onVoteComplete(true); // Notify the parent widget
-      final updatedSurvey =
-          await _fetchUpdatedResults(); // Fetch updated results
-      Navigator.of(context).pop(updatedSurvey);
+    // Check if the user has reached the maximum votes
+    if (voteStatusNotifier.voteStatus.length >=
+        widget.surveyDetails.maxVotesPerUser) {
+      final userProfileProvider =
+          Provider.of<UserProfileProvider>(context, listen: false);
+      // Update tokens
+      userProfileProvider.updateTokens(widget.surveyDetails.tokensEarned);
+      widget.onVoteComplete(true);
+      Navigator.of(context).pop();
     }
   }
 
-  Future<SurveyDetails?> _fetchUpdatedResults() async {
-    try {
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return null;
-
-      final token = await user.getIdToken();
-
-      if (token == null) return null;
-
-      final firebaseService =
-          Provider.of<FirebaseService>(context, listen: false);
-
-      final ArcadiaCloud arcadiaCloud;
-      arcadiaCloud = ArcadiaCloud(firebaseService);
-
-      final SurveyDetails? newSurveyDetails =
-          await arcadiaCloud.fetchSurveyDetails(token, widget.surveyDetails.id);
-
-      return newSurveyDetails;
-    } catch (error) {
-      // Handle any errors that occur during the API call
-      print('Failed to fetch updated survey results: $error');
+  Future<void> _initializeIfEmpty() async {
+    final voteStatusNotifier =
+        Provider.of<VoteStatusNotifier>(context, listen: false);
+    if (widget.surveyDetails.userSelectedAnswers.isNotEmpty) {
+      voteStatusNotifier
+          .initializeVoteStatus(widget.surveyDetails.userSelectedAnswers);
     }
-    return null;
   }
 
   @override
@@ -87,18 +71,25 @@ class _VoteScreenState extends State<VoteScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth >= 600;
     final columnCount = isTablet ? 3 : 2;
+    final voteStatusNotifier = Provider.of<VoteStatusNotifier>(context);
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: !widget.showResults
-            ? Text(widget.surveyDetails.description)
-            : const Text("Survey Results"),
-      ),
+          backgroundColor: Colors.black,
+          title: Text(!widget.showResults
+              ? widget.surveyDetails.description
+              : 'Vote Results')),
       body: Column(
         children: <Widget>[
           const SizedBox(height: 10),
-          const AdsCarouselComponent(viewType: ViewType.voteScreen),
+          //const AdsCarouselComponent(viewType: ViewType.voteScreen),
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+                !widget.showResults ? (widget.surveyDetails.rules ?? '') : '',
+                textAlign: TextAlign.left,
+                style: Theme.of(context).textTheme.titleLarge),
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(10.0),
@@ -113,7 +104,7 @@ class _VoteScreenState extends State<VoteScreen> {
                         final SurveyAnswer answer =
                             widget.surveyDetails.answers[index];
                         final bool isVoted =
-                            voteStatus[answer.answerId] ?? false;
+                            voteStatusNotifier.isVoted(answer.answerId);
 
                         return Container(
                           width: (screenWidth - (columnCount + 1) * 10) /
@@ -134,32 +125,31 @@ class _VoteScreenState extends State<VoteScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              const SizedBox(height: 15),
-                              Text(
-                                answer.title,
-                                style: Theme.of(context).textTheme.labelLarge,
-                              ),
-                              const SizedBox(height: 10),
+                              // Text(
+                              //   answer.title,
+                              //   style: Theme.of(context).textTheme.labelSmall,
+                              //   textAlign: TextAlign.center,
+                              // ),
+                              const SizedBox(height: 20),
                               if (answer.pictureUrl != null)
-                                Row(
+                                Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     CachedNetworkImage(
-                                      width: 100,
-                                      height: 85,
+                                      width: 180,
+                                      height: 180,
                                       imageUrl: answer.pictureUrl!,
                                       fit: BoxFit.contain,
-                                      placeholder: (context, url) =>
-                                          const Center(
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                  Colors.white),
-                                        ),
-                                      ),
+                                      placeholder: (context, url) {
+                                        return buildLoadingImageSkeleton(
+                                            (screenWidth -
+                                                    (columnCount + 1) * 10) /
+                                                columnCount);
+                                      },
                                       errorWidget: (context, url, error) =>
                                           const Icon(Icons.error),
                                     ),
+                                    const SizedBox(height: 15),
                                     if (widget.showResults)
                                       Padding(
                                         padding:
@@ -173,7 +163,6 @@ class _VoteScreenState extends State<VoteScreen> {
                                       ),
                                   ],
                                 ),
-                              const SizedBox(height: 15),
                               if (!widget.showResults)
                                 FractionallySizedBox(
                                   widthFactor: 0.9,

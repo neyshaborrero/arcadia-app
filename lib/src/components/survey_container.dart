@@ -1,12 +1,18 @@
-import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
+import 'dart:async';
+
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
+import 'package:arcadia_mobile/src/tools/loading.dart';
 import 'package:arcadia_mobile/src/views/events/vote_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class SurveyContainer extends StatefulWidget {
   SurveyDetails surveyDetails;
+  final Function(String surveyId)
+      onVoteComplete; // Add the onVoteComplete callback
 
-  SurveyContainer({super.key, required this.surveyDetails});
+  SurveyContainer(
+      {super.key, required this.surveyDetails, required this.onVoteComplete});
 
   @override
   _SurveyContainerState createState() => _SurveyContainerState();
@@ -15,10 +21,17 @@ class SurveyContainer extends StatefulWidget {
 class _SurveyContainerState extends State<SurveyContainer> {
   bool hasReachedMaxVotes = false;
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void _handleVoteCompletion(bool reachedMaxVotes) {
     setState(() {
       hasReachedMaxVotes = reachedMaxVotes;
     });
+    // Trigger the parent callback, passing the surveyId
+    widget.onVoteComplete(widget.surveyDetails.id);
   }
 
   Future<void> _navigateToVoteScreen(BuildContext context) async {
@@ -40,6 +53,7 @@ class _SurveyContainerState extends State<SurveyContainer> {
         expiresAt: widget.surveyDetails.expiresAt,
         answers: List.from(widget.surveyDetails.answers)
           ..sort((a, b) => b.percentage.compareTo(a.percentage)),
+        userSelectedAnswers: widget.surveyDetails.userSelectedAnswers,
       );
     }
 
@@ -70,7 +84,7 @@ class _SurveyContainerState extends State<SurveyContainer> {
         ? MediaQuery.of(context).size.height / 1000
         : MediaQuery.of(context).size.height / 900;
     final double fontSizeLabel =
-        Theme.of(context).textTheme.labelSmall!.fontSize! * scaleFactor;
+        Theme.of(context).textTheme.labelMedium!.fontSize! * scaleFactor;
     final double fontSizeTitle =
         Theme.of(context).textTheme.titleLarge!.fontSize! * scaleFactor;
     final double padding = 12 * scaleFactor;
@@ -92,24 +106,75 @@ class _SurveyContainerState extends State<SurveyContainer> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text(
-            widget.surveyDetails.description,
-            style: Theme.of(context)
-                .textTheme
-                .titleLarge!
-                .copyWith(fontSize: fontSizeTitle),
-            textAlign: TextAlign.center,
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment
+                        .center, // Adjust this to control vertical alignment
+                    children: [
+                      Text(
+                        widget.surveyDetails.description,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge!
+                            .copyWith(fontSize: fontSizeTitle),
+                        textAlign: TextAlign.center, // Text remains centered
+                      ),
+                      if (!widget.surveyDetails.userHasAnswered &&
+                          !hasReachedMaxVotes)
+                        Text(
+                          'Win Tokens',
+                          style: Theme.of(context).textTheme.bodySmall,
+                          textAlign: TextAlign.center, // Text remains centered
+                        )
+                    ]),
+              ),
+              Align(
+                  alignment: Alignment
+                      .centerRight, // Align image to the end of the row
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment
+                        .center, // Adjust this to control vertical alignment
+                    children: [
+                      if (widget.surveyDetails.userHasAnswered ||
+                          hasReachedMaxVotes)
+                        Image.asset(
+                          'assets/coin.gif',
+                          width: 36,
+                          height: 36,
+                        ),
+                      Text(
+                        widget.surveyDetails.userHasAnswered ||
+                                hasReachedMaxVotes
+                            ? '${widget.surveyDetails.tokensEarned} Tokens' // Text when GIF is shown
+                            : '', // Text when static image is shown
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall, // Adjust style as needed
+                      ),
+                    ],
+                  )),
+            ],
           ),
           const SizedBox(height: 10),
           if (widget.surveyDetails.pictureUrl != null)
-            Image.network(widget.surveyDetails.pictureUrl!,
-                width: imageSize, height: imageSize, fit: BoxFit.cover),
+            CachedNetworkImage(
+              width: imageSize,
+              height: imageSize,
+              imageUrl: widget.surveyDetails.pictureUrl!,
+              fit: BoxFit.contain,
+              placeholder: (context, url) {
+                return buildLoadingImageSkeleton(imageSize);
+              },
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            ),
           const SizedBox(height: 10),
           Text(
             widget.surveyDetails.question,
             style: Theme.of(context)
                 .textTheme
-                .labelSmall!
+                .labelMedium!
                 .copyWith(fontSize: fontSizeLabel),
             textAlign: TextAlign.center,
           ),

@@ -209,8 +209,6 @@ class ArcadiaCloud {
       bodyCall['profileComplete'] = isProfileComplete;
     }
 
-    print("userData $bodyCall");
-
     final response = await http.put(
       url,
       headers: {
@@ -259,6 +257,7 @@ class ArcadiaCloud {
 
   Future<UserActivity?> validateQRCode(
       String qrCode, String token, AppLocation location) async {
+    print("Validating response $qrCode");
     final response = await http.post(
       Uri.parse(
           '${_firebaseService.arcadiaCloudAddress}/mission/validate'), // Replace with your actual endpoint
@@ -275,8 +274,11 @@ class ArcadiaCloud {
       }),
     );
 
+    print("Validating response ${response.statusCode}");
+
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
+      print("Validating response $data");
       return UserActivity.fromJson(data, "idsir");
     } else if (response.statusCode == 400) {
       final Map<String, dynamic> errorResponse = json.decode(response.body);
@@ -378,7 +380,7 @@ class ArcadiaCloud {
     }
   }
 
-  Future<SurveyDetails?> fetchSurveyDetails(
+  Future<List<SurveyDetails>> fetchSurveyDetails(
       String token, String surveyId) async {
     final url = Uri.parse(
         '${_firebaseService.arcadiaCloudAddress}/survey/active?surveyId=$surveyId');
@@ -393,12 +395,15 @@ class ArcadiaCloud {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return SurveyDetails.fromJson(surveyId, jsonData);
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<SurveyDetails> surveyDetails = [];
+      surveyDetails.add(SurveyDetails.fromJson(data['id'], data));
+
+      return surveyDetails;
     } else {
       // Handle error
       print('Failed to load survey');
-      return null;
+      return [];
     }
   }
 
@@ -421,7 +426,6 @@ class ArcadiaCloud {
     );
 
     if (response.statusCode == 200) {
-      print('Survey answered successfully');
       return true;
     } else {
       // Handle error

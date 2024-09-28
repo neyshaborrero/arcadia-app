@@ -9,8 +9,6 @@ Future<AppLocation?> getCurrentLocation() async {
   serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     // Location services are not enabled, handle accordingly
-
-    print('Location services are disabled.');
     return null;
   }
 

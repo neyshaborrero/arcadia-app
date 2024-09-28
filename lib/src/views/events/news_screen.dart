@@ -4,6 +4,7 @@ import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
+import 'package:arcadia_mobile/src/tools/loading.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -133,7 +134,7 @@ class _NewsScreenState extends State<NewsScreen> {
         ),
         Padding(
             padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 37.0),
+                const EdgeInsets.symmetric(vertical: 4.0, horizontal: 37.0),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text('Latest News',
@@ -142,10 +143,12 @@ class _NewsScreenState extends State<NewsScreen> {
             )),
         Expanded(
           child: _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ))
+              ? ListView.builder(
+                  itemCount: 5, // Number of shimmer placeholders
+                  itemBuilder: (context, index) {
+                    return buildShimmerNewsCard(); // Show shimmer effect
+                  },
+                )
               : Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Consumer<ClickedState>(

@@ -194,7 +194,6 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
 
   Future<void> _checkReferralCode() async {
     final String referralCode = _referrerCodeController.text.trim();
-    print("check referral code");
     if (referralCode.isEmpty) {
       return;
     }
@@ -212,8 +211,6 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
             "Unable to retrieve authentication token.");
         return;
       }
-
-      print("checking referral");
 
       final response = await _arcadiaCloud.isUserReferral(referralCode, token);
 
