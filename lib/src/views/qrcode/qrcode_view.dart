@@ -1,6 +1,10 @@
+import 'package:arcadia_mobile/src/components/operator_qr_cod_widget.dart';
 import 'package:arcadia_mobile/src/components/qr_code_widget.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/views/qrcode/my_qr_code.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class QRCodeScreen extends StatefulWidget {
   const QRCodeScreen({super.key});
@@ -12,11 +16,14 @@ class QRCodeScreen extends StatefulWidget {
 class _QRCodeScreenState extends State<QRCodeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late final UserProfile? userProfile;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    userProfile =
+        Provider.of<UserProfileProvider>(context, listen: false).userProfile;
 
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -55,10 +62,21 @@ class _QRCodeScreenState extends State<QRCodeScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          QRScan(),
-          MyQRCode(),
-        ],
+        children: userProfile == null || userProfile?.userType == null
+            ? const [
+                QRScan(),
+                MyQRCode(),
+              ]
+            : userProfile?.userType == "operator" ||
+                    userProfile?.userType == "admin"
+                ? const [
+                    OperatorQRScan(),
+                    MyQRCode(),
+                  ]
+                : const [
+                    QRScan(),
+                    MyQRCode(),
+                  ],
       ),
     );
   }

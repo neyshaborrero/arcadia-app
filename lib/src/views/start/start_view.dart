@@ -102,7 +102,7 @@ class StartScreen extends StatelessWidget {
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
           child: Text(
-            'Purchase Tickets',
+            'Buy Tickets',
             style: TextStyle(fontSize: 18),
           ),
         ),

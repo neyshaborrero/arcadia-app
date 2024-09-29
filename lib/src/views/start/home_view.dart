@@ -10,6 +10,7 @@ import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/events/event_screen.dart';
 import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
+import 'package:arcadia_mobile/src/views/profile/operator.dart';
 import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/profile/settings.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
@@ -166,7 +167,13 @@ class _HomeScreenState extends State<HomeScreen>
             builder: (context) {
               switch (_currentView) {
                 case ViewType.profile:
-                  return const ProfileView();
+                  if (userProfile?.userType == "operator" ||
+                      userProfile?.userType == "admin") {
+                    return const OperatorView();
+                  } else {
+                    return const ProfileView();
+                  }
+
                 case ViewType.events:
                   return TabBarView(
                     controller: _tabController,
