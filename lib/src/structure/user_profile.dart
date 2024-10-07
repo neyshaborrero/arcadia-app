@@ -11,6 +11,7 @@ class UserProfile {
   String fcmToken;
   String? currentHubId;
   bool? isAdmin;
+  int xp;
 
   UserProfile(
       {required this.fullName,
@@ -24,11 +25,13 @@ class UserProfile {
       required this.profileComplete,
       required this.fcmToken,
       this.currentHubId,
-      this.isAdmin});
+      this.isAdmin,
+      required this.xp});
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
         fullName: json['fullName'] ?? '',
+        xp: json['xp'] ?? 0,
         gender: json['gender'] ?? '',
         dob: json['dob'] ?? '',
         gamertag: json['gamertag'] ?? '',

@@ -4,6 +4,8 @@ class SurveyDetails {
   final String id;
   final String question;
   final String description;
+  final String? subtitle;
+  final String? sponsorBy;
   final String? rules;
   final int maxAnswers;
   final int tokensEarned;
@@ -19,6 +21,8 @@ class SurveyDetails {
     required this.id,
     required this.question,
     required this.description,
+    this.subtitle,
+    this.sponsorBy,
     required this.maxAnswers,
     required this.tokensEarned,
     this.pictureUrl,
@@ -38,8 +42,10 @@ class SurveyDetails {
 
     return SurveyDetails(
       id: id,
+      subtitle: json['subtitle'],
       question: json['question'],
       description: json['description'],
+      sponsorBy: json['sponsorBy'],
       maxAnswers: json['maxAnswers'],
       tokensEarned: json['tokensEarned'],
       pictureUrl: json['pictureUrl'],

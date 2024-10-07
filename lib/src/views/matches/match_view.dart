@@ -1,6 +1,8 @@
+import 'package:arcadia_mobile/src/components/create_match.dart';
 import 'package:arcadia_mobile/src/structure/game.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/slides.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -22,6 +24,7 @@ class HubDetails {}
 class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
   int _selectedGameIndex = 1;
   int? _selectedAvatarIndex; // Track the selected avatar
+  String matchType = '1v1';
 
   late List<AnimationController> _controllers;
   late List<Animation<double>> _progressAnimations;
@@ -52,6 +55,10 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
           multiplier: 1,
         ),
       );
+    }
+
+    if (matchDetails.matchType!.isNotEmpty) {
+      matchType = matchDetails.matchType!;
     }
 
     _isAvatarSelected =
@@ -229,7 +236,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                                         });
                                       },
                                       child: _buildGameSelection(context, index,
-                                          game.image), // Game image
+                                          game.image, game.type), // Game image
                                     ),
                                   ],
                                 ),
@@ -248,7 +255,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                 alignment: Alignment.center,
                 child: Text(
                   (matchData.matchStatus != "in progress")
-                      ? 'Select Player'
+                      ? 'Assign Players'
                       : 'Select Winner(s)',
                   textAlign: TextAlign.left,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -263,7 +270,8 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: _buildPlayerAvatarSelection(
-                  matchData.matchType ?? '1v1',
+                  matchType,
+                  //matchData.matchType ?? '1v1',
                   matchData.team1,
                   matchData.team2,
                   matchData.matchStatus ?? '',
@@ -319,7 +327,10 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                   onTap: () {
                     // Action for tapping the add player button (e.g., opening QRCode screen)
                     navigateUpWithSlideTransition(
-                        context, const QRCodeScreen());
+                        context,
+                        const QRCodeScreen(
+                          viewType: ViewType.createMatch,
+                        ));
                   },
                   child: Container(
                     width: 40,
@@ -369,7 +380,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                     team1.first.imageprofile,
                     team1.first.stationSpot,
                     matchStatus)
-                : _buildAddPlayerAvatar(context, 'Player 1'),
+                : _buildAddPlayerAvatar(context, 'A'),
             if (matchType == '1v1')
               Flexible(
                 child: Image.asset(
@@ -386,7 +397,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                     team2.first.imageprofile,
                     team2.first.stationSpot,
                     matchStatus)
-                : _buildAddPlayerAvatar(context, 'Player 2'),
+                : _buildAddPlayerAvatar(context, 'B'),
           ],
         ),
         if (matchType == '2v2')
@@ -430,7 +441,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                       team1.last.imageprofile,
                       team1.last.stationSpot,
                       matchStatus)
-                  : _buildAddPlayerAvatar(context, 'Player 3'),
+                  : _buildAddPlayerAvatar(context, 'C'),
               team2 != null && team2.isNotEmpty
                   ? _buildPlayerAvatar(
                       context,
@@ -439,7 +450,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                       team2.last.imageprofile,
                       team2.last.stationSpot,
                       matchStatus)
-                  : _buildAddPlayerAvatar(context, 'Player 4'),
+                  : _buildAddPlayerAvatar(context, 'D'),
             ],
           ),
       ],
@@ -512,16 +523,17 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
   }
 
   Widget _buildGameSelection(
-      BuildContext context, int index, String gameImage) {
+      BuildContext context, int index, String gameImage, String gameMatchType) {
     bool isSelected = _selectedGameIndex == index;
 
-    double size = isSelected ? 75.0 : 40.0;
+    double size = isSelected ? 115.0 : 65.0;
     double opacity = isSelected ? 1.0 : 0.5;
 
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedGameIndex = index; // Set the selected game index
+          matchType = gameMatchType;
         });
       },
       child: AnimatedOpacity(
@@ -552,11 +564,12 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Center(
         child: ElevatedButton(
-          onPressed: _isAvatarSelected
-              ? () {
-                  Navigator.pop(context);
-                }
-              : null, // Disable the button if no avatar is selected
+          onPressed: () => {
+            if (matchData.matchStatus != "in progress")
+              showCreateMatch(context, matchData)
+            else if (matchData.matchStatus == "in progress")
+              {_isAvatarSelected ? Navigator.pop(context) : null}
+          },
           style: ElevatedButton.styleFrom(
             fixedSize: const Size(350, 58),
             disabledBackgroundColor: Colors.grey,
@@ -566,7 +579,9 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
             child: Text(
               (matchData.matchStatus != "in progress")
                   ? 'Create Match'
-                  : 'End Match',
+                  : (matchData.matchStatus == "created")
+                      ? 'Start Match'
+                      : 'End Match',
               style: const TextStyle(fontSize: 18),
             ),
           ),

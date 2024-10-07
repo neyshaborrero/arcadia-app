@@ -5,6 +5,7 @@ import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -147,7 +148,10 @@ class _OperatorViewState extends State<OperatorView> {
                     right: 0, // Adjust the position as per your design
                     child: GestureDetector(
                       onTap: () => _navigateUpWithSlideTransition(
-                          context, const QRCodeScreen()),
+                          context,
+                          const QRCodeScreen(
+                            viewType: ViewType.operatorProfile,
+                          )),
                       child: Container(
                         width: 54.0,
                         height: 54.0,
@@ -337,8 +341,11 @@ class _OperatorViewState extends State<OperatorView> {
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: isTablet ? 400 : 200),
       child: ElevatedButton(
-        onPressed: () =>
-            _navigateUpWithSlideTransition(context, const QRCodeScreen()),
+        onPressed: () => _navigateUpWithSlideTransition(
+            context,
+            const QRCodeScreen(
+              viewType: ViewType.operatorProfile,
+            )),
         style: ElevatedButton.styleFrom(
           minimumSize: Size.fromHeight(isTablet ? 70 : 50),
         ),

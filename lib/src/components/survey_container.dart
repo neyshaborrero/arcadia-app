@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
 import 'package:arcadia_mobile/src/tools/loading.dart';
 import 'package:arcadia_mobile/src/views/events/vote_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SurveyContainer extends StatefulWidget {
   SurveyDetails surveyDetails;
@@ -44,6 +46,7 @@ class _SurveyContainerState extends State<SurveyContainer> {
         id: widget.surveyDetails.id,
         question: widget.surveyDetails.question,
         description: widget.surveyDetails.description,
+        subtitle: widget.surveyDetails.subtitle,
         pictureUrl: widget.surveyDetails.pictureUrl,
         maxVotesPerUser: widget.surveyDetails.maxVotesPerUser,
         userHasAnswered: widget.surveyDetails.userHasAnswered,
@@ -121,6 +124,12 @@ class _SurveyContainerState extends State<SurveyContainer> {
                             .copyWith(fontSize: fontSizeTitle),
                         textAlign: TextAlign.center, // Text remains centered
                       ),
+                      if (widget.surveyDetails.subtitle != null)
+                        Text(
+                          widget.surveyDetails.subtitle ?? '',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center, // Text remains centered
+                        ),
                       if (!widget.surveyDetails.userHasAnswered &&
                           !hasReachedMaxVotes)
                         Text(
@@ -180,7 +189,7 @@ class _SurveyContainerState extends State<SurveyContainer> {
           ),
           const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.only(bottom: 42, top: 5),
+            padding: const EdgeInsets.only(bottom: 20, top: 5),
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: tablet ? 400 : 200),
               child: ElevatedButton(
@@ -216,6 +225,28 @@ class _SurveyContainerState extends State<SurveyContainer> {
               ),
             ),
           ),
+          if (widget.surveyDetails.sponsorBy != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Transform.translate(
+                  offset: const Offset(0, -6), // Move the text 3 pixels up
+                  child: Text(
+                    'Sponsored by:',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                CachedNetworkImage(
+                  width: 90,
+                  height: 60,
+                  imageUrl: widget.surveyDetails.sponsorBy ?? '',
+                  fit: BoxFit.fitWidth,
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                ),
+              ],
+            ),
         ],
       ),
     );

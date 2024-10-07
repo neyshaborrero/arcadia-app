@@ -1,4 +1,5 @@
 import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -297,7 +298,11 @@ Widget _buildActionButton(
             Navigator.of(context).pop();
           } else {
             Navigator.of(context).pop();
-            _navigateUpWithSlideTransition(context, const QRCodeScreen());
+            _navigateUpWithSlideTransition(
+                context,
+                const QRCodeScreen(
+                  viewType: ViewType.quest,
+                ));
           }
         },
         child: ConstrainedBox(

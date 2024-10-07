@@ -9,5 +9,8 @@ enum ViewType {
   qrprofile,
   splash,
   eventView,
-  voteScreen
+  voteScreen,
+  createMatch,
+  home,
+  operatorProfile
 }

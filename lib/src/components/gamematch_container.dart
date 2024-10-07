@@ -120,7 +120,7 @@ class _MatchContainerState extends State<MatchContainer> {
             ),
             Center(
               child: Text(
-                match.game!.name,
+                "${match.game!.name} ${match.game!.type}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,

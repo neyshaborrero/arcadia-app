@@ -319,7 +319,11 @@ class _HomeScreenState extends State<HomeScreen>
             child: FloatingActionButton(
               shape: const CircleBorder(),
               onPressed: () {
-                _navigateUpWithSlideTransition(context, const QRCodeScreen());
+                _navigateUpWithSlideTransition(
+                    context,
+                    const QRCodeScreen(
+                      viewType: ViewType.home,
+                    ));
               },
               backgroundColor: const Color(0xFFD20E0D),
               elevation: 5.0, // Default elevation for FAB shadow

@@ -150,7 +150,10 @@ class _ProfileViewState extends State<ProfileView> {
                     right: 0, // Adjust the position as per your design
                     child: GestureDetector(
                       onTap: () => _navigateUpWithSlideTransition(
-                          context, const QRCodeScreen()),
+                          context,
+                          const QRCodeScreen(
+                            viewType: ViewType.profile,
+                          )),
                       child: Container(
                         width: 54.0,
                         height: 54.0,
@@ -208,7 +211,9 @@ class _ProfileViewState extends State<ProfileView> {
                           ),
                           const SizedBox(width: 25),
                           Text(
-                            '0',
+                            userProfile != null
+                                ? userProfile.xp.toString()
+                                : '0',
                             style: Theme.of(context).textTheme.titleLarge,
                           )
                         ])

@@ -28,4 +28,9 @@ class UserProfileProvider with ChangeNotifier {
     _userProfile!.tokens = _userProfile!.tokens + tokensEarned;
     notifyListeners();
   }
+
+  void updateXP(int xpEarned) {
+    _userProfile!.xp = _userProfile!.xp + xpEarned;
+    notifyListeners();
+  }
 }
