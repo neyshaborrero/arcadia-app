@@ -208,7 +208,9 @@ class _ProfileViewState extends State<ProfileView> {
                           ),
                           const SizedBox(width: 25),
                           Text(
-                            '0',
+                            userProfile != null
+                                ? userProfile.xp.toString()
+                                : '0',
                             style: Theme.of(context).textTheme.titleLarge,
                           )
                         ])

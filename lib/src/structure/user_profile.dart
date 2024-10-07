@@ -9,6 +9,7 @@ class UserProfile {
   final String qrcode;
   final bool profileComplete;
   String fcmToken;
+  int xp;
 
   UserProfile(
       {required this.fullName,
@@ -20,11 +21,13 @@ class UserProfile {
       required this.tokens,
       required this.qrcode,
       required this.profileComplete,
-      required this.fcmToken});
+      required this.fcmToken,
+      required this.xp});
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
         fullName: json['fullName'] ?? '',
+        xp: json['xp'] ?? 0,
         gender: json['gender'] ?? '',
         dob: json['dob'] ?? '',
         gamertag: json['gamertag'] ?? '',
