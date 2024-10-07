@@ -1,5 +1,4 @@
 import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
-import 'package:arcadia_mobile/src/structure/prize_details.dart';
 import 'package:arcadia_mobile/src/views/events/prize_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

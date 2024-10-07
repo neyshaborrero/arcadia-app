@@ -50,13 +50,13 @@ dependencies:
   firebase_storage: ^12.1.0
   cached_network_image: ^3.3.1
   vibration: ^2.0.0
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.1
   firebase_messaging: ^15.0.2
   carousel_slider_plus: ^7.0.0
   firebase_crashlytics: ^4.0.4
   video_player: ^2.9.1
   firebase_performance: ^0.10.0+4
-  geolocator: ^12.0.0
+  geolocator: ^13.0.1
   package_info_plus: ^8.0.2
   device_info_plus: ^10.1.2
   shimmer: ^3.0.0
@@ -75,7 +75,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   test: ^1.25.2
 
 # For information on the generic Dart part of this file, see the
@@ -101,7 +101,6 @@ flutter:
     - assets/headphone.png
     - assets/calendar_red.png
     - assets/calendar_white.png
-    - assets/news_ad.png
     - assets/map_icon_1.png
     - assets/map_icon_1_grey.png
     - assets/headphone_red.png
@@ -121,6 +120,7 @@ flutter:
     - assets/fire.png
     - assets/game_controller_pink.png
     - assets/game_controller_white.png
+    - assets/versus.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

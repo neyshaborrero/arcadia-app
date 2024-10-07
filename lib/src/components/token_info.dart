@@ -5,10 +5,10 @@ class TokenInfo extends StatelessWidget {
   final double scaleFactor;
 
   const TokenInfo({
-    Key? key,
+    super.key,
     required this.tokens,
     required this.scaleFactor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

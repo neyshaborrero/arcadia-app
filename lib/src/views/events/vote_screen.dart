@@ -1,10 +1,8 @@
-import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/vote_dialog.dart';
 import 'package:arcadia_mobile/src/notifiers/survey_vote_status_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/survey_answers.dart';
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
-import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/loading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';

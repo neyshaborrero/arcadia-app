@@ -1,5 +1,4 @@
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
-import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:flutter/foundation.dart';
 
 class PrizesChangeProvider with ChangeNotifier {

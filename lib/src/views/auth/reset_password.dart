@@ -1,4 +1,3 @@
-import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/views/auth/change_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';

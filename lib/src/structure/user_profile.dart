@@ -9,6 +9,8 @@ class UserProfile {
   final String qrcode;
   final bool profileComplete;
   String fcmToken;
+  String? currentHubId;
+  bool? isAdmin;
 
   UserProfile(
       {required this.fullName,
@@ -20,7 +22,9 @@ class UserProfile {
       required this.tokens,
       required this.qrcode,
       required this.profileComplete,
-      required this.fcmToken});
+      required this.fcmToken,
+      this.currentHubId,
+      this.isAdmin});
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
@@ -33,7 +37,9 @@ class UserProfile {
         tokens: json['tokens'] ?? 0,
         qrcode: json['qrcode'] ?? '',
         profileComplete: json['profileComplete'] ?? false,
-        fcmToken: json['fcmToken'] ?? '');
+        fcmToken: json['fcmToken'] ?? '',
+        currentHubId: json['currentHubId'] ?? '',
+        isAdmin: json['isAdmin']);
   }
 
   String tokensToString() {

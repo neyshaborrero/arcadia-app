@@ -3,7 +3,9 @@ import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
+import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
+import 'package:arcadia_mobile/src/structure/match_details.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
@@ -431,6 +433,131 @@ class ArcadiaCloud {
       // Handle error
       print('Failed to submit survey answer');
       return false;
+    }
+  }
+
+  Future<MatchDetails?> createArcadiaMatch(String gameId, String eventId,
+      String hubId, String stationId, String matchType, String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/create');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: json.encode({
+        'gameId': gameId,
+        'eventId': eventId,
+        'hubId': hubId,
+        'stationId': stationId,
+        'matchType': matchType,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final MatchDetails data = json.decode(response.body);
+      print(data);
+      return data;
+    } else {
+      // Handle error
+      print('Failed to create arcadia match');
+      return null;
+    }
+  }
+
+  Future<List<MatchDetails>> getArcadiaMatches(
+      String hubId, String token) async {
+    print("hubId: $hubId");
+
+    // Construct the API URL
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/match/get?hubId=$hubId');
+
+    // Send the GET request to the server
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    // If the response is successful (status code 200)
+    if (response.statusCode == 200) {
+      try {
+        // Decode the response body into a Map<String, dynamic>
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        print("matches $jsonData");
+
+        // Initialize an empty list to store MatchDetails objects
+        List<MatchDetails> matches = [];
+
+        jsonData.forEach((key, item) {
+          try {
+            // Parse the item into MatchDetails and add it to the list
+            matches.add(MatchDetails.fromJson(item as Map<String, dynamic>));
+          } catch (e) {
+            // Print specific error message for this item
+            print("Error parsing item with key: $key. Error: $e");
+          }
+        });
+
+        // Return the list of matches
+        return matches;
+      } catch (e) {
+        // Catch and print any errors during the response decoding or processing
+        print("Error decoding or processing the response: $e");
+        return [];
+      }
+    } else {
+      // Handle the error case (non-200 response status)
+      print(
+          'Failed to get Arcadia matches. Status code: ${response.statusCode}');
+      return [];
+    }
+  }
+
+  Future<Hub?> getHubDetails(String hubId, String token) async {
+    // Construct the API URL
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/hubs/get/$hubId'); // Update with your actual API endpoint
+
+    // Send the GET request to the server
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key':
+            _firebaseService.xApiKey, // Replace with actual API key if needed
+      },
+    );
+
+    // If the response is successful (status code 200)
+    if (response.statusCode == 200) {
+      try {
+        // Decode the response body into a Map<String, dynamic>
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+
+        // Parse the response into HubDetails object
+        Hub hubDetails = Hub.fromJson(jsonData);
+
+        // Return the hub details
+        return hubDetails;
+      } catch (e) {
+        // Catch and print any errors during the response decoding or processing
+        print("Error decoding or processing the response: $e");
+        return null;
+      }
+    } else {
+      // Handle the error case (non-200 response status)
+      print('Failed to get hub details. Status code: ${response.statusCode}');
+      return null;
     }
   }
 

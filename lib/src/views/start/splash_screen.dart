@@ -3,11 +3,12 @@ import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
+import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
-import 'package:arcadia_mobile/src/tools/is_tablet.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
+import 'package:arcadia_mobile/src/views/matches/match_activity.dart';
 import 'package:arcadia_mobile/src/views/profile/update_profile.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -82,11 +83,16 @@ class _SplashScreenState extends State<SplashScreen>
         try {
           String? token = await user.getIdToken();
           if (token != null) {
-            print(token);
             UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
             if (profile != null) {
               Provider.of<UserProfileProvider>(context, listen: false)
                   .setUserProfile(profile);
+
+              if (profile.currentHubId != null &&
+                  profile.currentHubId!.isNotEmpty) {
+                _goToOperatorView(token, profile.currentHubId!);
+                return;
+              }
 
               if (!profile.profileComplete) {
                 Navigator.of(context).pushReplacement(
@@ -165,8 +171,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isTabletDevice = isTablet(context);
-
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -252,5 +256,20 @@ class _SplashScreenState extends State<SplashScreen>
         ],
       ),
     );
+  }
+
+  Future<void> _goToOperatorView(String token, String hubId) async {
+    Hub? hub = await _arcadiaCloud.getHubDetails(hubId, token);
+    if (hub != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+            builder: (context) => GameActivityView(
+                  hubId: hubId,
+                  hubDetails: hub,
+                )),
+      );
+    } else {
+      return;
+    }
   }
 }

@@ -58,8 +58,7 @@ class _MyQRCodeState extends State<MyQRCode> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           image: DecorationImage(
-                            image: userProfile != null &&
-                                    userProfile.profileImageUrl.isNotEmpty
+                            image: userProfile.profileImageUrl.isNotEmpty
                                 ? CachedNetworkImageProvider(
                                     userProfile.profileImageUrl)
                                 : const AssetImage('assets/hambopr.jpg')
@@ -73,7 +72,7 @@ class _MyQRCodeState extends State<MyQRCode> {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  userProfile != null && userProfile.gamertag.isNotEmpty
+                  userProfile.gamertag.isNotEmpty
                       ? userProfile.gamertag
                       : '[gamertag]',
                   style: const TextStyle(
