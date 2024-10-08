@@ -2,6 +2,7 @@ import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/gamematch_container.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
+import 'package:arcadia_mobile/src/structure/hub_checkout.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
 import 'package:arcadia_mobile/src/tools/slides.dart';
 import 'package:arcadia_mobile/src/views/matches/match_view.dart';
@@ -45,6 +46,24 @@ class _GameActivityViewState extends State<GameActivityView> {
     return response.isNotEmpty ? response : [];
   }
 
+  Future<bool> _hubCheckout(String hubId) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return false;
+
+    final HubCheckOut response =
+        await _arcadiaCloud.checkoutOperator(hubId, token);
+
+    if (response.success) {
+      return true;
+    }
+
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +104,7 @@ class _GameActivityViewState extends State<GameActivityView> {
             // Buttons at the bottom
             _buildNewMatchButton(context, widget.hubDetails),
             const SizedBox(height: 10), // Space between buttons
-            _buildCheckOutButton(context),
+            _buildCheckOutButton(context, widget.hubId),
             const SizedBox(height: 30), // Add some space below the buttons
           ],
         ),
@@ -99,6 +118,7 @@ class _GameActivityViewState extends State<GameActivityView> {
       title: const Text('Operator'),
       centerTitle: true,
       backgroundColor: Colors.black,
+      automaticallyImplyLeading: false,
       actions: [
         IconButton(
           icon: const Icon(Icons.report_problem_rounded, color: Colors.white),
@@ -182,6 +202,7 @@ class _GameActivityViewState extends State<GameActivityView> {
                 MatchView(
                   matchData: null,
                   hubDetails: hubDetails,
+                  hubId: widget.hubId,
                 ))
           },
           style: ElevatedButton.styleFrom(
@@ -200,12 +221,21 @@ class _GameActivityViewState extends State<GameActivityView> {
   }
 
   // Button for Check-Out
-  Widget _buildCheckOutButton(BuildContext context) {
+  Widget _buildCheckOutButton(BuildContext context, String hubId) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Center(
         child: OutlinedButton(
-          onPressed: () => {},
+          onPressed: () async => {
+            if (await _hubCheckout(hubId))
+              {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/', // Replace '/' with your initial route name
+                  (Route<dynamic> route) =>
+                      false, // This clears all previous routes
+                )
+              }
+          },
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(50),
           ),

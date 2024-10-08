@@ -69,8 +69,7 @@ class _QRCodeScreenState extends State<QRCodeScreen>
                 QRScan(),
                 MyQRCode(),
               ]
-            : userProfile?.userType == "operator" ||
-                    userProfile?.userType == "admin"
+            : userProfile?.userType == "operator"
                 ? const [
                     OperatorQRScan(),
                     MyQRCode(),

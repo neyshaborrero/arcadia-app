@@ -4,6 +4,8 @@ import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
+import 'package:arcadia_mobile/src/structure/hub_checkin.dart';
+import 'package:arcadia_mobile/src/structure/hub_checkout.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
@@ -13,6 +15,7 @@ import 'package:arcadia_mobile/src/structure/response_detail.dart';
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ArcadiaCloud {
@@ -259,7 +262,6 @@ class ArcadiaCloud {
 
   Future<UserActivity?> validateQRCode(
       String qrCode, String token, AppLocation location) async {
-    print("Validating response $qrCode");
     final response = await http.post(
       Uri.parse(
           '${_firebaseService.arcadiaCloudAddress}/mission/validate'), // Replace with your actual endpoint
@@ -288,6 +290,62 @@ class ArcadiaCloud {
       throw BadRequestException(errorResponse['errors'][0]['message']);
     } else {
       return null;
+    }
+  }
+
+  Future<HubCheckin> validateOperatorQRCode(String qrCode, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/operator/scan'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({
+        'qrcode': qrCode,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      print("Validating response $data");
+      return HubCheckin.fromJson(data);
+    } else if (response.statusCode == 400 || response.statusCode == 401) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      print(errorResponse['errors'][0]['message']);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    } else {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    }
+  }
+
+  Future<HubCheckOut> checkoutOperator(String hubId, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/hubs/activity/$hubId'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({
+        'type': "checkout",
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      print("Validating response $data");
+      return HubCheckOut.fromJson(data);
+    } else if (response.statusCode == 400 || response.statusCode == 401) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      print(errorResponse['errors'][0]['message']);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    } else {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
     }
   }
 
@@ -470,8 +528,6 @@ class ArcadiaCloud {
 
   Future<List<MatchDetails>> getArcadiaMatches(
       String hubId, String token) async {
-    print("hubId: $hubId");
-
     // Construct the API URL
     final url = Uri.parse(
         '${_firebaseService.arcadiaCloudAddress}/match/get?hubId=$hubId');

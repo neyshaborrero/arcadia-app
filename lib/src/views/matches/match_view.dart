@@ -1,4 +1,6 @@
-import 'package:arcadia_mobile/src/components/create_match.dart';
+import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/components/create_match_dialog.dart';
 import 'package:arcadia_mobile/src/structure/game.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
@@ -6,14 +8,20 @@ import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/slides.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:arcadia_mobile/src/structure/match_player.dart';
+import 'package:provider/provider.dart';
 
 class MatchView extends StatefulWidget {
   final MatchDetails? matchData;
   final Hub hubDetails;
+  final String hubId;
   const MatchView(
-      {super.key, required this.matchData, required this.hubDetails});
+      {super.key,
+      required this.matchData,
+      required this.hubDetails,
+      required this.hubId});
 
   @override
   _MatchViewState createState() => _MatchViewState();
@@ -23,8 +31,8 @@ class HubDetails {}
 
 class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
   int _selectedGameIndex = 1;
-  int? _selectedAvatarIndex; // Track the selected avatar
   String matchType = '1v1';
+  late final ArcadiaCloud _arcadiaCloud;
 
   late List<AnimationController> _controllers;
   late List<Animation<double>> _progressAnimations;
@@ -36,6 +44,10 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    final firebaseService =
+        Provider.of<FirebaseService>(context, listen: false);
+    _arcadiaCloud = ArcadiaCloud(firebaseService);
 
     if (widget.matchData != null) {
       matchDetails = widget.matchData!;
@@ -87,6 +99,21 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  Future<MatchDetails?> _createMatch(
+      Hub hub, Game game, String hubId, String stationId) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return null;
+
+    final MatchDetails? response = await _arcadiaCloud.createArcadiaMatch(
+        game.gameId, hub.eventId, hubId, stationId, game.type, token);
+
+    return response;
   }
 
   // Method to handle avatar tap

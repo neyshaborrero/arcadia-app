@@ -86,6 +86,7 @@ class _MatchContainerState extends State<MatchContainer> {
             MatchView(
               matchData: match,
               hubDetails: widget.hubDetails,
+              hubId: widget.hubId,
             ));
       },
       child: Container(

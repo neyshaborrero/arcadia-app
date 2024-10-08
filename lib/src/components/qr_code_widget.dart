@@ -48,7 +48,9 @@ class _QRScanState extends State<QRScan> {
     return Column(children: [
       Expanded(
           child: isManual
-              ? const ManualQRCodeView()
+              ? const ManualQRCodeView(
+                  operatorScan: false,
+                )
               : Column(children: [
                   Padding(
                     padding: const EdgeInsets.all(18.0),

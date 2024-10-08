@@ -30,9 +30,25 @@ void showCreateMatch(BuildContext context, MatchDetails match) {
               const SizedBox(
                 height: 10,
               ),
-              _buildActionButton(
-                context,
-                arcadiaCloud,
+              Row(
+                mainAxisAlignment: MainAxisAlignment
+                    .spaceEvenly, // Align buttons with space between them
+                children: [
+                  // First Action Button
+                  Expanded(
+                    child: _buildCloseButton(
+                      context,
+                      arcadiaCloud, // First action button parameters
+                    ),
+                  ),
+                  // Second Action Button
+                  Expanded(
+                    child: _buildActionButton(
+                      context,
+                      arcadiaCloud, // Second action button parameters
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -107,7 +123,52 @@ Widget _buildVoteContent(
 }
 
 Widget _buildActionButton(BuildContext context, ArcadiaCloud arcadiaCloud) {
-  const buttonText = "Vote";
+  const buttonText = "Start Match";
+
+  return Column(
+    children: [
+      ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size.fromHeight(48),
+          backgroundColor: Colors.black,
+        ),
+        onPressed: () async {
+          bool success = true;
+          //await _submitSurveyAnswer(arcadiaCloud, surveyId, [answerId]);
+          if (success) {
+            Navigator.of(context).pop(true); // Close the dialog and return true
+          } else {
+            // Handle the case when the survey submission fails (e.g., show an error message)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Failed to submit your vote. Try again later')),
+            );
+          }
+        },
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 225, maxWidth: 225),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: const Color(0XFF4BAE4F),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                buttonText,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildCloseButton(BuildContext context, ArcadiaCloud arcadiaCloud) {
+  const buttonText = "Close";
 
   return Column(
     children: [
@@ -141,7 +202,7 @@ Widget _buildActionButton(BuildContext context, ArcadiaCloud arcadiaCloud) {
               child: Text(
                 buttonText,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: Theme.of(context).textTheme.labelSmall,
               ),
             ),
           ),
