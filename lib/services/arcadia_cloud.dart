@@ -8,10 +8,12 @@ import 'package:arcadia_mobile/src/structure/hub_checkin.dart';
 import 'package:arcadia_mobile/src/structure/hub_checkout.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
+import 'package:arcadia_mobile/src/structure/match_player.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
 import 'package:arcadia_mobile/src/structure/response_detail.dart';
+import 'package:arcadia_mobile/src/structure/success_response.dart';
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
@@ -260,6 +262,27 @@ class ArcadiaCloud {
     }
   }
 
+  Future<String> fetchUserUID(String qrcode, String token) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/user/getuid/$qrcode');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      // Handle error
+      return '';
+    }
+  }
+
   Future<UserActivity?> validateQRCode(
       String qrCode, String token, AppLocation location) async {
     final response = await http.post(
@@ -494,8 +517,8 @@ class ArcadiaCloud {
     }
   }
 
-  Future<MatchDetails?> createArcadiaMatch(String gameId, String eventId,
-      String hubId, String stationId, String matchType, String token) async {
+  Future<MatchDetails?> createArcadiaMatch(String? gameId, String eventId,
+      String hubId, String? stationId, String? matchType, String token) async {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/create');
 
@@ -516,8 +539,8 @@ class ArcadiaCloud {
     );
 
     if (response.statusCode == 200) {
-      final MatchDetails data = json.decode(response.body);
-      print(data);
+      final Map<String, dynamic> jsonData = json.decode(response.body);
+      final MatchDetails data = MatchDetails.fromJson(null, jsonData);
       return data;
     } else {
       // Handle error
@@ -526,11 +549,133 @@ class ArcadiaCloud {
     }
   }
 
+  Future<MatchPlayer?> addPlayerArcadiaMatch(
+      String gameId,
+      String matchId,
+      String playerSlot,
+      String userId,
+      String matchType,
+      String stationId,
+      String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/addPlayer');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: json.encode({
+        'gameId': gameId,
+        'matchId': matchId,
+        'playerSlot': playerSlot,
+        'userId': userId,
+        'matchType': matchType,
+        'stationId': stationId
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = json.decode(response.body);
+      final MatchPlayer data = MatchPlayer.fromJson(jsonData);
+      return data;
+    } else {
+      // Handle error
+      print('Failed to add player');
+      return null;
+    }
+  }
+
+  Future<bool> changeMatchStatus(
+      String matchStatus, String matchId, String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/setStatus');
+
+    print("matchstatus $matchStatus");
+    print("matchId $matchId");
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: json.encode({
+        'matchId': matchId,
+        'matchStatus': matchStatus,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      // Handle error
+      print('Failed to change match status');
+      return false;
+    }
+  }
+
+  Future<bool> setMatchWinner(
+      String winner, String matchId, String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/setWinner');
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: json.encode({
+        'matchId': matchId,
+        'winner': winner,
+      }),
+    );
+
+    print("statusCode ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      // Handle error
+      print('Failed set match winner');
+      return false;
+    }
+  }
+
+  Future<bool> deleteArcadiaMatch(String matchId, String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/${matchId}');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = json.decode(response.body);
+      final SuccessResponse data = SuccessResponse.fromJson(jsonData);
+      return data.success;
+    } else {
+      // Handle error
+      print('Failed to delete arcadia match');
+      return false;
+    }
+  }
+
   Future<List<MatchDetails>> getArcadiaMatches(
       String hubId, String token) async {
     // Construct the API URL
     final url = Uri.parse(
-        '${_firebaseService.arcadiaCloudAddress}/match/get?hubId=$hubId');
+        '${_firebaseService.arcadiaCloudAddress}/match/get?hubId=$hubId&status=in%20progress&status=ready');
 
     // Send the GET request to the server
     final response = await http.get(
@@ -548,15 +693,14 @@ class ArcadiaCloud {
         // Decode the response body into a Map<String, dynamic>
         final Map<String, dynamic> jsonData = json.decode(response.body);
 
-        print("matches $jsonData");
-
         // Initialize an empty list to store MatchDetails objects
         List<MatchDetails> matches = [];
 
         jsonData.forEach((key, item) {
           try {
             // Parse the item into MatchDetails and add it to the list
-            matches.add(MatchDetails.fromJson(item as Map<String, dynamic>));
+            matches
+                .add(MatchDetails.fromJson(key, item as Map<String, dynamic>));
           } catch (e) {
             // Print specific error message for this item
             print("Error parsing item with key: $key. Error: $e");

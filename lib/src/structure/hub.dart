@@ -8,7 +8,7 @@ class Hub {
   final String image;
   final String name;
   final String sponsorId;
-  final Map<String, Station> stations; // Change to Map with Station class
+  final Map<String, Station> stations; // Map with Station class
   final List<Game> games;
 
   Hub({
@@ -27,7 +27,7 @@ class Hub {
     Map<String, Station> stationsMap =
         (json['stations'] as Map<String, dynamic>).map(
       (key, value) =>
-          MapEntry(key, Station.fromJson(value as Map<String, dynamic>)),
+          MapEntry(key, Station.fromJson(key, value as Map<String, dynamic>)),
     );
 
     // Parsing games: Convert each game entry into a Game object
@@ -45,5 +45,20 @@ class Hub {
       stations: stationsMap,
       games: gameList,
     );
+  }
+
+  // Method to return the Station ID based on the provided Game ID
+  String? getStationIdByGameId(String gameId) {
+    try {
+      // Loop through the stations and return the station ID if the gameId matches
+      for (var entry in stations.entries) {
+        if (entry.value.gameId == gameId) {
+          return entry.key; // Return the station ID (key in the map)
+        }
+      }
+    } catch (e) {
+      print("Error while retrieving Station ID for Game ID: $e");
+    }
+    return null; // Return null if no station is found for the given gameId
   }
 }

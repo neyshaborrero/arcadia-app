@@ -194,7 +194,7 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
             builder: (context) => GameActivityView(
                   hubId: hubId,
                   hubDetails: hub,
-                )),
+                ))
       );
     } else {
       return;
