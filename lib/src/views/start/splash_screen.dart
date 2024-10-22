@@ -40,6 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
     _arcadiaCloud = ArcadiaCloud(firebaseService);
 
     _splashAdFuture = _initializeSplashAd();
+
     _checkAuthStatus();
   }
 
@@ -72,6 +73,8 @@ class _SplashScreenState extends State<SplashScreen>
     FirebaseAuth.instance.authStateChanges().listen((User? user) async {
       await Future.delayed(const Duration(seconds: 3));
       if (!mounted) return;
+
+      print("user in splash screen $user");
 
       if (user == null) {
         Navigator.of(context).pushReplacement(
