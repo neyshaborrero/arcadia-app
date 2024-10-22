@@ -7,6 +7,7 @@ class UserProfile {
   final String userType;
   int tokens;
   final String qrcode;
+  final String qrcodeWithPepper;
   final bool profileComplete;
   String fcmToken;
   String? currentHubId;
@@ -22,6 +23,7 @@ class UserProfile {
       required this.userType,
       required this.tokens,
       required this.qrcode,
+      required this.qrcodeWithPepper,
       required this.profileComplete,
       required this.fcmToken,
       this.currentHubId,
@@ -39,6 +41,7 @@ class UserProfile {
         userType: json['userType'] ?? '',
         tokens: json['tokens'] ?? 0,
         qrcode: json['qrcode'] ?? '',
+        qrcodeWithPepper: json['qrcodeWithPepper'] ?? '',
         profileComplete: json['profileComplete'] ?? false,
         fcmToken: json['fcmToken'] ?? '',
         currentHubId: json['currentHubId'] ?? '',

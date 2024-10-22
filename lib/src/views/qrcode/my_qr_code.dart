@@ -21,7 +21,7 @@ class _MyQRCodeState extends State<MyQRCode> {
 
     // Generate the referral deep link using the user's ID
     final deepLink =
-        'https://arcadia-deeplink.web.app?userqr=${userProfile!.qrcode}'; // Change this URL based on your server setup
+        'https://arcadia-deeplink.web.app?userqr=${userProfile!.qrcodeWithPepper}'; // Change this URL based on your server setup
 
     // Determine the avatar radius based on screen size
     double avatarRadius;
