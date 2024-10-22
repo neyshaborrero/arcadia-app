@@ -12,20 +12,30 @@ import 'package:arcadia_mobile/src/views/start/update_app_view.dart';
 import 'package:arcadia_mobile/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_performance/firebase_performance.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
+import 'firebase_options_dev.dart';
 import 'src/notifiers/change_notifier.dart';
-
-// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-//     FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  // Check the value of FLAVOR passed via --dart-define to determine the environment.
+  const flavor = String.fromEnvironment('FLAVOR');
+  FirebaseOptions firebaseOptions;
+
+  if (flavor == 'dev') {
+    // Use development Firebase configuration
+    firebaseOptions = DefaultFirebaseOptionsDev.currentPlatform;
+  } else {
+    // Use production Firebase configuration (default)
+    firebaseOptions = DefaultFirebaseOptions.currentPlatform;
+  }
+
+  await Firebase.initializeApp(options: firebaseOptions);
 
   final firebaseService = FirebaseService.createInstance();
   bool initialized = await firebaseService.initialize();
@@ -39,10 +49,13 @@ void main() async {
   await screenTrace.start();
 
   // Perform the version check
-  bool isLatestVersion = await firebaseService.checkForUpdate();
-  if (!isLatestVersion) {
-    runApp(const UpdateRequiredApp());
-    return;
+  print("Are we in release mode? $kReleaseMode");
+  if (kReleaseMode) {
+    bool isLatestVersion = await firebaseService.checkForUpdate();
+    if (!isLatestVersion) {
+      runApp(const UpdateRequiredApp());
+      return;
+    }
   }
 
   runApp(

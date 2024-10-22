@@ -61,15 +61,20 @@ class _CreateAccountViewState extends State<CreateAccountView> {
       final response =
           await _arcadiaCloud.checkPassword(email, password, confirmPassword);
       if (response['success']) {
+        print("email $email");
         UserCredential userCredential =
             await _firebaseAuth.createUserWithEmailAndPassword(
           email: email,
           password: password,
         );
 
+        print("are we saving? ${userCredential.user}");
+
         User? user = userCredential.user;
         if (user != null) {
           String? token = await user.getIdToken();
+
+          print("token USER $token");
 
           final response = await _arcadiaCloud.saveUserToDB(email, token);
           if (response['success']) {

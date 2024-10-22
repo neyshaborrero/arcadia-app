@@ -133,7 +133,9 @@ class ArcadiaCloud {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/user/saveuser');
 
-    print(token);
+    print("so we have a token?? $token");
+
+    print("do we have an apikey? ${_firebaseService.xApiKey}");
 
     final response = await http.post(
       url,
@@ -148,6 +150,8 @@ class ArcadiaCloud {
       }),
     );
 
+    print("response ${response.statusCode}");
+
     if (response.statusCode == 200) {
       return {'success': true};
     } else {
@@ -156,7 +160,7 @@ class ArcadiaCloud {
       ResponseDetail parsedResponse = ResponseDetail.fromJson(res);
 
       List<ErrorDetail> errors = parsedResponse.errors;
-
+      print("errors $errors");
       return {'success': false, 'errors': errors};
     }
   }
