@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+import 'package:uuid/uuid.dart';
 
 class MyQRCode extends StatefulWidget {
   const MyQRCode({super.key});
@@ -14,6 +16,26 @@ class MyQRCode extends StatefulWidget {
 }
 
 class _MyQRCodeState extends State<MyQRCode> {
+  late final Timer _qrPepperTestTimer;
+  final Uuid _uuid = Uuid();
+  late String _currentQRPepper;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentQRPepper = _uuid.v4();
+    _qrPepperTestTimer = Timer.periodic(
+      Duration(seconds: 10),
+      (Timer timer) {
+        print(timer.tick);
+
+        setState(() {
+          _currentQRPepper = _uuid.v4();
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
@@ -21,7 +43,10 @@ class _MyQRCodeState extends State<MyQRCode> {
 
     // Generate the referral deep link using the user's ID
     final deepLink =
-        'https://arcadia-deeplink.web.app?userqr=${userProfile!.qrcodeWithPepper}'; // Change this URL based on your server setup
+        'https://arcadia-deeplink.web.app?userqr=${_currentQRPepper}\$${userProfile!.qrcode}'; // Change this URL based on your server setup
+
+    print("MR QR CODE INFO: qrcode: ${userProfile?.qrcode} qrcodeWithPepper: ${userProfile?.qrcodeWithPepper}");
+    print("_currentQrPepper: ${_currentQRPepper} deepLink: ${deepLink}");
 
     // Determine the avatar radius based on screen size
     double avatarRadius;
