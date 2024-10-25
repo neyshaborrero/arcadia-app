@@ -78,8 +78,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (token != null && token.isNotEmpty) {
         final profile = await _arcadiaCloud.fetchUserProfile(token);
         if (profile != null) {
-          Provider.of<UserProfileProvider>(context, listen: false)
-              .setUserProfile(profile);
+          final UserProfileProvider userProfileProvider = 
+            Provider.of<UserProfileProvider>(context, listen: false);
+          userProfileProvider.setUserProfile(profile);
+          userProfileProvider.setToken(token);
+
           if (!profile.profileComplete) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(

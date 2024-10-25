@@ -3,9 +3,11 @@ import 'package:flutter/foundation.dart';
 
 class UserProfileProvider with ChangeNotifier {
   UserProfile? _userProfile;
+  String? _token;
 
   UserProfile? get userProfile => _userProfile;
   String? get profileUrl => _userProfile?.profileImageUrl;
+  String? get token => _token;
 
   void setUserProfile(UserProfile profile) {
     _userProfile = profile;
@@ -31,6 +33,11 @@ class UserProfileProvider with ChangeNotifier {
 
   void updateXP(int xpEarned) {
     _userProfile!.xp = _userProfile!.xp + xpEarned;
+    notifyListeners();
+  }
+
+  void setToken(String? token) {
+    _token = token;
     notifyListeners();
   }
 }

@@ -332,8 +332,10 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
   Future<void> _handleSuccess(String token) async {
     UserProfile? profile = await _arcadiaCloud.fetchUserProfile(token);
     if (profile != null) {
-      Provider.of<UserProfileProvider>(context, listen: false)
-          .setUserProfile(profile);
+      final UserProfileProvider userProfileProvider =
+        Provider.of<UserProfileProvider>(context, listen: false);
+      userProfileProvider.setUserProfile(profile);
+      userProfileProvider.setToken(token);
     }
 
     List<MissionDetails>? missions = await _fetchMissions(token);

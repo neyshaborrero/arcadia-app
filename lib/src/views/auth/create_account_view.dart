@@ -82,8 +82,9 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                 ? await _arcadiaCloud.fetchUserProfile(token)
                 : null;
             if (profile != null) {
-              Provider.of<UserProfileProvider>(context, listen: false)
-                  .setUserProfile(profile);
+              final UserProfileProvider userProfileProvider = Provider.of<UserProfileProvider>(context, listen: false);
+              userProfileProvider.setUserProfile(profile);
+              userProfileProvider.setToken(token);
             }
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
