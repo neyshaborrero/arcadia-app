@@ -10,8 +10,7 @@ import 'package:provider/provider.dart';
 
 class SurveyContainer extends StatefulWidget {
   SurveyDetails surveyDetails;
-  final Function(String surveyId)
-      onVoteComplete; // Add the onVoteComplete callback
+  final Function() onVoteComplete; // Add the onVoteComplete callback
 
   SurveyContainer(
       {super.key, required this.surveyDetails, required this.onVoteComplete});
@@ -33,7 +32,7 @@ class _SurveyContainerState extends State<SurveyContainer> {
       hasReachedMaxVotes = reachedMaxVotes;
     });
     // Trigger the parent callback, passing the surveyId
-    widget.onVoteComplete(widget.surveyDetails.id);
+    widget.onVoteComplete();
   }
 
   Future<void> _navigateToVoteScreen(BuildContext context) async {

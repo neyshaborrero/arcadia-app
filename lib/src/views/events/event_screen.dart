@@ -36,10 +36,10 @@ class _EventViewState extends State<EventView> {
   }
 
   // Callback to be triggered when a vote is completed with the surveyId
-  void _onVoteComplete(String surveyId) {
+  void _onVoteComplete() {
     // Re-fetch the survey details to update the UI with new percentages
     setState(() {
-      _surveyDetailsFuture = _fetchSurveyDetails(surveyId);
+      _surveyDetailsFuture = _fetchSurveys();
     });
   }
 
@@ -89,10 +89,9 @@ class _EventViewState extends State<EventView> {
                             itemBuilder: (context, index) {
                               return SurveyContainer(
                                 surveyDetails: surveyDetailsList[index],
-                                onVoteComplete: (String surveyId) {
+                                onVoteComplete: () {
                                   // Handle the vote completion, such as re-fetching the survey details
-                                  _onVoteComplete(
-                                      surveyId); // This can re-fetch updated survey data
+                                  _onVoteComplete(); // This can re-fetch updated survey data
                                 },
                               );
                             },
@@ -145,20 +144,6 @@ class _EventViewState extends State<EventView> {
     if (token == null) return [];
 
     final List<SurveyDetails> surveys = await _arcadiaCloud.fetchSurveys(token);
-    return surveys;
-  }
-
-  // Method to fetch the specific survey details (this will include updated percentages)
-  Future<List<SurveyDetails>> _fetchSurveyDetails(String surveyId) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return [];
-
-    final token = await user.getIdToken();
-
-    if (token == null) return [];
-
-    final List<SurveyDetails> surveys =
-        await _arcadiaCloud.fetchSurveyDetails(token, surveyId);
     return surveys;
   }
 }
