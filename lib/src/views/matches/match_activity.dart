@@ -4,7 +4,6 @@ import 'package:arcadia_mobile/src/components/gamematch_container.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/hub_checkout.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
-import 'package:arcadia_mobile/src/tools/slides.dart';
 import 'package:arcadia_mobile/src/views/matches/match_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -46,28 +45,46 @@ class _GameActivityViewState extends State<GameActivityView> {
     return response.isNotEmpty ? response : [];
   }
 
+  // Method to refresh matches after pulling or popping MatchView
+  Future<void> _refreshMatches() async {
+    setState(() {
+      _hubMatchesFuture = _fetchMatches(widget.hubId); // Fetch updated matches
+    });
+  }
+
   Future<bool> _hubCheckout(String hubId) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return false;
 
     final token = await user.getIdToken();
-
     if (token == null) return false;
 
     final HubCheckOut response =
         await _arcadiaCloud.checkoutOperator(hubId, token);
-
     if (response.success) {
       return true;
     }
-
     return false;
+  }
+
+  Future<MatchDetails?> _createMatch(String hubId, String eventId) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    final token = await user.getIdToken();
+
+    if (token == null) return null;
+
+    final MatchDetails? response = await _arcadiaCloud.createArcadiaMatch(
+        null, eventId, hubId, null, null, token);
+
+    return response;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(widget.hubDetails.name),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -87,12 +104,19 @@ class _GameActivityViewState extends State<GameActivityView> {
                     // Show no matches available if the list is empty
                     return _buildGameActivityContainer(context);
                   } else {
-                    // Show the MatchContainer with fetched matches
-                    return SingleChildScrollView(
-                      child: MatchContainer(
-                        hubId: widget.hubId,
-                        hubMatches: snapshot.data!, // Pass the fetched matches
-                        hubDetails: widget.hubDetails,
+                    return RefreshIndicator(
+                      onRefresh: _refreshMatches,
+                      // Show the MatchContainer with fetched matches
+                      child: SingleChildScrollView(
+                        physics:
+                            const AlwaysScrollableScrollPhysics(), // Ensure it is scrollable even with less content
+                        child: MatchContainer(
+                          hubId: widget.hubId,
+                          hubMatches:
+                              snapshot.data!, // Pass the fetched matches
+                          hubDetails: widget.hubDetails,
+                          onRefreshMatches: _refreshMatches,
+                        ),
                       ),
                     );
                   }
@@ -102,7 +126,7 @@ class _GameActivityViewState extends State<GameActivityView> {
             const SizedBox(height: 20), // Space before the buttons
 
             // Buttons at the bottom
-            _buildNewMatchButton(context, widget.hubDetails),
+            _buildNewMatchButton(context, widget.hubDetails, widget.hubId),
             const SizedBox(height: 10), // Space between buttons
             _buildCheckOutButton(context, widget.hubId),
             const SizedBox(height: 30), // Add some space below the buttons
@@ -113,9 +137,9 @@ class _GameActivityViewState extends State<GameActivityView> {
   }
 
   // AppBar Widget
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(String hubName) {
     return AppBar(
-      title: const Text('Operator'),
+      title: Text(hubName),
       centerTitle: true,
       backgroundColor: Colors.black,
       automaticallyImplyLeading: false,
@@ -191,20 +215,13 @@ class _GameActivityViewState extends State<GameActivityView> {
   }
 
   // Button for New Match
-  Widget _buildNewMatchButton(BuildContext context, Hub hubDetails) {
+  Widget _buildNewMatchButton(
+      BuildContext context, Hub hubDetails, String hubId) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Center(
         child: ElevatedButton(
-          onPressed: () => {
-            navigateUpWithSlideTransition(
-                context,
-                MatchView(
-                  matchData: null,
-                  hubDetails: hubDetails,
-                  hubId: widget.hubId,
-                ))
-          },
+          onPressed: () => {createNewMatch(hubDetails, hubId)},
           style: ElevatedButton.styleFrom(
             minimumSize: const Size.fromHeight(50),
           ),
@@ -249,5 +266,32 @@ class _GameActivityViewState extends State<GameActivityView> {
         ),
       ),
     );
+  }
+
+  // When navigating to MatchView, listen for the result
+  createNewMatch(Hub hubDetails, String hubId) async {
+    MatchDetails? matchDetails = await _createMatch(hubId, hubDetails.eventId);
+
+    if (matchDetails != null) {
+      var result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MatchView(
+            matchData: matchDetails,
+            hubDetails: hubDetails,
+            hubId: widget.hubId,
+          ),
+        ),
+      );
+
+      if (result == 'refresh') {
+        _refreshMatches();
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Something went wrong. Try creating a match later')),
+      );
+    }
   }
 }

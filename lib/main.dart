@@ -94,6 +94,7 @@ class MyApp extends StatelessWidget {
   final bool initialized;
   final List<AdsDetails> ads;
   final Trace screenTrace;
+
   const MyApp(
       {super.key,
       required this.initialized,

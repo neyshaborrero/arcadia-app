@@ -5,6 +5,9 @@ import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/hub_checkin.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
+import 'package:arcadia_mobile/src/structure/match_details.dart';
+import 'package:arcadia_mobile/src/structure/match_player.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/location.dart';
 import 'package:arcadia_mobile/src/views/matches/match_activity.dart';
 import 'package:arcadia_mobile/src/views/qrcode/manual_code.dart';
@@ -15,7 +18,8 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:vibration/vibration.dart';
 
 class OperatorQRScan extends StatefulWidget {
-  const OperatorQRScan({super.key});
+  final ViewType viewType;
+  const OperatorQRScan({super.key, required this.viewType});
 
   @override
   _OperatorQRScanState createState() => _OperatorQRScanState();
@@ -114,21 +118,24 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
         if (user != null) {
           final String? token = await user.getIdToken();
           if (token != null) {
-            final HubCheckin? response =
-                await _arcadiaCloud.validateOperatorQRCode(code, token);
+            if (widget.viewType != ViewType.createMatch) {
+              final HubCheckin response =
+                  await _arcadiaCloud.validateOperatorQRCode(code, token);
 
-            if (response != null) {
               _goToOperatorView(token, response.hubId);
               return;
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text(
-                        'We couldnt validate the QR Code, try another one.')),
-              );
-
-              await Future.delayed(const Duration(seconds: 5));
-              Navigator.of(context).pop();
+              final String response =
+                  await _arcadiaCloud.fetchUserUID(code, token);
+              if (response.isNotEmpty) {
+                Navigator.of(context).pop(response);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text(
+                          'We couldnt validate the QR Code, try another one.')),
+                );
+              }
             }
           }
         }
@@ -143,21 +150,18 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message)),
       );
-
-      await Future.delayed(const Duration(seconds: 5));
-      Navigator.of(context).pop();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('We couldnt validate the QR Code, try another one.')),
       );
-
-      await Future.delayed(const Duration(seconds: 5));
-      Navigator.of(context).pop();
     } finally {
       setState(() {
         isScanning = true;
       });
+
+      await Future.delayed(const Duration(seconds: 5));
+      Navigator.of(context).pop();
     }
   }
 

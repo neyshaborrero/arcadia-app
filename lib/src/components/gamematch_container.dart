@@ -1,7 +1,6 @@
 import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
 import 'package:arcadia_mobile/src/structure/match_player.dart';
-import 'package:arcadia_mobile/src/tools/slides.dart';
 import 'package:flutter/material.dart';
 
 import '../views/matches/match_view.dart';
@@ -10,12 +9,15 @@ class MatchContainer extends StatefulWidget {
   final String hubId;
   final Hub hubDetails;
   final List<MatchDetails> hubMatches;
+  final VoidCallback onRefreshMatches;
 
-  const MatchContainer(
-      {super.key,
-      required this.hubId,
-      required this.hubMatches,
-      required this.hubDetails});
+  const MatchContainer({
+    super.key,
+    required this.hubId,
+    required this.hubMatches,
+    required this.hubDetails,
+    required this.onRefreshMatches,
+  });
 
   @override
   _MatchContainerState createState() => _MatchContainerState();
@@ -26,12 +28,6 @@ class _MatchContainerState extends State<MatchContainer> {
 
   @override
   Widget build(BuildContext context) {
-    final bool tablet = MediaQuery.of(context).size.width >= 600;
-    final double scaleFactor = tablet
-        ? MediaQuery.of(context).size.height / 1000
-        : MediaQuery.of(context).size.height / 900;
-    final double padding = 12 * scaleFactor;
-
     // Directly using the matches from widget.hubMatches
     final matches = widget.hubMatches;
 
@@ -80,14 +76,22 @@ class _MatchContainerState extends State<MatchContainer> {
     List<MatchPlayer> team2 = match.team2 ?? [];
 
     return InkWell(
-      onTap: () {
-        navigateUpWithSlideTransition(
-            context,
-            MatchView(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MatchView(
               matchData: match,
               hubDetails: widget.hubDetails,
               hubId: widget.hubId,
-            ));
+            ),
+          ),
+        );
+
+        // If the result is 'refresh', trigger a callback or method in GameActivityView
+        if (result == 'refresh') {
+          widget.onRefreshMatches();
+        }
       },
       child: Container(
         padding: EdgeInsets.all(10),
@@ -104,41 +108,70 @@ class _MatchContainerState extends State<MatchContainer> {
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize
-              .min, // Ensures the column takes only the necessary space
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            // Display station name and game name
-            Center(
-              child: Text(
-                match.station!.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+            Stack(children: [
+              if (match.matchStatus == 'in progress')
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Transform.scale(
+                      scale: 0.7,
+                      child: Switch(
+                        value: true, // Always "on"
+                        onChanged: (bool value) {
+                          // Do nothing, so the switch always stays "on"
+                        },
+                        activeTrackColor: Colors.lightGreenAccent,
+                        activeColor: Colors.green,
+                      )),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Center(
-              child: Text(
-                "${match.game!.name} ${match.game!.type}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
+              Column(children: [
+                SizedBox(
+                  height: 15,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+                // Display station name and game name
+                Center(
+                  child: Text(
+                    match.station != null
+                        ? match.station!.name
+                        : 'Finish Setting up the Match',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Center(
+                  child: Text(
+                    match.game != null
+                        ? "${match.game!.name} ${match.game!.type}"
+                        : '',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              ]),
+            ]),
             const SizedBox(height: 15),
 
             // Display team1 and team2 players
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Flexible(
-                  child: _buildPlayerAvatar(context, team1[0].gamertag,
-                      team1[0].imageprofile, team1[0].stationSpot),
-                ),
+                if (team1.isNotEmpty)
+                  Flexible(
+                    child: _buildPlayerAvatar(context, team1[0].gamertag,
+                        team1[0].imageprofile, team1[0].stationSpot),
+                  ),
                 if (match.matchType == '1v1')
                   Flexible(
                     child: Image.asset(
@@ -147,10 +180,11 @@ class _MatchContainerState extends State<MatchContainer> {
                       height: 60,
                     ),
                   ),
-                Flexible(
-                  child: _buildPlayerAvatar(context, team2[0].gamertag,
-                      team2[0].imageprofile, team2[0].stationSpot),
-                ),
+                if (team2.isNotEmpty)
+                  Flexible(
+                    child: _buildPlayerAvatar(context, team2[0].gamertag,
+                        team2[0].imageprofile, team2[0].stationSpot),
+                  ),
               ],
             ),
 
