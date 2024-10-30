@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen>
                     indicatorSize: TabBarIndicatorSize.tab,
                     tabs: const [
                       Tab(text: 'Quests'),
-                      Tab(text: 'Event'),
+                      Tab(text: 'Vote'),
                       Tab(text: 'News'),
                     ],
                   )

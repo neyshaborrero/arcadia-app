@@ -68,7 +68,7 @@ class QuestsView extends StatelessWidget {
                 children: [
                   ListAction(
                     missions: dailyQuests,
-                    title: 'Daily Quests',
+                    title: 'Earn Daily Tokens',
                     isTablet: isTablet,
                     isLargePhone: isLargePhone,
                     isSmallPhone: isSmallPhone,
@@ -78,7 +78,7 @@ class QuestsView extends StatelessWidget {
                   ),
                   ListAction(
                     missions: sideQuests,
-                    title: 'Side Quests',
+                    title: 'Earn More Tokens',
                     isTablet: isTablet,
                     isLargePhone: isLargePhone,
                     isSmallPhone: isSmallPhone,

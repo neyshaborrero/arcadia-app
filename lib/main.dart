@@ -6,6 +6,8 @@ import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/survey_vote_status_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
+import 'package:arcadia_mobile/src/views/onboarding/onboarding_manager.dart';
+import 'package:arcadia_mobile/src/views/onboarding/onboarding_screen.dart';
 import 'package:arcadia_mobile/src/views/start/error_view.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:arcadia_mobile/src/views/start/update_app_view.dart';
@@ -30,6 +32,10 @@ void main() async {
   final firebaseService = FirebaseService.createInstance();
   bool initialized = await firebaseService.initialize();
   List<AdsDetails> splashAd = await loadSplashAds(initialized, firebaseService);
+
+  //Clear the onboarding preference
+  // final onboardingManager = OnboardingManager();
+  // await onboardingManager.clearOnboardingSeenPreference();
 
   // Initialize Firebase Performance
   FirebasePerformance performance = FirebasePerformance.instance;
@@ -111,11 +117,33 @@ class MyApp extends StatelessWidget {
     });
 
     return MaterialApp(
-      title: 'Arcadia Battle Royale 2024',
-      theme: _buildThemeData(context),
-      debugShowCheckedModeBanner: false,
-      home: initialized ? const SplashScreen() : const ErrorScreen(),
-    );
+        title: 'Arcadia Battle Royale 2024',
+        theme: _buildThemeData(context),
+        debugShowCheckedModeBanner: false,
+        home: FutureBuilder<bool>(
+            future: OnboardingManager().hasSeenOnboarding(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              }
+              bool hasSeenOnboarding = snapshot.data ?? false;
+
+              return hasSeenOnboarding
+                  ? initialized
+                      ? SplashScreen()
+                      : ErrorScreen()
+                  : OnboardingScreen(
+                      onFinish: () {
+                        // Rebuild to display the splash screen after onboarding
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                initialized ? SplashScreen() : ErrorScreen(),
+                          ),
+                        );
+                      },
+                    );
+            }));
   }
 }
 

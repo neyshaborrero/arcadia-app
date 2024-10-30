@@ -29,7 +29,7 @@ class PrizeScreen extends StatelessWidget {
           viewType: ViewType.prize,
         ),
         Text(
-          'Entries unlock in Aracadia on Dec 7 & 8!',
+          'Entries unlock in Arcadia on Dec 7 & 8!',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         Padding(

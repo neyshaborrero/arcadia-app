@@ -63,7 +63,7 @@ class TokenXPContainer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'View Rewards',
+                  'View Prizes',
                   style: Theme.of(context)
                       .textTheme
                       .labelMedium!
