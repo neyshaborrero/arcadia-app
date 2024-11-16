@@ -4,10 +4,15 @@ import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/no_activity.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
+import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
+import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
+import 'package:arcadia_mobile/src/views/events/loot_screen.dart';
+import 'package:arcadia_mobile/src/views/events/prize_screen.dart';
+import 'package:arcadia_mobile/src/views/events/raffle_view.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -31,51 +36,41 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   void initState() {
     super.initState();
+    _initializeArcadiaCloud();
+    _fetchInitialUserActivity();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _initializeArcadiaCloud() {
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
+  }
 
-    _fetchUserActivity(Provider.of<UserActivityProvider>(context, listen: false)
-        .isProviderEmpty());
-    _scrollController.addListener(_onScroll);
+  void _fetchInitialUserActivity() {
+    final isProviderEmpty =
+        Provider.of<UserActivityProvider>(context, listen: false)
+            .isProviderEmpty();
+    _fetchUserActivity(isProviderEmpty);
   }
 
   Future<void> _fetchUserActivity(bool isActivityProviderEmpty,
       {String? startAfter}) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-
+    final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     final token = await user.getIdToken();
-
     if (token == null) return;
 
     setState(() {
-      if (startAfter == null) {
-        _isLoading = true;
-      } else {
-        _isLoadingMore = true;
-      }
+      _isLoading = startAfter == null;
+      _isLoadingMore = startAfter != null;
     });
 
     final response =
         await _arcadiaCloud.fetchUserActivity(token, startAfter: startAfter);
-
     if (response != null) {
-      final List<UserActivity> activities = response['activities'];
-      final String lastKey = response['lastKey'];
-
-      if (startAfter != null) {
-        Provider.of<UserActivityProvider>(context, listen: false)
-            .addUserActivities(activities);
-      } else {
-        Provider.of<UserActivityProvider>(context, listen: false)
-            .setUserActivities(activities);
-      }
-
-      setState(() {
-        _lastKey = lastKey;
-      });
+      _handleUserActivityResponse(response, startAfter);
     }
 
     setState(() {
@@ -84,271 +79,296 @@ class _ProfileViewState extends State<ProfileView> {
     });
   }
 
+  void _handleUserActivityResponse(
+      Map<String, dynamic> response, String? startAfter) {
+    final activities = response['activities'] as List<UserActivity>;
+    final lastKey = response['lastKey'] as String;
+
+    final activityProvider =
+        Provider.of<UserActivityProvider>(context, listen: false);
+    if (startAfter != null) {
+      activityProvider.addUserActivities(activities);
+    } else {
+      activityProvider.setUserActivities(activities);
+    }
+
+    _lastKey = lastKey;
+  }
+
   void _onScroll() {
-    if (_scrollController.position.pixels ==
-            _scrollController.position.maxScrollExtent &&
+    if (_scrollController.position.atEdge &&
+        !_scrollController.position.outOfRange &&
         !_isLoadingMore) {
-      _fetchUserActivity(true, startAfter: _lastKey);
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        _fetchUserActivity(true, startAfter: _lastKey);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userActivityProvider =
-        Provider.of<UserActivityProvider>(context, listen: true);
-    final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
+    final userProfileProvider = Provider.of<UserProfileProvider>(context);
+    final userProfile = userProfileProvider.userProfile;
+    final userActivityProvider = Provider.of<UserActivityProvider>(context);
     final userActivities = userActivityProvider.userActivities;
 
     return Container(
-        margin:
-            const EdgeInsets.only(top: 10.0).copyWith(left: 16.0, right: 16.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Stack(
-                alignment:
-                    Alignment.center, // Aligns the '+' icon over the avatar
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(
-                        2), // This value is the width of the border
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white, // Border color
-                        width: 4.0, // Border width
-                      ),
-                    ),
-                    child: CircleAvatar(
-                      radius: 70, // Adjust the radius to your preference
-                      backgroundColor: const Color(
-                          0xFF2C2B2B), // Background color for the avatar
-                      child: FractionallySizedBox(
-                        widthFactor: 1.0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: userProfile != null &&
-                                      userProfile.profileImageUrl.isNotEmpty
-                                  ? CachedNetworkImageProvider(
-                                      userProfile.profileImageUrl)
-                                  : const AssetImage('assets/hambopr.jpg')
-                                      as ImageProvider, // Fallback to default asset image
-                              fit: BoxFit
-                                  .cover, // Fills the space, you could use BoxFit.contain to maintain aspect ratio
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0, // Adjust the position as per your design
-                    right: 0, // Adjust the position as per your design
-                    child: GestureDetector(
-                      onTap: () => _navigateUpWithSlideTransition(
-                          context,
-                          const QRCodeScreen(
-                            viewType: ViewType.profile,
-                          )),
-                      child: Container(
-                        width: 54.0,
-                        height: 54.0,
-                        decoration: const BoxDecoration(
-                          color: Color(
-                              0xFFD20E0D), // Background color of the '+' icon circle
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.qr_code_scanner,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            _buildProfileAvatar(userProfile),
+            const SizedBox(height: 21),
+            _buildXpTokensContainer(userProfile),
+            const SizedBox(height: 7),
+            _buildPrizesContainer(),
+            const SizedBox(height: 20),
+            Expanded(
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white)))
+                  : userActivities.isEmpty
+                      ? buildNoActivityWidget()
+                      : _buildUserActivityList(userActivities),
+            ),
+            const AdsCarouselComponent(viewType: ViewType.profile),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileAvatar(UserProfile? userProfile) {
+    return SizedBox(
+      width: double.infinity,
+      child: Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CircleAvatar(
+              radius: 73,
+              backgroundColor: Colors.white,
+              child: CircleAvatar(
+                radius: 70,
+                backgroundImage: userProfile?.profileImageUrl.isNotEmpty == true
+                    ? CachedNetworkImageProvider(userProfile!.profileImageUrl)
+                    : const AssetImage('assets/hambopr.jpg') as ImageProvider,
               ),
-              const SizedBox(height: 21),
-              Container(
-                constraints: const BoxConstraints(
-                  maxHeight: 80.0, // Set the maximum height
-                ),
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      const Color(0xFFD20E0D)
-                          .withOpacity(0.85), // Dark red color start
-                      const Color(0xFF020202)
-                          .withOpacity(0.85), // Lighter red color end
-                    ],
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: () => _navigateUpWithSlideTransition(
+                    context, const QRCodeScreen(viewType: ViewType.profile)),
+                child: Container(
+                  width: 54.0,
+                  height: 54.0,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFD20E0D),
+                    shape: BoxShape.circle,
                   ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'XP',
-                          style: Theme.of(context).textTheme.labelMedium,
-                        ),
-                        const SizedBox(height: 5),
-                        Row(children: [
-                          Image.asset(
-                            'assets/ribbon.png',
-                            width: 30,
-                            height: 30,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(width: 25),
-                          Text(
-                            userProfile != null
-                                ? userProfile.xp.toString()
-                                : '0',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          )
-                        ])
-                      ],
-                    ),
-                    Container(
-                      height: 50, // Adjust the height according to your needs
-                      width: 2, // Width of the line
-                      color: Colors.white, // Color of the line
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        //TokenInfo(tokens: userProfile?.tokens ?? 0)
-                        Text(
-                          'Tokens',
-                          style: Theme.of(context).textTheme.labelMedium,
-                        ),
-                        const SizedBox(height: 5),
-                        Row(children: [
-                          Image.asset(
-                            'assets/tokenization.png',
-                            width: 30,
-                            height: 30,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(width: 25),
-                          Text(
-                            userProfile != null
-                                ? userProfile.tokens.toString()
-                                : '0',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          )
-                        ])
-                      ],
-                    ),
-                  ],
+                  child: const Icon(
+                    Icons.qr_code_scanner,
+                    color: Colors.white,
+                    size: 32,
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ))
-                    : userActivities.isEmpty
-                        ? buildNoActivityWidget()
-                        : ListView.builder(
-                            controller: _scrollController,
-                            itemCount: userActivities.length + 1,
-                            itemBuilder: (context, index) {
-                              if (index == userActivities.length) {
-                                return _isLoadingMore
-                                    ? const Center(
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                  Colors.white),
-                                        ),
-                                      )
-                                    : const SizedBox.shrink();
-                              }
-                              final userActivity = userActivities[index];
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2c2b2b),
-                                    borderRadius: BorderRadius.circular(
-                                        10.0), // Adds rounded corners to the container
-                                  ), // Conditional background color
-                                  child: ListTile(
-                                    title: Text(
-                                      userActivity.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge,
-                                    ),
-                                    subtitle: Text(
-                                      userActivity.description,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelMedium,
-                                    ),
-                                    leading: userActivity.qType == "checkin"
-                                        ? const Icon(
-                                            Icons.location_on_outlined,
-                                            size: 35,
-                                          )
-                                        : userActivity.qType == "activity"
-                                            ? const Icon(
-                                                Icons.star_border_outlined,
-                                                size: 35,
-                                              )
-                                            : const Icon(
-                                                Icons.shopping_bag_outlined,
-                                                size: 35,
-                                              ),
-                                    trailing: Text(
-                                      userActivity.getFormattedDate(),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall,
-                                    ),
-                                    onTap: () async {
-                                      showActivityDialog(
-                                        context,
-                                        null,
-                                        true,
-                                        true,
-                                        userActivity.title,
-                                        userActivity.description,
-                                        userActivity.imageComplete,
-                                        userActivity.imageIncomplete,
-                                        null,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-              ),
-              const AdsCarouselComponent(
-                viewType: ViewType.profile,
-              )
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildXpTokensContainer(UserProfile? userProfile) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 50.0),
+      padding: const EdgeInsets.all(8.0),
+      decoration: _buildGradientBoxDecoration(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildXpOrTokensColumn(
+            label: 'XP',
+            value: userProfile?.xp.toString() ?? '0',
+            assetPath: 'assets/ribbon.png',
           ),
-        ));
+          Container(height: 50, width: 2, color: Colors.white),
+          _buildXpOrTokensColumn(
+            label: '',
+            value: userProfile?.tokens.toString() ?? '0',
+            assetPath: 'assets/tokenization.png',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrizesContainer() {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 50.0),
+      padding: const EdgeInsets.all(8.0),
+      decoration: _buildGradientBoxDecoration(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildPrizeColumn(
+              label: 'Royal Loot',
+              value: '',
+              assetPath: 'assets/loot.png',
+              onLabelTap: () {
+                _navigateUpWithSlideTransition(context, const LootView());
+              }),
+          Container(height: 50, width: 2, color: Colors.white),
+          _buildPrizeColumn(
+            label: 'Prizes',
+            value: '',
+            assetPath: 'assets/prize.png',
+            onLabelTap: () {
+              // Action for label tap
+              _navigateUpWithSlideTransition(context, const RaffleView());
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  BoxDecoration _buildGradientBoxDecoration() {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          const Color(0xFFD20E0D).withOpacity(0.85),
+          const Color(0xFF020202).withOpacity(0.85),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(10),
+    );
+  }
+
+  Widget _buildXpOrTokensColumn(
+      {required String label,
+      required String value,
+      required String assetPath}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          children: [
+            Image.asset(assetPath, width: 30, height: 30, fit: BoxFit.cover),
+            const SizedBox(width: 10),
+            Row(children: [
+              Text(value, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(width: 5),
+              Text(label, style: Theme.of(context).textTheme.labelMedium),
+            ])
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPrizeColumn({
+    required String label,
+    required String value,
+    required String assetPath,
+    required VoidCallback onLabelTap, // Callback for label click
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          children: [
+            Image.asset(assetPath, width: 30, height: 30, fit: BoxFit.cover),
+            const SizedBox(width: 10),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: onLabelTap,
+                  child: Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          decoration: TextDecoration.underline,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUserActivityList(List<UserActivity> userActivities) {
+    return ListView.builder(
+      controller: _scrollController,
+      itemCount: userActivities.length + 1,
+      itemBuilder: (context, index) {
+        if (index == userActivities.length) {
+          return _isLoadingMore
+              ? const Center(
+                  child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+              : const SizedBox.shrink();
+        }
+        final userActivity = userActivities[index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF2c2b2b),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: ListTile(
+              title: Text(userActivity.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelLarge),
+              subtitle: Text(userActivity.description,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium),
+              leading: Icon(
+                _getActivityIcon(userActivity.qType ?? "activity"),
+                size: 35,
+              ),
+              trailing: Text(userActivity.getFormattedDate(),
+                  style: Theme.of(context).textTheme.labelSmall),
+              onTap: () => showActivityDialog(
+                  context,
+                  null,
+                  true,
+                  true,
+                  userActivity.title,
+                  userActivity.description,
+                  userActivity.imageComplete,
+                  userActivity.imageIncomplete,
+                  null),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _getActivityIcon(String qType) {
+    switch (qType) {
+      case "checkin":
+        return Icons.location_on_outlined;
+      case "activity":
+        return Icons.star_border_outlined;
+      default:
+        return Icons.shopping_bag_outlined;
+    }
   }
 
   void _navigateUpWithSlideTransition(BuildContext context, Widget page) {

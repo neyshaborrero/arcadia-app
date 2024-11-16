@@ -89,6 +89,17 @@ class _HomeScreenState extends State<HomeScreen>
     } else {
       print("failed to load prizes");
     }
+
+    final lootResponse = await _arcadiaCloud.fetchArcadiaLoot(token);
+
+    if (lootResponse != null) {
+      List<PrizeDetails> lootList = lootResponse;
+
+      Provider.of<PrizesChangeProvider>(context, listen: false)
+          .addPrizes(lootList);
+    } else {
+      print("failed to load prizes");
+    }
   }
 
   @override
@@ -167,8 +178,7 @@ class _HomeScreenState extends State<HomeScreen>
             builder: (context) {
               switch (_currentView) {
                 case ViewType.profile:
-                  if (userProfile?.userType == "operator" ||
-                      userProfile?.userType == "admin") {
+                  if (userProfile?.userType == "operator") {
                     return const OperatorView();
                   } else {
                     return const ProfileView();

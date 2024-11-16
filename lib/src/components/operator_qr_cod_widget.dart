@@ -5,8 +5,6 @@ import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/hub_checkin.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
-import 'package:arcadia_mobile/src/structure/match_details.dart';
-import 'package:arcadia_mobile/src/structure/match_player.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/location.dart';
 import 'package:arcadia_mobile/src/views/matches/match_activity.dart';
@@ -19,7 +17,8 @@ import 'package:vibration/vibration.dart';
 
 class OperatorQRScan extends StatefulWidget {
   final ViewType viewType;
-  const OperatorQRScan({super.key, required this.viewType});
+  final String? bountyId;
+  const OperatorQRScan({super.key, required this.viewType, this.bountyId});
 
   @override
   _OperatorQRScanState createState() => _OperatorQRScanState();
@@ -110,7 +109,7 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
     ]);
   }
 
-  Future<void> _validateQRCode(String code) async {
+  Future<void> _validateQRCode(String code, String? bountyId) async {
     try {
       AppLocation? location = await getCurrentLocation();
       if (location != null) {
@@ -118,13 +117,25 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
         if (user != null) {
           final String? token = await user.getIdToken();
           if (token != null) {
-            if (widget.viewType != ViewType.createMatch) {
-              final HubCheckin response =
-                  await _arcadiaCloud.validateOperatorQRCode(code, token);
+            if (widget.viewType == ViewType.challengeBounty) {
+              final String responseuid =
+                  await _arcadiaCloud.fetchUserUID(code, token);
 
-              _goToOperatorView(token, response.hubId);
-              return;
-            } else {
+              if (responseuid.isNotEmpty) {
+                final String responseBounty = await _arcadiaCloud
+                    .requestBountyChallenge(token, bountyId ?? '', responseuid);
+                if (responseBounty.isNotEmpty) {
+                  Navigator.of(context).pop(responseBounty);
+                  return;
+                }
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text(
+                        'We couldnt validate the QR Code, try another one.')),
+              );
+            } else if (widget.viewType == ViewType.createMatch) {
               final String response =
                   await _arcadiaCloud.fetchUserUID(code, token);
               if (response.isNotEmpty) {
@@ -136,6 +147,12 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
                           'We couldnt validate the QR Code, try another one.')),
                 );
               }
+            } else {
+              final HubCheckin response =
+                  await _arcadiaCloud.validateOperatorQRCode(code, token);
+
+              _goToOperatorView(token, response.hubId);
+              return;
             }
           }
         }
@@ -208,7 +225,7 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
 
         // Pass the extracted userQR value to the validation function
         if (userQR != null) {
-          _validateQRCode(userQR);
+          _validateQRCode(userQR, widget.bountyId);
         } else {
           print('Invalid QR code or missing userqr parameter.');
         }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
+import 'package:arcadia_mobile/src/structure/bounty.dart';
 import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/hub_checkin.dart';
@@ -283,6 +284,67 @@ class ArcadiaCloud {
     }
   }
 
+  Future<List<Bounty>> getBounties(String token) async {
+    final url = Uri.parse('${_firebaseService.arcadiaCloudAddress}/bounty/get');
+
+    print("URL $url");
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body)['bounties'];
+
+      return data.map((bountyJson) => Bounty.fromJson(bountyJson)).toList();
+    } else if (response.statusCode == 404) {
+      throw Exception('No Bounties Available');
+    } else {
+      // Handle error appropriately
+      throw Exception('Failed to load bounties');
+    }
+  }
+
+  Future<String> requestBountyChallenge(
+      String token, String bountyId, String challengerId) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/bounty/requestChallenge');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({
+        'bountyId': bountyId,
+        'challengerId': challengerId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Decode the JSON response
+      final data = json.decode(response.body);
+
+      // Retrieve the expirationTimestamp
+      final expirationTimestamp = data['expirationTimestamp'].toString();
+
+      //final String data = json.decode(response.body)['bounties'];
+      return expirationTimestamp;
+    } else if (response.statusCode == 404) {
+      throw Exception('No Bounties Available');
+    } else {
+      // Handle error appropriately
+      throw Exception('Failed to load bounties');
+    }
+  }
+
   Future<UserActivity?> validateQRCode(
       String qrCode, String token, AppLocation location) async {
     final response = await http.post(
@@ -332,11 +394,9 @@ class ArcadiaCloud {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-      print("Validating response $data");
       return HubCheckin.fromJson(data);
     } else if (response.statusCode == 400 || response.statusCode == 401) {
       final Map<String, dynamic> errorResponse = json.decode(response.body);
-      print(errorResponse['errors'][0]['message']);
       throw BadRequestException(errorResponse['errors'][0]['message']);
     } else {
       final Map<String, dynamic> errorResponse = json.decode(response.body);
@@ -764,6 +824,34 @@ class ArcadiaCloud {
   Future<List<PrizeDetails>?> fetchArcadiaPrizes(String token) async {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/raffle/prizes');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': _firebaseService.xApiKey,
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<PrizeDetails> prizes =
+          (data['prizes'] as List<dynamic>).map((activityJson) {
+        return PrizeDetails.fromJson(activityJson, activityJson['id']);
+      }).toList();
+
+      return prizes;
+    } else {
+      // Handle error
+      print('Failed to load prizes ${response.body}');
+      return null;
+    }
+  }
+
+  Future<List<PrizeDetails>?> fetchArcadiaLoot(String token) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/raffle/lootPrizes');
 
     final response = await http.get(
       url,

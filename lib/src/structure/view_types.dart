@@ -12,5 +12,7 @@ enum ViewType {
   voteScreen,
   createMatch,
   home,
-  operatorProfile
+  operatorProfile,
+  bounties,
+  challengeBounty
 }

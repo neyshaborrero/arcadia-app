@@ -11,7 +11,9 @@ import 'package:provider/provider.dart';
 class QRCodeScreen extends StatefulWidget {
   final ViewType viewType;
   final MatchDetails? matchDetails;
-  const QRCodeScreen({super.key, required this.viewType, this.matchDetails});
+  final String? bountyId;
+  const QRCodeScreen(
+      {super.key, required this.viewType, this.matchDetails, this.bountyId});
 
   @override
   _QRCodeScreenState createState() => _QRCodeScreenState();
@@ -42,7 +44,8 @@ class _QRCodeScreenState extends State<QRCodeScreen>
   Widget build(BuildContext context) {
     List<String> tabTitles = [];
     tabTitles.add('QRCode');
-    if (widget.viewType != ViewType.createMatch) tabTitles.add('QRCode');
+    if (widget.viewType != ViewType.createMatch ||
+        widget.viewType != ViewType.challengeBounty) tabTitles.add('QRCode');
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
@@ -61,7 +64,9 @@ class _QRCodeScreenState extends State<QRCodeScreen>
           indicatorSize: TabBarIndicatorSize.tab,
           tabs: [
             Tab(text: 'Scan'),
-            if (widget.viewType != ViewType.createMatch) Tab(text: 'My QR'),
+            if (widget.viewType != ViewType.createMatch ||
+                widget.viewType != ViewType.challengeBounty)
+              Tab(text: 'My QR'),
           ],
         ),
       ),
@@ -76,6 +81,7 @@ class _QRCodeScreenState extends State<QRCodeScreen>
                 ? [
                     OperatorQRScan(
                       viewType: widget.viewType,
+                      bountyId: widget.bountyId,
                     ),
                     MyQRCode(),
                   ]

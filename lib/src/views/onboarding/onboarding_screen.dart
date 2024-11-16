@@ -24,7 +24,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _pages.addAll([
       OnboardingPage(
         title: "Welcome to",
-        subtitle: "Where is all about the fun of the game!",
+        subtitle: "Where it is all about the fun of the game!",
         description:
             "Start earning TOKENS now and get ready to use them at the Arcadia Battle Royale gaming event—a day of fun for everyone!",
         buttonText: "Start Collecting Tokens",
