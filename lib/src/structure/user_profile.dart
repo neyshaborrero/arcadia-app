@@ -12,6 +12,8 @@ class UserProfile {
   String? currentHubId;
   bool? isAdmin;
   int xp;
+  final bool checkedin;
+  int playerLevel;
 
   UserProfile(
       {required this.fullName,
@@ -26,23 +28,28 @@ class UserProfile {
       required this.fcmToken,
       this.currentHubId,
       this.isAdmin,
-      required this.xp});
+      required this.xp,
+      required this.checkedin,
+      required this.playerLevel});
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-        fullName: json['fullName'] ?? '',
-        xp: json['xp'] ?? 0,
-        gender: json['gender'] ?? '',
-        dob: json['dob'] ?? '',
-        gamertag: json['gamertag'] ?? '',
-        profileImageUrl: json['profileImageUrl'] ?? '',
-        userType: json['userType'] ?? '',
-        tokens: json['tokens'] ?? 0,
-        qrcode: json['qrcode'] ?? '',
-        profileComplete: json['profileComplete'] ?? false,
-        fcmToken: json['fcmToken'] ?? '',
-        currentHubId: json['currentHubId'] ?? '',
-        isAdmin: json['isAdmin']);
+      fullName: json['fullName'] ?? '',
+      xp: json['xp'] ?? 0,
+      gender: json['gender'] ?? '',
+      dob: json['dob'] ?? '',
+      gamertag: json['gamertag'] ?? '',
+      profileImageUrl: json['profileImageUrl'] ?? '',
+      userType: json['userType'] ?? '',
+      tokens: json['tokens'] ?? 0,
+      qrcode: json['qrcode'] ?? '',
+      profileComplete: json['profileComplete'] ?? false,
+      fcmToken: json['fcmToken'] ?? '',
+      currentHubId: json['currentHubId'] ?? '',
+      isAdmin: json['isAdmin'],
+      checkedin: json['checkedin'] ?? false,
+      playerLevel: json['playerLevel'] ?? 0,
+    );
   }
 
   String tokensToString() {

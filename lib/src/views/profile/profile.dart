@@ -4,14 +4,12 @@ import 'package:arcadia_mobile/src/components/ads_carousel.dart';
 import 'package:arcadia_mobile/src/components/no_activity.dart';
 import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
-import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/views/events/loot_screen.dart';
-import 'package:arcadia_mobile/src/views/events/prize_screen.dart';
 import 'package:arcadia_mobile/src/views/events/raffle_view.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -119,8 +117,39 @@ class _ProfileViewState extends State<ProfileView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            _buildProfileAvatar(userProfile),
-            const SizedBox(height: 21),
+            // Constrained Row for Avatar and Icons
+            SizedBox(
+              height: 10,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (userProfile != null && userProfile.checkedin)
+                  SizedBox(
+                    width: 10,
+                  ),
+                _buildProfileAvatar(userProfile),
+                if (userProfile != null && userProfile.checkedin)
+                  const SizedBox(width: 40), // Space between avatar and icons
+
+                if (userProfile != null && userProfile.checkedin)
+                  Flexible(
+                    // Ensures proper constraints
+                    child: _buildProfileIcons(),
+                  ),
+                if (userProfile != null && userProfile.checkedin)
+                  SizedBox(
+                    width: 10,
+                  ),
+              ],
+            ),
+
+            // SizedBox(
+            //     height: userProfile != null && userProfile.checkedin ? 35 : 20),
+            SizedBox(
+              height: 20,
+            ),
             _buildXpTokensContainer(userProfile),
             const SizedBox(height: 7),
             _buildPrizesContainer(),
@@ -143,100 +172,260 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildProfileAvatar(UserProfile? userProfile) {
-    return SizedBox(
-      width: double.infinity,
-      child: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            CircleAvatar(
-              radius: 73,
-              backgroundColor: Colors.white,
-              child: CircleAvatar(
-                radius: 70,
-                backgroundImage: userProfile?.profileImageUrl.isNotEmpty == true
-                    ? CachedNetworkImageProvider(userProfile!.profileImageUrl)
-                    : const AssetImage('assets/hambopr.jpg') as ImageProvider,
-              ),
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none, // Ensures no clipping of Positioned widget
+        children: [
+          CircleAvatar(
+            radius: 73,
+            backgroundColor: Colors.white,
+            child: CircleAvatar(
+              radius: 70,
+              backgroundImage: userProfile?.profileImageUrl.isNotEmpty == true
+                  ? CachedNetworkImageProvider(userProfile!.profileImageUrl)
+                  : const AssetImage('assets/hambopr.jpg') as ImageProvider,
             ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: GestureDetector(
-                onTap: () => _navigateUpWithSlideTransition(
-                    context, const QRCodeScreen(viewType: ViewType.profile)),
-                child: Container(
-                  width: 54.0,
-                  height: 54.0,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFD20E0D),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.qr_code_scanner,
-                    color: Colors.white,
-                    size: 32,
-                  ),
+          ),
+          Positioned(
+            bottom: -10, // Slightly outside the avatar for better positioning
+            right: -10, // Slightly outside the avatar for better positioning
+            child: GestureDetector(
+              onTap: () => _navigateUpWithSlideTransition(
+                  context, const QRCodeScreen(viewType: ViewType.profile)),
+              child: Container(
+                width: 54.0,
+                height: 54.0,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFD20E0D),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.qr_code_scanner,
+                  color: Colors.white,
+                  size: 32,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileIcons() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      alignment: Alignment
+                          .topRight, // Position the text on the top-right
+                      children: [
+                        Image.asset(
+                          'assets/level-shield.png',
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.contain,
+                        ),
+                        Positioned(
+                          top: 5, // Adjust the text position
+                          right: 10,
+                          child: _buildTextBadge('55'), // Badge with text '1'
+                        ),
+                      ],
+                    ),
+                    Text("Level",
+                        style: Theme.of(context).textTheme.titleSmall),
+                  ]),
+              const SizedBox(width: 20),
+              Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      alignment: Alignment
+                          .topRight, // Position the text on the top-right
+                      children: [
+                        Image.asset(
+                          'assets/award.png',
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.contain,
+                        ),
+                        Positioned(
+                          top: 3,
+                          right: 10,
+                          child: _buildTextBadge('50'), // Badge with text '5'
+                        ),
+                      ],
+                    ),
+                    Text("Prestiege",
+                        style: Theme.of(context).textTheme.titleSmall),
+                  ]), // Space between icon and label
+            ]),
+        const SizedBox(height: 16), // Space between icons
+        Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment:
+                    Alignment.topRight, // Position the text on the top-right
+                children: [
+                  Image.asset(
+                    'assets/fire.png',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
+              Text("50 Win Streak",
+                  style: Theme.of(context).textTheme.titleSmall)
+            ]),
+      ],
+    );
+  }
+
+  Widget _buildTextBadge(String text) {
+    return Container(
+      padding: const EdgeInsets.all(4.0),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Outline text
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              foreground: Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1.5 // Width of the outline
+                ..color = Colors.black, // Outline color
+            ),
+          ),
+          // Filled white text
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              color: Colors.white, // Fill color
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildXpTokensContainer(UserProfile? userProfile) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 50.0),
-      padding: const EdgeInsets.all(8.0),
-      decoration: _buildGradientBoxDecoration(),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildXpOrTokensColumn(
-            label: 'XP',
-            value: userProfile?.xp.toString() ?? '0',
-            assetPath: 'assets/ribbon.png',
+    return Stack(
+      clipBehavior:
+          Clip.none, // Allows the image to overflow outside the container
+      children: [
+        Container(
+          constraints:
+              const BoxConstraints(maxHeight: 50.0), // Consistent height
+          padding: const EdgeInsets.all(8.0),
+          decoration: _buildGradientBoxDecoration(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment:
+                CrossAxisAlignment.center, // Ensures vertical alignment
+            children: [
+              _buildXpOrTokensColumn(
+                label: 'XP',
+                value: userProfile?.xp.toString() ?? '0',
+                assetPath: 'assets/ribbon.png',
+              ),
+              _buildXpOrTokensColumn(
+                label: '',
+                value: userProfile?.tokens.toString() ?? '0',
+                assetPath: 'assets/tokenization.png',
+              ),
+            ],
           ),
-          Container(height: 50, width: 2, color: Colors.white),
-          _buildXpOrTokensColumn(
-            label: '',
-            value: userProfile?.tokens.toString() ?? '0',
-            assetPath: 'assets/tokenization.png',
-          ),
-        ],
-      ),
+        ),
+        Positioned(
+            top: 5, // Adjust to position the image above the container
+            left: 0,
+            right: 0,
+            child: Center(child: _buildCenterDivider())),
+        // if (userProfile?.checkedin == true)
+        //   Positioned(
+        //     top: -25, // Adjust to position the image above the container
+        //     left: 0,
+        //     right: 0,
+        //     child: Center(
+        //       child: Image.asset(
+        //         'assets/level-shield.png', // Path to your uploaded image
+        //         width: 50,
+        //         height: 50,
+        //         fit: BoxFit.contain,
+        //       ),
+        //     ),
+        //   ),
+      ],
     );
   }
 
   Widget _buildPrizesContainer() {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 50.0),
-      padding: const EdgeInsets.all(8.0),
-      decoration: _buildGradientBoxDecoration(),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return Stack(
+        clipBehavior:
+            Clip.none, // Allows the image to overflow outside the container
         children: [
-          _buildPrizeColumn(
-              label: 'Royal Loot',
-              value: '',
-              assetPath: 'assets/loot.png',
-              onLabelTap: () {
-                _navigateUpWithSlideTransition(context, const LootView());
-              }),
-          Container(height: 50, width: 2, color: Colors.white),
-          _buildPrizeColumn(
-            label: 'Prizes',
-            value: '',
-            assetPath: 'assets/prize.png',
-            onLabelTap: () {
-              // Action for label tap
-              _navigateUpWithSlideTransition(context, const RaffleView());
-            },
+          Container(
+            constraints: const BoxConstraints(
+                maxHeight: 50.0), // Same height as _buildXpTokensContainer
+            padding: const EdgeInsets.all(8.0),
+            decoration: _buildGradientBoxDecoration(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, // Ensures vertical alignment
+              children: [
+                _buildPrizeColumn(
+                  label: 'Royal Loot',
+                  value: '',
+                  assetPath: 'assets/loot.png',
+                  onLabelTap: () {
+                    _navigateUpWithSlideTransition(context, const LootView());
+                  },
+                ),
+                _buildPrizeColumn(
+                  label: 'Prizes',
+                  value: '',
+                  assetPath: 'assets/prize.png',
+                  onLabelTap: () {
+                    _navigateUpWithSlideTransition(context, const RaffleView());
+                  },
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+          Positioned(
+              top: 5, // Adjust to position the image above the container
+              left: 0,
+              right: 0,
+              child: Center(child: _buildCenterDivider())),
+        ]);
+  }
+
+  Widget _buildCenterDivider() {
+    return Container(
+      height: 40, // Consistent height for the divider
+      width: 2, // Thickness of the divider
+      color: Colors.white.withOpacity(0.55),
     );
   }
 
@@ -366,6 +555,8 @@ class _ProfileViewState extends State<ProfileView> {
         return Icons.location_on_outlined;
       case "activity":
         return Icons.star_border_outlined;
+      case "match":
+        return Icons.gamepad;
       default:
         return Icons.shopping_bag_outlined;
     }
