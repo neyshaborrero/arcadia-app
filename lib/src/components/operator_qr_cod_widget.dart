@@ -1,6 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
-import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/hub_checkin.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
@@ -9,6 +9,7 @@ import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/location.dart';
 import 'package:arcadia_mobile/src/views/matches/match_activity.dart';
 import 'package:arcadia_mobile/src/views/qrcode/manual_code.dart';
+import 'package:arcadia_mobile/src/views/start/scan_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -151,7 +152,12 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
               final HubCheckin response =
                   await _arcadiaCloud.validateOperatorQRCode(code, token);
 
-              _goToOperatorView(token, response.hubId);
+              if (response.hubId.isNotEmpty) {
+                Provider.of<UserProfileProvider>(context, listen: false)
+                    .updateOperatorCheckIn(response.hubId);
+                _goToOperatorView(token, response.hubId);
+              }
+
               return;
             }
           }
@@ -192,7 +198,14 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
         // Check if the parsed URI has a valid scheme (http or https) and is not null
         if ((uri.scheme == 'http' || uri.scheme == 'https')) {
           // Retrieve the 'userqr' parameter from the query parameters, if available
-          return uri.queryParameters['userqr'];
+
+          if (uri.queryParameters['userqr'] != null) {
+            return uri.queryParameters['userqr'];
+          } else if (uri.queryParameters['hubid'] != null) {
+            return uri.queryParameters['hubid'];
+          } else {
+            return scannedCode;
+          }
         } else {
           return scannedCode;
         }
@@ -227,7 +240,9 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
         if (userQR != null) {
           _validateQRCode(userQR, widget.bountyId);
         } else {
-          print('Invalid QR code or missing userqr parameter.');
+          print("scanned qr $scannedCode");
+          if (scannedCode != null) _validateQRCode(scannedCode!, null);
+          print('Invalid QR code or missing parameter.');
         }
       }
     });
@@ -239,20 +254,24 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
     super.dispose();
   }
 
-  void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
-    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
-  }
-
   Future<void> _goToOperatorView(String token, String hubId) async {
     Hub? hub = await _arcadiaCloud.getHubDetails(hubId, token);
     if (hub != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (context) => GameActivityView(
-                  hubId: hubId,
-                  hubDetails: hub,
-                )),
-      );
+      if (hub.type != 'checkin') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+              builder: (context) => GameActivityView(
+                    hubId: hubId,
+                    hubDetails: hub,
+                  )),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => ScanView(
+            appBarTitle: "Check In to Arcadia Battle Royale",
+          ),
+        ));
+      }
     } else {
       return;
     }

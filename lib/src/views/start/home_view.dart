@@ -14,6 +14,7 @@ import 'package:arcadia_mobile/src/views/profile/operator.dart';
 import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/profile/settings.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
+import 'package:arcadia_mobile/src/views/start/event_home.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -188,7 +189,9 @@ class _HomeScreenState extends State<HomeScreen>
                   return TabBarView(
                     controller: _tabController,
                     children: [
-                      QuestsView(missionList: widget.missions),
+                      (userProfile != null && userProfile!.checkedin.isEmpty)
+                          ? QuestsView(missionList: widget.missions)
+                          : EventHome(),
                       const EventView(),
                       const NewsScreen()
                     ],

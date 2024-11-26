@@ -5,7 +5,7 @@ import 'package:arcadia_mobile/src/components/quests_dialogs.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
-import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
+import 'package:arcadia_mobile/src/structure/hub_checkout.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/user_activity.dart';
@@ -20,7 +20,9 @@ import 'package:vibration/vibration.dart';
 import '../structure/view_types.dart';
 
 class QRScan extends StatefulWidget {
-  const QRScan({super.key});
+  const QRScan({
+    super.key,
+  });
 
   @override
   _QRScanState createState() => _QRScanState();
@@ -109,14 +111,70 @@ class _QRScanState extends State<QRScan> {
                       ),
                     ),
                   ),
-                  const AdsCarouselComponent(
-                    viewType: ViewType.qrscan,
-                  ),
+                  if (!Provider.of<UserProfileProvider>(context, listen: false)
+                      .isOperator)
+                    const AdsCarouselComponent(
+                      viewType: ViewType.qrscan,
+                    ),
+                  if (Provider.of<UserProfileProvider>(context, listen: false)
+                          .isOperator &&
+                      Provider.of<UserProfileProvider>(context, listen: false)
+                              .currentHubId !=
+                          null)
+                    _buildCheckOutButton(
+                        context,
+                        Provider.of<UserProfileProvider>(context, listen: false)
+                            .currentHubId!),
                   const SizedBox(
                     height: 40,
                   )
                 ]))
     ]);
+  }
+
+  Widget _buildCheckOutButton(BuildContext context, String hubId) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Center(
+        child: OutlinedButton(
+          onPressed: () async => {
+            if (await _hubCheckout(hubId))
+              {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/',
+                  (Route<dynamic> route) => false,
+                )
+              }
+          },
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(50),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+            child: Text(
+              'Check-Out',
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> _hubCheckout(String hubId) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final token = await user.getIdToken();
+    if (token == null) return false;
+
+    print("checking out $hubId");
+
+    final HubCheckOut response =
+        await _arcadiaCloud.checkoutOperator(hubId, token);
+
+    print("response ${response.success}");
+    return response.success;
   }
 
   Future<void> _validateQRCode(code) async {
@@ -264,9 +322,5 @@ class _QRScanState extends State<QRScan> {
   void dispose() {
     controller?.dispose();
     super.dispose();
-  }
-
-  void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
-    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
   }
 }

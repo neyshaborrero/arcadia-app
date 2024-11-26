@@ -63,6 +63,7 @@ dependencies:
   flutter_animate: ^4.5.0
   firebase_database: ^11.1.4
   shared_preferences: ^2.3.2
+  restart_app: ^1.3.2
 
 dev_dependencies:
   flutter_driver:
@@ -128,6 +129,8 @@ flutter:
     - assets/versus.png
     - assets/level-shield.png
     - assets/award.png
+    - assets/map.png
+    - assets/gift_card.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

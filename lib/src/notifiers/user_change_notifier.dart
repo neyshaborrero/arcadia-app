@@ -6,6 +6,8 @@ class UserProfileProvider with ChangeNotifier {
 
   UserProfile? get userProfile => _userProfile;
   String? get profileUrl => _userProfile?.profileImageUrl;
+  bool get isOperator => _userProfile?.userType == 'operator';
+  String? get currentHubId => _userProfile?.currentHubId;
 
   void setUserProfile(UserProfile profile) {
     _userProfile = profile;
@@ -32,5 +34,12 @@ class UserProfileProvider with ChangeNotifier {
   void updateXP(int xpEarned) {
     _userProfile!.xp = _userProfile!.xp + xpEarned;
     notifyListeners();
+  }
+
+  void updateOperatorCheckIn(String hubId) {
+    if (_userProfile != null) {
+      _userProfile!.currentHubId = hubId;
+      notifyListeners();
+    }
   }
 }

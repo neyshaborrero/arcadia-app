@@ -13,6 +13,7 @@ import 'package:arcadia_mobile/src/structure/user_activity.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/location.dart';
 import 'package:arcadia_mobile/src/views/matches/match_activity.dart';
+import 'package:arcadia_mobile/src/views/start/scan_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -189,13 +190,21 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
   Future<void> _goToOperatorView(String token, String hubId) async {
     Hub? hub = await _arcadiaCloud.getHubDetails(hubId, token);
     if (hub != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (context) => GameActivityView(
-                  hubId: hubId,
-                  hubDetails: hub,
-                ))
-      );
+      if (hub.type != 'checkin') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+              builder: (context) => GameActivityView(
+                    hubId: hubId,
+                    hubDetails: hub,
+                  )),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => ScanView(
+            appBarTitle: "Check In to Arcadia Battle Royale",
+          ),
+        ));
+      }
     } else {
       return;
     }

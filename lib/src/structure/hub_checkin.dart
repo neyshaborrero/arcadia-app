@@ -5,7 +5,7 @@ class HubCheckin {
 
   factory HubCheckin.fromJson(Map<String, dynamic> json) {
     return HubCheckin(
-      hubId: json['hubId'],
+      hubId: json['hubId'] ?? '',
     );
   }
 }

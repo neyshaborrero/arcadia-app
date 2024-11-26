@@ -10,6 +10,7 @@ class Hub {
   final String sponsorId;
   final Map<String, Station> stations; // Map with Station class
   final List<Game> games;
+  final String type;
 
   Hub({
     required this.assignedOperators,
@@ -17,6 +18,7 @@ class Hub {
     required this.eventId,
     required this.image,
     required this.name,
+    required this.type,
     required this.sponsorId,
     required this.stations,
     required this.games,
@@ -36,15 +38,15 @@ class Hub {
     }).toList();
 
     return Hub(
-      assignedOperators: List<String>.from(json['assignedOperators']),
-      description: json['description'],
-      eventId: json['eventId'],
-      image: json['image'],
-      name: json['name'],
-      sponsorId: json['sponsorId'],
-      stations: stationsMap,
-      games: gameList,
-    );
+        assignedOperators: List<String>.from(json['assignedOperators']),
+        description: json['description'],
+        eventId: json['eventId'],
+        image: json['image'],
+        name: json['name'],
+        sponsorId: json['sponsorId'],
+        stations: stationsMap,
+        games: gameList,
+        type: json['type'] ?? 'matches');
   }
 
   // Method to return the Station ID based on the provided Game ID

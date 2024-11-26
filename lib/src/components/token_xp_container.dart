@@ -64,10 +64,10 @@ class TokenXPContainer extends StatelessWidget {
               children: [
                 Text(
                   'View Prizes',
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium!
-                      .copyWith(fontSize: fontSize),
+                  style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                        fontSize: fontSize,
+                        decoration: TextDecoration.underline,
+                      ),
                 ),
                 const SizedBox(height: 5),
                 Row(

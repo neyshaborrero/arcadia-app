@@ -12,8 +12,10 @@ class UserProfile {
   String? currentHubId;
   bool? isAdmin;
   int xp;
-  final bool checkedin;
+  final String checkedin;
   int playerLevel;
+  int matchStreak;
+  int prestigeTotal;
 
   UserProfile(
       {required this.fullName,
@@ -30,7 +32,9 @@ class UserProfile {
       this.isAdmin,
       required this.xp,
       required this.checkedin,
-      required this.playerLevel});
+      required this.playerLevel,
+      required this.matchStreak,
+      required this.prestigeTotal});
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
@@ -47,8 +51,10 @@ class UserProfile {
       fcmToken: json['fcmToken'] ?? '',
       currentHubId: json['currentHubId'] ?? '',
       isAdmin: json['isAdmin'],
-      checkedin: json['checkedin'] ?? false,
+      checkedin: json['checkedin'] ?? '',
       playerLevel: json['playerLevel'] ?? 0,
+      matchStreak: json['matchStreak'] ?? 0,
+      prestigeTotal: json['prestigeTotal'] ?? 0,
     );
   }
 

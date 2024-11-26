@@ -125,20 +125,20 @@ class _ProfileViewState extends State<ProfileView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (userProfile != null && userProfile.checkedin)
+                if (userProfile != null && userProfile.checkedin.isNotEmpty)
                   SizedBox(
                     width: 10,
                   ),
                 _buildProfileAvatar(userProfile),
-                if (userProfile != null && userProfile.checkedin)
+                if (userProfile != null && userProfile.checkedin.isNotEmpty)
                   const SizedBox(width: 40), // Space between avatar and icons
 
-                if (userProfile != null && userProfile.checkedin)
+                if (userProfile != null && userProfile.checkedin.isNotEmpty)
                   Flexible(
                     // Ensures proper constraints
-                    child: _buildProfileIcons(),
+                    child: _buildProfileIcons(userProfile),
                   ),
-                if (userProfile != null && userProfile.checkedin)
+                if (userProfile != null && userProfile.checkedin.isNotEmpty)
                   SizedBox(
                     width: 10,
                   ),
@@ -213,7 +213,7 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  Widget _buildProfileIcons() {
+  Widget _buildProfileIcons(UserProfile? userProfile) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -239,7 +239,8 @@ class _ProfileViewState extends State<ProfileView> {
                         Positioned(
                           top: 5, // Adjust the text position
                           right: 10,
-                          child: _buildTextBadge('55'), // Badge with text '1'
+                          child: _buildTextBadge(
+                              '${userProfile?.playerLevel}'), // Badge with text '1'
                         ),
                       ],
                     ),
@@ -253,7 +254,7 @@ class _ProfileViewState extends State<ProfileView> {
                   children: [
                     Stack(
                       alignment: Alignment
-                          .topRight, // Position the text on the top-right
+                          .center, // Position the text on the top-right
                       children: [
                         Image.asset(
                           'assets/award.png',
@@ -264,11 +265,12 @@ class _ProfileViewState extends State<ProfileView> {
                         Positioned(
                           top: 3,
                           right: 10,
-                          child: _buildTextBadge('50'), // Badge with text '5'
+                          child: _buildTextBadge(
+                              '${userProfile?.prestigeTotal}'), // Badge with text '5'
                         ),
                       ],
                     ),
-                    Text("Prestiege",
+                    Text("Prestige",
                         style: Theme.of(context).textTheme.titleSmall),
                   ]), // Space between icon and label
             ]),
@@ -289,7 +291,7 @@ class _ProfileViewState extends State<ProfileView> {
                   ),
                 ],
               ),
-              Text("50 Win Streak",
+              Text("${userProfile?.matchStreak} Win Streak",
                   style: Theme.of(context).textTheme.titleSmall)
             ]),
       ],
@@ -298,7 +300,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   Widget _buildTextBadge(String text) {
     return Container(
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.all(0.0),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -306,7 +308,7 @@ class _ProfileViewState extends State<ProfileView> {
           Text(
             text,
             style: TextStyle(
-              fontSize: 19,
+              fontSize: 17,
               fontWeight: FontWeight.bold,
               foreground: Paint()
                 ..style = PaintingStyle.stroke
@@ -318,7 +320,7 @@ class _ProfileViewState extends State<ProfileView> {
           Text(
             text,
             style: const TextStyle(
-              fontSize: 19,
+              fontSize: 17,
               fontWeight: FontWeight.bold,
               color: Colors.white, // Fill color
             ),

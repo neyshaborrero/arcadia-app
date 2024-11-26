@@ -1,5 +1,7 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
+import 'package:arcadia_mobile/services/db_listener_service.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/components/global_db_listener.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
@@ -60,6 +62,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AdsDetailsProvider()),
         ChangeNotifierProvider(create: (_) => PrizesChangeProvider()),
         ChangeNotifierProvider(create: (_) => VoteStatusNotifier()),
+        ChangeNotifierProvider(
+            create: (_) =>
+                DatabaseListenerService(firebaseService: firebaseService)),
         Provider<FirebaseService>.value(value: firebaseService),
       ],
       child: MyApp(

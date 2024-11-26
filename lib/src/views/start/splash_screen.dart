@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/components/global_db_listener.dart';
 import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/ads_details.dart';
@@ -10,6 +11,7 @@ import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/matches/match_activity.dart';
 import 'package:arcadia_mobile/src/views/profile/update_profile.dart';
+import 'package:arcadia_mobile/src/views/start/scan_view.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -107,7 +109,8 @@ class _SplashScreenState extends State<SplashScreen>
 
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => HomeScreen(missions: missions ?? []),
+                builder: (context) => GlobalDBListener(
+                    child: HomeScreen(missions: missions ?? [])),
               ),
             );
           }
@@ -248,13 +251,21 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _goToOperatorView(String token, String hubId) async {
     Hub? hub = await _arcadiaCloud.getHubDetails(hubId, token);
     if (hub != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (context) => GameActivityView(
-                  hubId: hubId,
-                  hubDetails: hub,
-                )),
-      );
+      if (hub.type != 'checkin') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+              builder: (context) => GameActivityView(
+                    hubId: hubId,
+                    hubDetails: hub,
+                  )),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => ScanView(
+            appBarTitle: "Check In to Arcadia Battle Royale",
+          ),
+        ));
+      }
     } else {
       return;
     }

@@ -2,6 +2,7 @@ import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -189,4 +190,52 @@ class FirebaseService {
   String get xApiKey => _remoteConfig.getString('x_api_key');
   String get arcadiaCloudAddress =>
       _remoteConfig.getString('arcadia_cloud_address');
+
+  // Add a method to get a reference to the Realtime Database
+  DatabaseReference getDatabaseReference(String path) {
+    return FirebaseDatabase.instance.ref(path);
+  }
+
+  // Add a method to listen for database changes
+  void listenToDatabase(String path, Function(DatabaseEvent) onData) {
+    final ref = getDatabaseReference(path);
+    ref.onValue.listen(onData, onError: (error) {
+      print("Error listening to database: $error");
+    });
+  }
+
+  // Add a method to write data to the database
+  Future<void> writeToDatabase(String path, dynamic data) async {
+    try {
+      final ref = getDatabaseReference(path);
+      await ref.set(data);
+      print("Data written successfully to $path");
+    } catch (e) {
+      print("Error writing to database: $e");
+    }
+  }
+
+  // Add a method to read data once from the database
+  Future<dynamic> readFromDatabase(String path) async {
+    try {
+      final ref = getDatabaseReference(path);
+      final snapshot = await ref.get();
+      return snapshot.value;
+    } catch (e) {
+      print("Error reading from database: $e");
+      return null;
+    }
+  }
+
+  void monitorConnectionStatus() {
+    final connectedRef = FirebaseDatabase.instance.ref(".info/connected");
+    connectedRef.onValue.listen((event) {
+      final connected = event.snapshot.value as bool? ?? false;
+      if (connected) {
+        print("Connected to Firebase Realtime Database.");
+      } else {
+        print("Disconnected from Firebase Realtime Database.");
+      }
+    });
+  }
 }
