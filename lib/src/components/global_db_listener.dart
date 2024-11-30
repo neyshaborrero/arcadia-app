@@ -17,15 +17,27 @@ class GlobalDBListener extends StatelessWidget {
     // Initialize the listener
     databaseService.initializeListener();
 
+    // Check the static flag for navigation
+    if (databaseService.secondListenerValue.isNotEmpty &&
+        !DatabaseListenerService.hasNavigated) {
+      DatabaseListenerService.hasNavigated = true;
+      Future.microtask(() {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/',
+          (Route<dynamic> route) => false,
+        );
+      });
+    }
+
     return Stack(
       children: [
         child,
-        if (databaseService.currentMatchValue.length > 2) // Customize condition
+        if (databaseService.currentMatchValue.length > 2)
           _buildBlockingModal(context),
-        if (databaseService.currentMatchValue == "0") // Customize condition
+        if (databaseService.currentMatchValue == "0")
           _buildResultsModal(context, firebaseService),
         if (databaseService.currentMatchValue == "-1")
-          _buildLoserModal(context, firebaseService)
+          _buildLoserModal(context, firebaseService),
       ],
     );
   }

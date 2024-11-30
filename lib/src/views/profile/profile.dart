@@ -125,23 +125,23 @@ class _ProfileViewState extends State<ProfileView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (userProfile != null && userProfile.checkedin.isNotEmpty)
-                  SizedBox(
-                    width: 10,
-                  ),
+                // if (userProfile != null && userProfile.checkedin.isNotEmpty)
+                //   SizedBox(
+                //     width: 10,
+                //   ),
                 _buildProfileAvatar(userProfile),
-                if (userProfile != null && userProfile.checkedin.isNotEmpty)
-                  const SizedBox(width: 40), // Space between avatar and icons
+                // if (userProfile != null && userProfile.checkedin.isNotEmpty)
+                //   const SizedBox(width: 40), // Space between avatar and icons
 
-                if (userProfile != null && userProfile.checkedin.isNotEmpty)
-                  Flexible(
-                    // Ensures proper constraints
-                    child: _buildProfileIcons(userProfile),
-                  ),
-                if (userProfile != null && userProfile.checkedin.isNotEmpty)
-                  SizedBox(
-                    width: 10,
-                  ),
+                // if (userProfile != null && userProfile.checkedin.isNotEmpty)
+                //   Flexible(
+                //     // Ensures proper constraints
+                //     child: _buildProfileIcons(userProfile),
+                //   ),
+                // if (userProfile != null && userProfile.checkedin.isNotEmpty)
+                //   SizedBox(
+                //     width: 10,
+                //   ),
               ],
             ),
 

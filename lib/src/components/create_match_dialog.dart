@@ -5,7 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-Future<String?> showCreateMatch(BuildContext context, MatchDetails match) {
+Future<String?> showCreateMatch(
+    BuildContext context, MatchDetails match, String hubId) {
   final firebaseService = Provider.of<FirebaseService>(context, listen: false);
   final ArcadiaCloud arcadiaCloud = ArcadiaCloud(firebaseService);
 
@@ -45,7 +46,8 @@ Future<String?> showCreateMatch(BuildContext context, MatchDetails match) {
                       child: _buildActionButton(
                           context,
                           arcadiaCloud, // Second action button parameters
-                          match.id!),
+                          match.id!,
+                          hubId),
                     ),
                 ],
               ),
@@ -104,8 +106,8 @@ Widget _buildMatchContent(
   );
 }
 
-Widget _buildActionButton(
-    BuildContext context, ArcadiaCloud arcadiaCloud, String matchId) {
+Widget _buildActionButton(BuildContext context, ArcadiaCloud arcadiaCloud,
+    String matchId, String hubId) {
   const buttonText = "Start Match";
 
   return Column(
@@ -117,10 +119,7 @@ Widget _buildActionButton(
         ),
         onPressed: () async {
           // Call the function to change the match status to 'in progress'
-          bool success = await _changeMatchStatus(
-            arcadiaCloud,
-            matchId,
-          );
+          bool success = await _changeMatchStatus(arcadiaCloud, matchId, hubId);
           if (success) {
             Navigator.of(context).pop(true);
           } else {
@@ -188,7 +187,7 @@ Widget _buildCloseButton(BuildContext context, ArcadiaCloud arcadiaCloud) {
 }
 
 Future<bool> _changeMatchStatus(
-    ArcadiaCloud arcadiaCloud, String matchId) async {
+    ArcadiaCloud arcadiaCloud, String matchId, String hubId) async {
   final User? user = FirebaseAuth.instance.currentUser;
   if (user == null) return false;
 
@@ -196,8 +195,8 @@ Future<bool> _changeMatchStatus(
 
   if (token == null) return false;
   try {
-    final success =
-        await arcadiaCloud.changeMatchStatus('in progress', matchId, token);
+    final success = await arcadiaCloud.changeMatchStatus(
+        'in progress', matchId, hubId, token);
 
     return success;
   } catch (e) {

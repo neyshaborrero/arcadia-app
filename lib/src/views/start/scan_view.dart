@@ -1,4 +1,5 @@
-import 'package:arcadia_mobile/src/components/qr_code_widget.dart';
+import 'package:arcadia_mobile/src/components/operator_qr_cod_widget.dart';
+import 'package:arcadia_mobile/src/structure/view_types.dart';
 import 'package:flutter/material.dart';
 
 class ScanView extends StatelessWidget {
@@ -18,7 +19,9 @@ class ScanView extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: QRScan(),
+      body: OperatorQRScan(
+        viewType: ViewType.checkin,
+      ),
     );
   }
 }

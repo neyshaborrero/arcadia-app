@@ -168,12 +168,9 @@ class _QRScanState extends State<QRScan> {
     final token = await user.getIdToken();
     if (token == null) return false;
 
-    print("checking out $hubId");
-
     final HubCheckOut response =
         await _arcadiaCloud.checkoutOperator(hubId, token);
 
-    print("response ${response.success}");
     return response.success;
   }
 

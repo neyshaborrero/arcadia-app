@@ -120,7 +120,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
   }
 
   // Method to change the match status to "completed" after selecting a winner
-  Future<bool> _changeMatchStatus(String status) async {
+  Future<bool> _changeMatchStatus(String status, String hubId) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return false;
 
@@ -134,8 +134,8 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     }
 
     // Change the match status to 'completed'
-    bool success =
-        await _arcadiaCloud.changeMatchStatus(status, matchDetails.id!, token);
+    bool success = await _arcadiaCloud.changeMatchStatus(
+        status, matchDetails.id!, hubId, token);
 
     if (success) {
       return true;
@@ -147,12 +147,12 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     }
   }
 
-  Widget buildStartMatchButton() {
+  Widget buildStartMatchButton(String hubId) {
     return ElevatedButton(
       onPressed: matchDetails.matchStatus == 'ready'
           ? () async {
               // Call method to change the match status to 'in progress'
-              bool success = await _changeMatchStatus('in progress');
+              bool success = await _changeMatchStatus('in progress', hubId);
               if (success) {
                 Navigator.of(context).pop("refresh");
                 setState(() {
@@ -182,7 +182,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
   }
 
   // Method to change the match status before enabling winner selection
-  Future<void> _startMatch() async {
+  Future<void> _startMatch(String hubId) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -197,7 +197,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
 
     // Change the match status to 'in progress'
     bool success = await _arcadiaCloud.changeMatchStatus(
-        'in progress', matchDetails.id!, token);
+        'in progress', matchDetails.id!, hubId, token);
 
     if (success) {
       setState(() {
@@ -214,8 +214,14 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     }
   }
 
-  Future<MatchPlayer?> _addPlayer(String userId, String playerSlot,
-      String gameId, String matchId, String matchType, String stationId) async {
+  Future<MatchPlayer?> _addPlayer(
+      String userId,
+      String playerSlot,
+      String gameId,
+      String matchId,
+      String matchType,
+      String hubId,
+      String stationId) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return null;
 
@@ -224,13 +230,21 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     if (token == null) return null;
 
     final MatchPlayer? response = await _arcadiaCloud.addPlayerArcadiaMatch(
-        gameId, matchId, playerSlot, userId, matchType, stationId, token);
+      gameId,
+      matchId,
+      playerSlot,
+      userId,
+      matchType,
+      stationId,
+      hubId,
+      token,
+    );
 
     return response;
   }
 
   // Method to call the setMatchWinner API
-  Future<void> _endMatch() async {
+  Future<void> _endMatch(String hubId) async {
     if (_selectedWinner == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a winner')),
@@ -251,12 +265,13 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     }
 
     // First, update the match status to 'completed'
-    await _changeMatchStatus("completed");
+    await _changeMatchStatus("completed", hubId);
 
     // Call setMatchWinner API
     bool success = await _arcadiaCloud.setMatchWinner(
       _selectedWinner == 'team1' ? '1' : '2', // Pass 1 for team1, 2 for team2
       matchDetails.id!,
+      hubId,
       token,
     );
 
@@ -272,7 +287,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     }
   }
 
-  Future<bool> _deleteArcadiaMatch(String matchId) async {
+  Future<bool> _deleteArcadiaMatch(String matchId, String hubId) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return false;
 
@@ -281,13 +296,13 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     if (token == null) return false;
 
     final bool response =
-        await _arcadiaCloud.deleteArcadiaMatch(matchId, token);
+        await _arcadiaCloud.deleteArcadiaMatch(matchId, hubId, token);
     return response;
   }
 
-  void deleteMatch(String? matchId) async {
+  void deleteMatch(String? matchId, String hubId) async {
     if (matchId != null) {
-      bool deleteMatch = await _deleteArcadiaMatch(matchId);
+      bool deleteMatch = await _deleteArcadiaMatch(matchId, hubId);
       if (deleteMatch) {
         Navigator.pop(context, 'refresh');
       } else {
@@ -298,11 +313,11 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     }
   }
 
-  void getMatchReady(MatchDetails matchData) async {
+  void getMatchReady(MatchDetails matchData, String hubId) async {
     if (matchData.id != null) {
-      var didChange = await _changeMatchStatus('ready');
+      var didChange = await _changeMatchStatus('ready', hubId);
 
-      if (didChange) showCreateMatch(context, matchData);
+      if (didChange) showCreateMatch(context, matchData, hubId);
     }
   }
 
@@ -411,7 +426,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                     if (widget.matchData?.id != null &&
                         widget.matchData!.id!.isNotEmpty) {
                       // var matchId = widget.matchData?.id!;
-                      deleteMatch(widget.matchData!.id);
+                      deleteMatch(widget.matchData!.id, widget.hubId);
                     }
                   },
                 ),
@@ -656,6 +671,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                         widget.hubDetails.games[_selectedGameIndex].gameId,
                         match.id ?? '',
                         matchType,
+                        widget.hubId,
                         widget.hubDetails.getStationIdByGameId(widget
                                 .hubDetails.games[_selectedGameIndex].gameId) ??
                             '');
@@ -1074,7 +1090,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
       return ElevatedButton(
         onPressed: matchData.matchStatus == 'in progress'
             ? () {
-                _endMatch(); // End match and set winner
+                _endMatch(widget.hubId); // End match and set winner
               }
             : null,
         style: ElevatedButton.styleFrom(
@@ -1088,7 +1104,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
       );
     }
 
-    Widget buildCreateMatchButton() {
+    Widget buildCreateMatchButton(String hubId) {
       return ElevatedButton(
         onPressed: () async {
           // Fetch the selected game and station info based on _selectedGameIndex
@@ -1115,12 +1131,12 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
             });
 
             // Call the _changeMatchStatus function and wait for its result
-            bool success = await _changeMatchStatus('ready');
+            bool success = await _changeMatchStatus('ready', hubId);
 
             // If the status change is successful, show the dialog
             if (success) {
               // Show the dialog and wait for its result
-              await showCreateMatch(context, matchDetails);
+              await showCreateMatch(context, matchDetails, hubId);
               Navigator.pop(context, 'refresh');
             } else {
               // Handle the failure case with a message
@@ -1151,8 +1167,10 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         children: [
-          if (matchData.matchStatus == 'created') buildCreateMatchButton(),
-          if (matchData.matchStatus == 'ready') buildStartMatchButton(),
+          if (matchData.matchStatus == 'created')
+            buildCreateMatchButton(widget.hubId),
+          if (matchData.matchStatus == 'ready')
+            buildStartMatchButton(widget.hubId),
           if (matchData.matchStatus == "in progress") buildEndMatchButton(),
         ],
       ),

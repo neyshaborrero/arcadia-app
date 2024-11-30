@@ -15,5 +15,6 @@ enum ViewType {
   operatorProfile,
   bounties,
   challengeBounty,
-  eventHome
+  eventHome,
+  checkin
 }

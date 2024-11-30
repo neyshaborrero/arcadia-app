@@ -17,6 +17,7 @@ import 'package:arcadia_mobile/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
@@ -27,6 +28,7 @@ import 'src/notifiers/change_notifier.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -34,6 +36,8 @@ void main() async {
   final firebaseService = FirebaseService.createInstance();
   bool initialized = await firebaseService.initialize();
   List<AdsDetails> splashAd = await loadSplashAds(initialized, firebaseService);
+
+  await DefaultCacheManager().emptyCache();
 
   //Clear the onboarding preference
   // final onboardingManager = OnboardingManager();

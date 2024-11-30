@@ -15,6 +15,7 @@ import 'package:arcadia_mobile/src/views/profile/profile.dart';
 import 'package:arcadia_mobile/src/views/profile/settings.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:arcadia_mobile/src/views/start/event_home.dart';
+import 'package:arcadia_mobile/src/views/start/play_home.dart';
 import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -149,28 +150,43 @@ class _HomeScreenState extends State<HomeScreen>
             backgroundColor: Colors.black,
             automaticallyImplyLeading: false,
             centerTitle: true,
-            title: Text(
-              _currentView == ViewType.events
-                  ? tabTitles[_tabController.index]
-                  : userProfile != null &&
-                          userProfile!.profileImageUrl.isNotEmpty
-                      ? userProfile!.gamertag
-                      : 'hambopr',
-              style: const TextStyle(
-                fontSize: 24.0,
-                fontWeight: FontWeight
-                    .w700, // This corresponds to font-weight: 700 in CSS
-              ),
-            ),
-            toolbarHeight: 40.0,
+            title: (userProfile != null && userProfile!.checkedin.isEmpty) ||
+                    (_currentView == ViewType.profile)
+                ? Text(
+                    _currentView == ViewType.events
+                        ? tabTitles[_tabController.index]
+                        : userProfile != null &&
+                                userProfile!.profileImageUrl.isNotEmpty
+                            ? userProfile!.gamertag
+                            : 'hambopr',
+                    style: const TextStyle(
+                      fontSize: 24.0,
+                      fontWeight: FontWeight
+                          .w700, // This corresponds to font-weight: 700 in CSS
+                    ),
+                  )
+                : null,
+            toolbarHeight:
+                (userProfile != null && userProfile!.checkedin.isEmpty) ||
+                        (_currentView == ViewType.profile)
+                    ? 40.0
+                    : 10.0,
             bottom: _currentView == ViewType.events
                 ? TabBar(
                     controller: _tabController,
                     indicatorSize: TabBarIndicatorSize.tab,
-                    tabs: const [
-                      Tab(text: 'Quests'),
+                    tabs: [
+                      Tab(
+                          text: (userProfile != null &&
+                                  userProfile!.checkedin.isEmpty)
+                              ? 'Quests'
+                              : 'Play'),
                       Tab(text: 'Vote'),
-                      Tab(text: 'News'),
+                      Tab(
+                          text: (userProfile != null &&
+                                  userProfile!.checkedin.isEmpty)
+                              ? 'News'
+                              : 'Event'),
                     ],
                   )
                 : null,
@@ -191,9 +207,11 @@ class _HomeScreenState extends State<HomeScreen>
                     children: [
                       (userProfile != null && userProfile!.checkedin.isEmpty)
                           ? QuestsView(missionList: widget.missions)
-                          : EventHome(),
+                          : PlayHome(),
                       const EventView(),
-                      const NewsScreen()
+                      (userProfile != null && userProfile!.checkedin.isEmpty)
+                          ? NewsScreen()
+                          : EventHome()
                     ],
                   );
                 default:

@@ -3,6 +3,7 @@ import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/hub_checkin.dart';
+import 'package:arcadia_mobile/src/structure/hub_checkout.dart';
 import 'package:arcadia_mobile/src/structure/location.dart';
 import 'package:arcadia_mobile/src/structure/badrequest_exception.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
@@ -103,6 +104,15 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
                       ),
                     ),
                   ),
+                  if (Provider.of<UserProfileProvider>(context, listen: false)
+                          .isOperator &&
+                      Provider.of<UserProfileProvider>(context, listen: false)
+                              .currentHubId !=
+                          null)
+                    _buildCheckOutButton(
+                        context,
+                        Provider.of<UserProfileProvider>(context, listen: false)
+                            .currentHubId!),
                   const SizedBox(
                     height: 40,
                   )
@@ -148,6 +158,21 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
                           'We couldnt validate the QR Code, try another one.')),
                 );
               }
+            } else if (widget.viewType == ViewType.checkin) {
+              if (Provider.of<UserProfileProvider>(context, listen: false)
+                      .currentHubId !=
+                  null) {
+                var isCheckedIn = await _arcadiaCloud.checkinEventPlayer(
+                    code,
+                    Provider.of<UserProfileProvider>(context, listen: false)
+                        .currentHubId!,
+                    token);
+                if (isCheckedIn) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('User Checked In')),
+                  );
+                }
+              }
             } else {
               final HubCheckin response =
                   await _arcadiaCloud.validateOperatorQRCode(code, token);
@@ -157,8 +182,6 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
                     .updateOperatorCheckIn(response.hubId);
                 _goToOperatorView(token, response.hubId);
               }
-
-              return;
             }
           }
         }
@@ -181,10 +204,24 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
     } finally {
       setState(() {
         isScanning = true;
+        print("scanning for two");
       });
 
-      await Future.delayed(const Duration(seconds: 5));
-      Navigator.of(context).pop();
+      if (widget.viewType != ViewType.checkin) {
+        await Future.delayed(const Duration(seconds: 5));
+        Navigator.of(context).pop();
+      }
+
+      if (widget.viewType == ViewType.checkin) {
+        print("refreshing in 5 seconds");
+        await Future.delayed(const Duration(seconds: 5));
+
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => ScanView(
+            appBarTitle: "Check In to Arcadia Battle Royale",
+          ),
+        ));
+      }
     }
   }
 
@@ -240,9 +277,7 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
         if (userQR != null) {
           _validateQRCode(userQR, widget.bountyId);
         } else {
-          print("scanned qr $scannedCode");
           if (scannedCode != null) _validateQRCode(scannedCode!, null);
-          print('Invalid QR code or missing parameter.');
         }
       }
     });
@@ -275,5 +310,47 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
     } else {
       return;
     }
+  }
+
+  Widget _buildCheckOutButton(BuildContext context, String hubId) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Center(
+        child: OutlinedButton(
+          onPressed: () async => {
+            if (await _hubCheckout(hubId))
+              {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/',
+                  (Route<dynamic> route) => false,
+                )
+              }
+          },
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(50),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+            child: Text(
+              'Check-Out',
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> _hubCheckout(String hubId) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final token = await user.getIdToken();
+    if (token == null) return false;
+
+    final HubCheckOut response =
+        await _arcadiaCloud.checkoutOperator(hubId, token);
+
+    return response.success;
   }
 }

@@ -432,6 +432,33 @@ class ArcadiaCloud {
     }
   }
 
+  Future<bool> checkinEventPlayer(
+      String userId, String hubId, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/events/qr-check-in'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({'qrcode': userId, 'hubId': hubId}),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return data['success'];
+      //return HubCheckOut.fromJson(data);
+    } else if (response.statusCode == 400 || response.statusCode == 401) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      print(errorResponse['errors'][0]['message']);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    } else {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    }
+  }
+
   Future<Map<String, dynamic>?> fetchUserActivity(String token,
       {String? startAfter}) async {
     final url = Uri.parse(
@@ -616,9 +643,12 @@ class ArcadiaCloud {
       String userId,
       String matchType,
       String stationId,
+      String hubId,
       String token) async {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/addPlayer');
+
+    print("token, $token");
 
     final response = await http.post(
       url,
@@ -633,7 +663,8 @@ class ArcadiaCloud {
         'playerSlot': playerSlot,
         'userId': userId,
         'matchType': matchType,
-        'stationId': stationId
+        'stationId': stationId,
+        'hubId': hubId
       }),
     );
 
@@ -643,18 +674,15 @@ class ArcadiaCloud {
       return data;
     } else {
       // Handle error
-      print('Failed to add player');
+      print('Failed to add player ${response.body}');
       return null;
     }
   }
 
   Future<bool> changeMatchStatus(
-      String matchStatus, String matchId, String token) async {
+      String matchStatus, String matchId, String hubId, String token) async {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/setStatus');
-
-    print("matchstatus $matchStatus");
-    print("matchId $matchId");
 
     final response = await http.put(
       url,
@@ -663,23 +691,21 @@ class ArcadiaCloud {
         'Authorization': 'Bearer $token',
         'x-api-key': _firebaseService.xApiKey,
       },
-      body: json.encode({
-        'matchId': matchId,
-        'matchStatus': matchStatus,
-      }),
+      body: json.encode(
+          {'matchId': matchId, 'matchStatus': matchStatus, 'hubId': hubId}),
     );
 
     if (response.statusCode == 200) {
       return true;
     } else {
       // Handle error
-      print('Failed to change match status');
+      print('Failed to change match status ${response.body}');
       return false;
     }
   }
 
   Future<bool> setMatchWinner(
-      String winner, String matchId, String token) async {
+      String winner, String matchId, String hubId, String token) async {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/setWinner');
 
@@ -693,6 +719,7 @@ class ArcadiaCloud {
       body: json.encode({
         'matchId': matchId,
         'winner': winner,
+        'hubId': hubId,
       }),
     );
 
@@ -702,14 +729,15 @@ class ArcadiaCloud {
       return true;
     } else {
       // Handle error
-      print('Failed set match winner');
+      print('Failed set match winner ${response.body}');
       return false;
     }
   }
 
-  Future<bool> deleteArcadiaMatch(String matchId, String token) async {
-    final url =
-        Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/${matchId}');
+  Future<bool> deleteArcadiaMatch(
+      String matchId, String hubId, String token) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/match/$hubId/$matchId');
 
     final response = await http.delete(
       url,
