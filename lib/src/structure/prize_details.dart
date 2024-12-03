@@ -8,6 +8,8 @@ class PrizeDetails {
   final String termsurl;
   final String raffleDate;
   final bool? lootPrize;
+  final String ticketId;
+  final bool enable;
 
   PrizeDetails(
       {required this.id,
@@ -18,7 +20,9 @@ class PrizeDetails {
       required this.description,
       required this.termsurl,
       required this.raffleDate,
-      this.lootPrize});
+      this.lootPrize,
+      required this.ticketId,
+      required this.enable});
 
   factory PrizeDetails.fromJson(Map<String, dynamic> json, String id) {
     return PrizeDetails(
@@ -30,6 +34,8 @@ class PrizeDetails {
         description: json['description'],
         termsurl: json['termsurl'] ?? "",
         raffleDate: json['raffleDate'] ?? "",
-        lootPrize: json['lootPrize'] ?? false);
+        lootPrize: json['lootPrize'] ?? false,
+        ticketId: json['ticketId'] ?? "",
+        enable: json['enable'] ?? true);
   }
 }

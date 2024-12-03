@@ -5,11 +5,11 @@ import 'package:flutter/foundation.dart';
 class DatabaseListenerService with ChangeNotifier {
   final FirebaseService firebaseService;
   String _currentMatchValue = '';
-  String _secondListenerValue = '';
+  bool _secondListenerValue = false;
   static bool hasNavigated = false; // Static variable to track navigation
 
   String get currentMatchValue => _currentMatchValue;
-  String get secondListenerValue => _secondListenerValue;
+  bool get secondListenerValue => _secondListenerValue;
 
   DatabaseListenerService({required this.firebaseService});
 
@@ -37,14 +37,12 @@ class DatabaseListenerService with ChangeNotifier {
     });
 
     // Second Listener: Listen to another path (e.g., 'preferences')
-    final secondPath = '/users/$userId/checkedin';
+    final secondPath = '/users/$userId/refresh';
     firebaseService.listenToDatabase(secondPath, (event) {
-      print("listening party");
-      final newValue = event.snapshot.value as String?;
-      if (newValue != null && newValue != _secondListenerValue) {
-        print('new values');
+      final newValue = event.snapshot.value as bool;
+      if (newValue == true && newValue != _secondListenerValue) {
         _secondListenerValue = newValue;
-        print("New preferences value detected: $_secondListenerValue");
+        print("New value detected: $_secondListenerValue");
         notifyListeners();
       }
     });
@@ -52,7 +50,7 @@ class DatabaseListenerService with ChangeNotifier {
 
   void reset() {
     _currentMatchValue = '';
-    _secondListenerValue = '';
+    _secondListenerValue = false;
     notifyListeners();
     hasNavigated = false;
   }

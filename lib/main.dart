@@ -1,7 +1,7 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/db_listener_service.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
-import 'package:arcadia_mobile/src/components/global_db_listener.dart';
+import 'package:arcadia_mobile/src/components/lifecycle_manager.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
@@ -73,6 +73,12 @@ void main() async {
       ],
       child: MyApp(
           initialized: initialized, ads: splashAd, screenTrace: screenTrace),
+      //Add this lifecycle manager after the Arcadia Event
+      // child: LifecycleManager(
+      //     child: MyApp(
+      //         initialized: initialized,
+      //         ads: splashAd,
+      //         screenTrace: screenTrace)),
     ),
   );
 }

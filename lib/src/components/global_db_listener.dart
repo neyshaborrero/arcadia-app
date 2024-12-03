@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/db_listener_service.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,13 +19,25 @@ class GlobalDBListener extends StatelessWidget {
     databaseService.initializeListener();
 
     // Check the static flag for navigation
-    if (databaseService.secondListenerValue.isNotEmpty &&
+    if (databaseService.secondListenerValue &&
         !DatabaseListenerService.hasNavigated) {
       DatabaseListenerService.hasNavigated = true;
-      Future.microtask(() {
+      Future.microtask(() async {
         Navigator.of(context).pushNamedAndRemoveUntil(
           '/',
           (Route<dynamic> route) => false,
+        );
+
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          print("User not authenticated");
+          return;
+        }
+
+        // Write "abandon" action to the database
+        await firebaseService.writeToDatabase(
+          '/users/${user.uid}/refresh',
+          false,
         );
       });
     }
@@ -117,6 +130,11 @@ class GlobalDBListener extends StatelessWidget {
                   '',
                 );
 
+                await firebaseService.writeToDatabase(
+                  '/users/${user.uid}/refresh',
+                  true,
+                );
+
                 Provider.of<DatabaseListenerService>(context, listen: false)
                     .reset();
               },
@@ -170,6 +188,11 @@ class GlobalDBListener extends StatelessWidget {
                 await firebaseService.writeToDatabase(
                   '/users/${user.uid}/currentMatch',
                   '',
+                );
+
+                await firebaseService.writeToDatabase(
+                  '/users/${user.uid}/refresh',
+                  true,
                 );
 
                 Provider.of<DatabaseListenerService>(context, listen: false)

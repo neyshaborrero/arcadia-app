@@ -7,6 +7,7 @@ import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/views/start/home_view.dart';
+import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -339,7 +340,7 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
     List<MissionDetails>? missions = await _fetchMissions(token);
     if (missions != null && mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomeScreen(missions: missions)),
+        MaterialPageRoute(builder: (context) => SplashScreen()),
       );
     }
   }
@@ -478,20 +479,10 @@ class _UserProfileUpdateScreenState extends State<UserProfileUpdateScreen> {
                                 : null,
                           ),
                           const SizedBox(height: 20),
-                          // _buildDropdownFormField(
-                          //   value: _selectedUserType,
-                          //   label: 'User Type *',
-                          //   items: ['Player', 'Cosplayer', 'Placeholder'],
-                          //   onChanged: (value) =>
-                          //       setState(() => _selectedUserType = value),
-                          //   validator: (value) => value == null || value.isEmpty
-                          //       ? 'Required'
-                          //       : null,
-                          // ),
                           _buildTextFormField(
                             controller: _referrerCodeController,
                             focusNode: _referralCodeFocusNode,
-                            label: 'Player Invite Code',
+                            label: 'Player Invite Code (Optional)',
                             keyboardType: TextInputType.name,
                             validator: null,
                           ),

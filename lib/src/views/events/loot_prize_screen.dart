@@ -25,7 +25,7 @@ class LootPrizeScreen extends StatelessWidget {
           height: 10,
         ),
         const AdsCarouselComponent(
-          viewType: ViewType.prize,
+          viewType: ViewType.loot,
         ),
         Expanded(
           child: Padding(

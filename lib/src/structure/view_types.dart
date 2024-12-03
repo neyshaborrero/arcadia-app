@@ -16,5 +16,7 @@ enum ViewType {
   bounties,
   challengeBounty,
   eventHome,
-  checkin
+  checkin,
+  userRaffleEntries,
+  loot
 }

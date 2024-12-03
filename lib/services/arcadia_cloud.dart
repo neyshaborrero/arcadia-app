@@ -13,6 +13,7 @@ import 'package:arcadia_mobile/src/structure/match_player.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/news_article.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
+import 'package:arcadia_mobile/src/structure/raffle_purchase.dart';
 import 'package:arcadia_mobile/src/structure/response_detail.dart';
 import 'package:arcadia_mobile/src/structure/success_response.dart';
 import 'package:arcadia_mobile/src/structure/survey_details.dart';
@@ -258,6 +259,7 @@ class ArcadiaCloud {
       print(data);
       return UserProfile.fromJson(data);
     } else {
+      print("error getting profile ${response.body}");
       // Handle error
       return null;
     }
@@ -902,6 +904,55 @@ class ArcadiaCloud {
       // Handle error
       print('Failed to load prizes ${response.body}');
       return null;
+    }
+  }
+
+  Future<RafflePurchase> buyRaffleTickets({
+    required String prizeId,
+    required int ticketCount,
+    required String eventId,
+    required int tokenCost,
+    required String token,
+  }) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/raffle/buy-raffle-tickets');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'x-api-key': _firebaseService.xApiKey,
+        },
+        body: json.encode({
+          'prizeId': prizeId,
+          'ticketCount': ticketCount,
+          'eventId': eventId,
+          'tokenCost': tokenCost,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+
+        if (responseBody['success'] == true) {
+          return RafflePurchase(
+            entries: responseBody['ticketsPurchased'],
+            remainingTokens: responseBody['remainingTokens'],
+            dayOne: responseBody['raffleEntriesDayOnePur'] ?? 0,
+            dayTwo: responseBody['raffleEntriesDayTwoPur'] ?? 0,
+          );
+        } else {
+          throw Exception('API Error: ${responseBody['message']}');
+        }
+      } else {
+        throw Exception(
+            'HTTP Error: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('Error purchasing raffle tickets: $e');
+      rethrow; // Re-throw the error for upstream handling
     }
   }
 

@@ -31,6 +31,20 @@ class UserProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void setTokens(int tokens) {
+    _userProfile!.tokens = tokens;
+    notifyListeners();
+  }
+
+  void updateRaffleEntries(int entries, int dayOne, int dayTwo) {
+    _userProfile!.raffleEntries = _userProfile!.raffleEntries + entries;
+    _userProfile!.raffleEntriesDayOne =
+        _userProfile!.raffleEntriesDayOne + dayOne;
+    _userProfile!.raffleEntriesDayTwo =
+        _userProfile!.raffleEntriesDayTwo + dayTwo;
+    notifyListeners();
+  }
+
   void updateXP(int xpEarned) {
     _userProfile!.xp = _userProfile!.xp + xpEarned;
     notifyListeners();

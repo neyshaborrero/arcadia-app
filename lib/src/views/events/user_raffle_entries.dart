@@ -1,27 +1,24 @@
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
-import 'package:arcadia_mobile/src/components/prize_dialog.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
-import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
 import 'package:arcadia_mobile/src/structure/prize_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
-import 'package:arcadia_mobile/src/views/events/raffle_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class PrizeScreen extends StatelessWidget {
+class RaffleEntriesScreen extends StatelessWidget {
   final List<PrizeDetails> prizeList;
-  final int entries;
+  final int entriesDay;
 
-  const PrizeScreen(
-      {super.key, required this.prizeList, required this.entries});
+  const RaffleEntriesScreen(
+      {super.key, required this.prizeList, required this.entriesDay});
 
   @override
   Widget build(BuildContext context) {
     final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth >= 600;
-    final columnCount = isTablet ? 2 : 1;
+    final columnCount = isTablet ? 3 : 2;
 
     return Column(
       children: <Widget>[
@@ -31,8 +28,6 @@ class PrizeScreen extends StatelessWidget {
         const AdsCarouselComponent(
           viewType: ViewType.prize,
         ),
-        if (userProfile != null && userProfile.checkedin.isEmpty)
-          _buildRaffleInfo(context),
         const SizedBox(
           height: 5,
         ),
@@ -97,27 +92,14 @@ class PrizeScreen extends StatelessWidget {
                             color: Colors.white, // Color of the line
                           ),
                           GestureDetector(
-                            onTap: () => {
-                              if (userProfile != null &&
-                                  (userProfile.raffleEntriesDayOne > 0 ||
-                                      userProfile.raffleEntriesDayTwo > 0))
-                                _navigateUpWithSlideTransition(
-                                  context,
-                                  const RaffleView(
-                                    viewType: ViewType.userRaffleEntries,
-                                  ), // Destination page
-                                )
-                            },
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text('Entries',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelMedium
-                                        ?.copyWith(
-                                          decoration: TextDecoration.underline,
-                                        )),
+                                Text(
+                                  'Entries',
+                                  style:
+                                      Theme.of(context).textTheme.labelMedium,
+                                ),
                                 const SizedBox(height: 5),
                                 Row(children: [
                                   Image.asset(
@@ -128,7 +110,7 @@ class PrizeScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 25),
                                   Text(
-                                    '$entries',
+                                    '$entriesDay',
                                     style:
                                         Theme.of(context).textTheme.titleLarge,
                                   )
@@ -171,7 +153,6 @@ class PrizeScreen extends StatelessWidget {
                             Text(
                               prize.title,
                               style: Theme.of(context).textTheme.labelLarge,
-                              textAlign: TextAlign.center,
                             ),
                             const SizedBox(
                               height: 10,
@@ -213,42 +194,6 @@ class PrizeScreen extends StatelessWidget {
                             const SizedBox(
                               height: 5,
                             ),
-                            ElevatedButton(
-                              onPressed: () => showPrizeDialog(context,
-                                  title: prize.title,
-                                  image: prize.image,
-                                  prizeId: prize.id,
-                                  eventId: userProfile != null
-                                      ? userProfile.checkedin
-                                      : '',
-                                  token: prize.token,
-                                  description: prize.description,
-                                  poweredby: prize.poweredBy,
-                                  termsurl: prize.termsurl,
-                                  userTokens: userProfile != null
-                                      ? userProfile.tokens
-                                      : 0,
-                                  userCheckedIn: userProfile != null &&
-                                          userProfile.checkedin.isNotEmpty
-                                      ? true
-                                      : false,
-                                  enable: prize.enable),
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: const Size(0, 0),
-                                fixedSize: const Size(280, 45),
-                                textStyle:
-                                    Theme.of(context).textTheme.labelSmall,
-                              ),
-                              child: const Text(
-                                'Details',
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight
-                                      .w700, // This corresponds to font-weight: 700 in CSS
-                                ),
-                              ),
-                            ),
                             const SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -287,27 +232,4 @@ class PrizeScreen extends StatelessWidget {
       ],
     );
   }
-
-  Widget _buildRaffleInfo(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          'Raffle entries unlock on Dec 7 & 8!',
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: 2), // Spacing between the two texts
-        Text(
-          'Buy your Arcadia Battle Royale Tickets to participate.',
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
-
-void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
-  Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
 }

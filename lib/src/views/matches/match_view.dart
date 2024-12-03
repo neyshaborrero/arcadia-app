@@ -30,7 +30,7 @@ class MatchView extends StatefulWidget {
 
 class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
   late int _selectedGameIndex;
-  String matchType = '1v1';
+  late String matchType;
   late final ArcadiaCloud _arcadiaCloud;
 
   late List<AnimationController> _controllers;
@@ -90,6 +90,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     } else {
       // Default to the first game if the matchStatus is 'created'
       _selectedGameIndex = 0;
+      matchType = widget.hubDetails.games.first.type;
     }
 
     isAvatarSelected = matchDetails.matchStatus == "in progress" ? false : true;

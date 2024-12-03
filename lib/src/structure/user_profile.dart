@@ -16,6 +16,9 @@ class UserProfile {
   int playerLevel;
   int matchStreak;
   int prestigeTotal;
+  int raffleEntries;
+  int raffleEntriesDayOne;
+  int raffleEntriesDayTwo;
 
   UserProfile(
       {required this.fullName,
@@ -30,6 +33,9 @@ class UserProfile {
       required this.fcmToken,
       this.currentHubId,
       this.isAdmin,
+      required this.raffleEntries,
+      required this.raffleEntriesDayOne,
+      required this.raffleEntriesDayTwo,
       required this.xp,
       required this.checkedin,
       required this.playerLevel,
@@ -53,6 +59,9 @@ class UserProfile {
       isAdmin: json['isAdmin'],
       checkedin: json['checkedin'] ?? '',
       playerLevel: json['playerLevel'] ?? 0,
+      raffleEntries: json['raffleEntries'] ?? 0,
+      raffleEntriesDayOne: json['raffleEntriesDayOne'] ?? 0,
+      raffleEntriesDayTwo: json['raffleEntriesDayTwo'] ?? 0,
       matchStreak: json['matchStreak'] ?? 0,
       prestigeTotal: json['prestigeTotal'] ?? 0,
     );

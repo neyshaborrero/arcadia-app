@@ -29,6 +29,7 @@ class _ProfileViewState extends State<ProfileView> {
   bool _isLoading = true;
   bool _isLoadingMore = false;
   String? _lastKey;
+  String? _selectedUserType;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -144,6 +145,12 @@ class _ProfileViewState extends State<ProfileView> {
                 //   ),
               ],
             ),
+            _buildDropdownFormField(
+              value: _selectedUserType,
+              label: 'User Type *',
+              items: ['Player', 'Cosplayer', 'Placeholder'],
+              onChanged: (value) => setState(() => _selectedUserType = value),
+            ),
 
             // SizedBox(
             //     height: userProfile != null && userProfile.checkedin ? 35 : 20),
@@ -168,6 +175,38 @@ class _ProfileViewState extends State<ProfileView> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDropdownFormField({
+    required String? value,
+    required String label,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    String? Function(String?)? validator,
+  }) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: label,
+        contentPadding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+        filled: true,
+        fillColor: const Color(0xFF2C2B2B),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      dropdownColor: const Color(0xFFD20E0D),
+      value: value,
+      items: items.map((String item) {
+        return DropdownMenuItem<String>(
+          value: item,
+          child: Text(item),
+        );
+      }).toList(),
+      onChanged: onChanged,
+      style: const TextStyle(color: Colors.white, fontSize: 16),
+      validator: validator,
     );
   }
 
@@ -409,7 +448,11 @@ class _ProfileViewState extends State<ProfileView> {
                   value: '',
                   assetPath: 'assets/prize.png',
                   onLabelTap: () {
-                    _navigateUpWithSlideTransition(context, const RaffleView());
+                    _navigateUpWithSlideTransition(
+                        context,
+                        const RaffleView(
+                          viewType: ViewType.prize,
+                        ));
                   },
                 ),
               ],

@@ -50,7 +50,9 @@ class _EventHomeState extends State<EventHome> {
                       onActionPressed: () {
                         _navigateUpWithSlideTransition(
                           context,
-                          const RaffleView(), // Destination page
+                          const RaffleView(
+                            viewType: ViewType.prize,
+                          ), // Destination page
                         );
                       },
                     ),
@@ -146,6 +148,7 @@ class _EventSection extends StatelessWidget {
                 child: Text(
                   actionLabel,
                   style: Theme.of(context).textTheme.labelLarge,
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),

@@ -51,15 +51,15 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const SplashScreen()),
-      );
-    }
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.resumed) {
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const SplashScreen()),
+  //     );
+  //   }
+  // }
 
   Future<AdsDetails> _initializeSplashAd() async {
     final adsProvider = Provider.of<AdsDetailsProvider>(context, listen: false);

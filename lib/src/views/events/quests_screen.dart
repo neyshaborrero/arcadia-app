@@ -52,7 +52,10 @@ class QuestsView extends StatelessWidget {
                           tokens: userProfile?.tokens ?? 0,
                           onViewRewardsTap: () {
                             _navigateUpWithSlideTransition(
-                                context, const RaffleView());
+                                context,
+                                const RaffleView(
+                                  viewType: ViewType.prize,
+                                ));
                           },
                         ),
                       ],

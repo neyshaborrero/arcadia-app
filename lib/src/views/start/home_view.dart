@@ -104,16 +104,16 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // When the app is resumed, show the splash screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const SplashScreen()),
-      );
-    }
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.resumed) {
+  //     // When the app is resumed, show the splash screen
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const SplashScreen()),
+  //     );
+  //   }
+  // }
 
   List<String> tabTitles = ['Quests', 'Event', 'News'];
 
