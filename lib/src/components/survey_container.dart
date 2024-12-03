@@ -42,21 +42,21 @@ class _SurveyContainerState extends State<SurveyContainer> {
     // Check the condition and sort if true
     if (widget.surveyDetails.userHasAnswered || hasReachedMaxVotes) {
       surveyDetailsToPass = SurveyDetails(
-        id: widget.surveyDetails.id,
-        question: widget.surveyDetails.question,
-        description: widget.surveyDetails.description,
-        subtitle: widget.surveyDetails.subtitle,
-        pictureUrl: widget.surveyDetails.pictureUrl,
-        maxVotesPerUser: widget.surveyDetails.maxVotesPerUser,
-        userHasAnswered: widget.surveyDetails.userHasAnswered,
-        maxAnswers: widget.surveyDetails.maxAnswers,
-        tokensEarned: widget.surveyDetails.tokensEarned,
-        createdAt: widget.surveyDetails.createdAt,
-        expiresAt: widget.surveyDetails.expiresAt,
-        answers: List.from(widget.surveyDetails.answers)
-          ..sort((a, b) => b.percentage.compareTo(a.percentage)),
-        userSelectedAnswers: widget.surveyDetails.userSelectedAnswers,
-      );
+          id: widget.surveyDetails.id,
+          question: widget.surveyDetails.question,
+          description: widget.surveyDetails.description,
+          subtitle: widget.surveyDetails.subtitle,
+          pictureUrl: widget.surveyDetails.pictureUrl,
+          maxVotesPerUser: widget.surveyDetails.maxVotesPerUser,
+          userHasAnswered: widget.surveyDetails.userHasAnswered,
+          maxAnswers: widget.surveyDetails.maxAnswers,
+          tokensEarned: widget.surveyDetails.tokensEarned,
+          createdAt: widget.surveyDetails.createdAt,
+          expiresAt: widget.surveyDetails.expiresAt,
+          answers: List.from(widget.surveyDetails.answers)
+            ..sort((a, b) => b.percentage.compareTo(a.percentage)),
+          userSelectedAnswers: widget.surveyDetails.userSelectedAnswers,
+          showResults: widget.surveyDetails.showResults);
     }
 
     // Navigate to the VoteScreen and await the result

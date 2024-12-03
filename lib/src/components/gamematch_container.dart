@@ -110,80 +110,127 @@ class _MatchContainerState extends State<MatchContainer> {
             ),
             const SizedBox(height: 15),
 
-            // Display avatars for 1v1v1v1
+            // Display avatars for different match types
             if (match.matchType == '1v1v1v1') ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (team1.isNotEmpty) _buildPlayerAvatar(context, team1[0]),
-                  if (team2.isNotEmpty) _buildPlayerAvatar(context, team2[0]),
-                ],
-              ),
-              Image.asset(
-                'assets/versus.png',
-                width: 60,
-                height: 60,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (team3.isNotEmpty) _buildPlayerAvatar(context, team3[0]),
-                  if (team4.isNotEmpty) _buildPlayerAvatar(context, team4[0]),
-                ],
-              ),
+              _build1v1v1v1Layout(context, team1, team2, team3, team4),
             ] else if (match.matchType == '2v2') ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (team1.isNotEmpty) _buildPlayerAvatar(context, team1[0]),
-                  SizedBox(
-                    width: double
-                        .infinity, // Ensures the container takes the full width
-                    child: Stack(
-                      alignment:
-                          Alignment.center, // Center the image and the line
-                      children: [
-                        // Line that expands from end to end
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Container(
-                              height: 2, // Thickness of the line
-                              color: const Color(0xFFFAC437), // Line color
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                            ),
-                          ),
-                        ),
-                        // Image centered on top of the line
-                        Image.asset(
-                          'assets/versus.png', // Replace with your image asset path
-                          width: 60,
-                          height: 60,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (team2.isNotEmpty) _buildPlayerAvatar(context, team2[0]),
-                ],
-              ),
+              _build2v2Layout(context, team1, team2),
             ] else if (match.matchType == '1v1') ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (team1.isNotEmpty) _buildPlayerAvatar(context, team1[0]),
-                  Image.asset(
-                    'assets/versus.png',
-                    width: 60,
-                    height: 60,
-                  ),
-                  if (team2.isNotEmpty) _buildPlayerAvatar(context, team2[0]),
-                ],
-              ),
+              _build1v1Layout(context, team1, team2),
             ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _build1v1Layout(
+      BuildContext context, List<MatchPlayer> team1, List<MatchPlayer> team2) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        if (team1.isNotEmpty)
+          Flexible(child: _buildPlayerAvatar(context, team1[0])),
+        Image.asset(
+          'assets/versus.png',
+          width: 60,
+          height: 60,
+        ),
+        if (team2.isNotEmpty)
+          Flexible(child: _buildPlayerAvatar(context, team2[0])),
+      ],
+    );
+  }
+
+  Widget _build2v2Layout(
+      BuildContext context, List<MatchPlayer> team1, List<MatchPlayer> team2) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            if (team1.isNotEmpty)
+              Flexible(child: _buildPlayerAvatar(context, team1[0])),
+            if (team1.length > 1)
+              Flexible(child: _buildPlayerAvatar(context, team1[1])),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity, // Ensures the container takes the full width
+          child: Stack(
+            alignment: Alignment.center, // Center the image and the line
+            children: [
+              // Line that expands from end to end
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    height: 2, // Thickness of the line
+                    color: const Color(0xFFFAC437), // Line color
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                ),
+              ),
+              // Image centered on top of the line
+              Image.asset(
+                'assets/versus.png', // Replace with your image asset path
+                width: 60,
+                height: 60,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            if (team2.isNotEmpty)
+              Flexible(child: _buildPlayerAvatar(context, team2[0])),
+            if (team2.length > 1)
+              Flexible(child: _buildPlayerAvatar(context, team2[1])),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _build1v1v1v1Layout(
+      BuildContext context,
+      List<MatchPlayer> team1,
+      List<MatchPlayer> team2,
+      List<MatchPlayer> team3,
+      List<MatchPlayer> team4) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            if (team1.isNotEmpty)
+              Flexible(child: _buildPlayerAvatar(context, team1[0])),
+            if (team2.isNotEmpty)
+              Flexible(child: _buildPlayerAvatar(context, team2[0])),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Center(
+          child: Image.asset(
+            'assets/versus.png',
+            width: 60,
+            height: 60,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            if (team3.isNotEmpty)
+              Flexible(child: _buildPlayerAvatar(context, team3[0])),
+            if (team4.isNotEmpty)
+              Flexible(child: _buildPlayerAvatar(context, team4[0])),
+          ],
+        ),
+      ],
     );
   }
 

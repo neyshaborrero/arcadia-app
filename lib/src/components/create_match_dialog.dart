@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 Future<String?> showCreateMatch(
-    BuildContext context, MatchDetails match, String hubId) {
+    BuildContext context, MatchDetails match, String hubId, String matchType) {
   final firebaseService = Provider.of<FirebaseService>(context, listen: false);
   final ArcadiaCloud arcadiaCloud = ArcadiaCloud(firebaseService);
 
@@ -24,7 +24,7 @@ Future<String?> showCreateMatch(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
-                child: _buildMatchContent(context, match),
+                child: _buildMatchContent(context, match, matchType),
               ),
               const SizedBox(
                 height: 10,
@@ -62,9 +62,7 @@ Future<String?> showCreateMatch(
 }
 
 Widget _buildMatchContent(
-  BuildContext context,
-  MatchDetails matchData,
-) {
+    BuildContext context, MatchDetails matchData, String matchType) {
   return Container(
     decoration: BoxDecoration(
       gradient: LinearGradient(
@@ -90,10 +88,12 @@ Widget _buildMatchContent(
         const SizedBox(height: 12),
 
         // Conditionally render based on matchType
-        if (matchData.matchType == '1v1')
+        if (matchType == '1v1')
           _build1v1MatchContent(context, matchData)
-        else if (matchData.matchType == '2v2')
-          _build2v2MatchContent(context, matchData),
+        else if (matchType == '2v2')
+          _build2v2MatchContent(context, matchData)
+        else if (matchType == '1v1v1v1')
+          _build1v1v1v1MatchContent(context, matchData),
 
         const SizedBox(height: 12),
         Text(
@@ -103,6 +103,79 @@ Widget _buildMatchContent(
         ),
       ],
     ),
+  );
+}
+
+Widget _build1v1v1v1MatchContent(BuildContext context, MatchDetails matchData) {
+  return Column(
+    children: [
+      // First row: Team 1 and Team 2
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildPlayerAvatar(
+            context,
+            matchData.team1?.isNotEmpty == true
+                ? matchData.team1![0].gamertag
+                : 'Team 1',
+            matchData.team1?.isNotEmpty == true
+                ? matchData.team1![0].imageprofile
+                : '',
+            'A', // Station spot A
+          ),
+          const SizedBox(width: 5),
+          _buildPlayerAvatar(
+            context,
+            matchData.team2?.isNotEmpty == true
+                ? matchData.team2![0].gamertag
+                : 'Team 2',
+            matchData.team2?.isNotEmpty == true
+                ? matchData.team2![0].imageprofile
+                : '',
+            'B', // Station spot B
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+
+      // Versus image for middle row
+      Center(
+        child: Image.asset(
+          'assets/versus.png',
+          width: 60,
+          height: 60,
+        ),
+      ),
+      const SizedBox(height: 12),
+
+      // Second row: Team 3 and Team 4
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildPlayerAvatar(
+            context,
+            matchData.team3?.isNotEmpty == true
+                ? matchData.team3![0].gamertag
+                : 'Team 3',
+            matchData.team3?.isNotEmpty == true
+                ? matchData.team3![0].imageprofile
+                : '',
+            'C', // Station spot C
+          ),
+          const SizedBox(width: 5),
+          _buildPlayerAvatar(
+            context,
+            matchData.team4?.isNotEmpty == true
+                ? matchData.team4![0].gamertag
+                : 'Team 4',
+            matchData.team4?.isNotEmpty == true
+                ? matchData.team4![0].imageprofile
+                : '',
+            'D', // Station spot D
+          ),
+        ],
+      ),
+    ],
   );
 }
 
@@ -249,6 +322,7 @@ Widget _build2v2MatchContent(BuildContext context, MatchDetails matchData) {
     children: [
       // First row for Team 1
       Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildPlayerAvatar(
             context,
@@ -271,16 +345,35 @@ Widget _build2v2MatchContent(BuildContext context, MatchDetails matchData) {
       ),
       const SizedBox(height: 5),
       // Versus image
-      Center(
-        child: Image.asset(
-          'assets/versus.png',
-          width: 60,
-          height: 60,
+      SizedBox(
+        width: double.infinity, // Ensures the container takes the full width
+        child: Stack(
+          alignment: Alignment.center, // Center the image and the line
+          children: [
+            // Line that expands from end to end
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  height: 2, // Thickness of the line
+                  color: const Color(0xFFFAC437), // Line color
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                ),
+              ),
+            ),
+            // Image centered on top of the line
+            Image.asset(
+              'assets/versus.png', // Replace with your image asset path
+              width: 60,
+              height: 60,
+            ),
+          ],
         ),
       ),
       const SizedBox(height: 5),
       // Second row for Team 2
       Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildPlayerAvatar(
             context,

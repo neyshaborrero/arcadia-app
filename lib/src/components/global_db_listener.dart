@@ -72,26 +72,26 @@ class GlobalDBListener extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Reset listener and dismiss modal
-                Provider.of<DatabaseListenerService>(context, listen: false)
-                    .reset();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-              ),
-              child: const Text(
-                'Abandon Match',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     // Reset listener and dismiss modal
+            //     Provider.of<DatabaseListenerService>(context, listen: false)
+            //         .reset();
+            //   },
+            //   style: ElevatedButton.styleFrom(
+            //     backgroundColor: Colors.red,
+            //     padding:
+            //         const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            //   ),
+            //   child: const Text(
+            //     'Abandon Match',
+            //     style: TextStyle(
+            //       fontSize: 18,
+            //       color: Colors.white,
+            //       fontWeight: FontWeight.bold,
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

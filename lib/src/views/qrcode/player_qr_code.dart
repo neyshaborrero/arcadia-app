@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/src/components/gradient_avatar.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +8,31 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ffi' as ffi; // Prefix dart:ffi
 import 'dart:ui'; // Keep dart:ui without a prefix
 
-class PlayerQRCodeWidget extends StatelessWidget {
+class PlayerQRCodeWidget extends StatefulWidget {
   const PlayerQRCodeWidget({super.key});
+
+  @override
+  _PlayerQRCodeWidgetState createState() => _PlayerQRCodeWidgetState();
+}
+
+class _PlayerQRCodeWidgetState extends State<PlayerQRCodeWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(); // Loop the animation
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,17 +59,33 @@ class PlayerQRCodeWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  UserAvatarWidget(
-                    avatarRadius: screenHeight / 10,
-                    profileImageUrl: userProfile.profileImageUrl,
-                  ),
+                  Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        UserAvatarWidget(
+                          avatarRadius: screenHeight / 10,
+                          profileImageUrl: userProfile.profileImageUrl,
+                          animation: _controller,
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          userProfile.gamertag.isNotEmpty
+                              ? userProfile.gamertag
+                              : '[gamertag]',
+                          style: const TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        QRCodeWidget(
+                          data: deepLink,
+                          qrcodeText: userProfile.qrcode,
+                        ),
+                      ]),
                   ProfileIconsWidget(userProfile: userProfile),
                 ],
-              ),
-              const SizedBox(height: 20),
-              QRCodeWidget(
-                data: deepLink,
-                qrcodeText: userProfile.qrcode,
               ),
             ],
           ),
@@ -59,37 +99,37 @@ class PlayerQRCodeWidget extends StatelessWidget {
 class UserAvatarWidget extends StatelessWidget {
   final double avatarRadius;
   final String profileImageUrl;
+  final Animation<double> animation;
 
   const UserAvatarWidget({
     super.key,
     required this.avatarRadius,
     required this.profileImageUrl,
+    required this.animation,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white,
-          width: 4.0,
-        ),
+    return CustomPaint(
+      painter: GradientBorderPainter(
+        animation: animation, // Pass the animation controller
       ),
-      child: CircleAvatar(
-        radius: avatarRadius,
-        backgroundColor: const Color(0xFF2C2B2B),
-        child: FractionallySizedBox(
-          widthFactor: 1.0,
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                image: profileImageUrl.isNotEmpty
-                    ? CachedNetworkImageProvider(profileImageUrl)
-                    : const AssetImage('assets/hambopr.jpg') as ImageProvider,
-                fit: BoxFit.cover,
+      child: Padding(
+        padding: const EdgeInsets.all(8), // Adjust padding for border thickness
+        child: CircleAvatar(
+          radius: avatarRadius,
+          backgroundColor: const Color(0xFF2C2B2B),
+          child: FractionallySizedBox(
+            widthFactor: 1.0,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: profileImageUrl.isNotEmpty
+                      ? CachedNetworkImageProvider(profileImageUrl)
+                      : const AssetImage('assets/hambopr.jpg') as ImageProvider,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
@@ -110,26 +150,21 @@ class ProfileIconsWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildIconColumn(
-                context: context,
-                imagePath: 'assets/level-shield.png',
-                badgeText: '${userProfile?.playerLevel ?? 0}',
-                labelText: "Level",
-                paddingTop: 2.0),
-            const SizedBox(width: 20),
-            _buildIconColumn(
-                context: context,
-                imagePath: 'assets/award.png',
-                badgeText: '${userProfile?.prestigeTotal ?? 0}',
-                labelText: "Prestige",
-                paddingTop: 0.0),
-          ],
-        ),
-        const SizedBox(height: 16),
+        _buildIconColumn(
+            context: context,
+            imagePath: 'assets/level-shield.png',
+            badgeText: '${userProfile?.playerLevel ?? 0}',
+            labelText: "Level",
+            paddingTop: 2.0),
+        const SizedBox(height: 20),
+        _buildIconColumn(
+            context: context,
+            imagePath: 'assets/award.png',
+            badgeText: '${userProfile?.prestigeTotal ?? 0}',
+            labelText: "Prestige",
+            paddingTop: 0.0),
+
+        const SizedBox(height: 20),
         //_buildXpTokensContainer(userProfile, context),
         // _buildXpOrTokensColumn(
         //   context: context,
@@ -138,53 +173,48 @@ class ProfileIconsWidget extends StatelessWidget {
         //   assetPath: 'assets/fire.png',
         // )
 
-        Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.topRight,
+              children: [
+                Image.asset(
+                  'assets/fire.png',
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.contain,
+                ),
+              ],
+            ),
+            Text(
+              "${userProfile?.matchStreak ?? 0} Win Streak",
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
+              Stack(
+                alignment: Alignment.topRight,
                 children: [
-                  Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Image.asset(
-                        'assets/fire.png',
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.contain,
-                      ),
-                    ],
-                  ),
-                  Text(
-                    "${userProfile?.matchStreak ?? 0} Win Streak",
-                    style: Theme.of(context).textTheme.titleSmall,
+                  Image.asset(
+                    'assets/ribbon.png',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.contain,
                   ),
                 ],
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Image.asset(
-                        'assets/ribbon.png',
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.contain,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 40),
-                  Text(
-                    "${userProfile?.xp ?? 0} XP",
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ],
-              )
+              const SizedBox(width: 40),
+              Text(
+                "${userProfile?.xp ?? 0} XP",
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
             ]),
       ],
     );

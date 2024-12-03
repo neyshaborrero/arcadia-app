@@ -153,7 +153,9 @@ class _VoteScreenState extends State<VoteScreen> {
                                         padding:
                                             const EdgeInsets.only(left: 8.0),
                                         child: Text(
-                                          '${answer.percentage.toStringAsFixed(1)}%',
+                                          widget.surveyDetails.showResults
+                                              ? '${answer.percentage.toStringAsFixed(1)}%'
+                                              : 'Voting in Progress',
                                           style: Theme.of(context)
                                               .textTheme
                                               .labelLarge,

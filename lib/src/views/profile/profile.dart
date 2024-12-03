@@ -145,12 +145,12 @@ class _ProfileViewState extends State<ProfileView> {
                 //   ),
               ],
             ),
-            _buildDropdownFormField(
-              value: _selectedUserType,
-              label: 'User Type *',
-              items: ['Player', 'Cosplayer', 'Placeholder'],
-              onChanged: (value) => setState(() => _selectedUserType = value),
-            ),
+            // _buildDropdownFormField(
+            //   value: _selectedUserType,
+            //   label: 'User Type *',
+            //   items: ['Player', 'Cosplayer', 'Placeholder'],
+            //   onChanged: (value) => setState(() => _selectedUserType = value),
+            // ),
 
             // SizedBox(
             //     height: userProfile != null && userProfile.checkedin ? 35 : 20),

@@ -16,24 +16,26 @@ class SurveyDetails {
   final List<SurveyAnswer> answers;
   final int maxVotesPerUser;
   final List<String> userSelectedAnswers; // Add this field
+  final bool showResults;
 
-  SurveyDetails({
-    required this.id,
-    required this.question,
-    required this.description,
-    this.subtitle,
-    this.sponsorBy,
-    required this.maxAnswers,
-    required this.tokensEarned,
-    this.pictureUrl,
-    required this.createdAt,
-    required this.expiresAt,
-    required this.userHasAnswered,
-    required this.answers,
-    required this.maxVotesPerUser,
-    this.rules,
-    required this.userSelectedAnswers, // Add this in the constructor
-  });
+  SurveyDetails(
+      {required this.id,
+      required this.question,
+      required this.description,
+      this.subtitle,
+      this.sponsorBy,
+      required this.maxAnswers,
+      required this.tokensEarned,
+      this.pictureUrl,
+      required this.createdAt,
+      required this.expiresAt,
+      required this.userHasAnswered,
+      required this.answers,
+      required this.maxVotesPerUser,
+      this.rules,
+      required this.userSelectedAnswers,
+      required this.showResults // Add this in the constructor
+      });
 
   factory SurveyDetails.fromJson(String id, Map<String, dynamic> json) {
     var answersFromJson = json['answers'] as List;
@@ -42,21 +44,22 @@ class SurveyDetails {
 
     return SurveyDetails(
       id: id,
-      subtitle: json['subtitle'],
-      question: json['question'],
-      description: json['description'],
-      sponsorBy: json['sponsorBy'],
-      maxAnswers: json['maxAnswers'],
-      tokensEarned: json['tokensEarned'],
-      pictureUrl: json['pictureUrl'],
-      createdAt: json['createdAt'],
-      expiresAt: json['expiresAt'],
-      userHasAnswered: json['userHasAnswered'],
+      subtitle: json['subtitle'] ?? '',
+      question: json['question'] ?? '',
+      description: json['description'] ?? '',
+      sponsorBy: json['sponsorBy'] ?? '',
+      maxAnswers: json['maxAnswers'] ?? 1,
+      tokensEarned: json['tokensEarned'] ?? 150,
+      pictureUrl: json['pictureUrl'] ?? '',
+      createdAt: json['createdAt'] ?? '',
+      expiresAt: json['expiresAt'] ?? '',
+      userHasAnswered: json['userHasAnswered'] ?? false,
       answers: answersList,
-      maxVotesPerUser: json['maxVotesPerUser'],
-      rules: json['rules'],
+      maxVotesPerUser: json['maxVotesPerUser'] ?? 1,
+      rules: json['rules'] ?? '',
+      showResults: json['showResults'] ?? true,
       userSelectedAnswers: List<String>.from(
-          json['userSelectedAnswers']), // Convert to list of strings
+          json['userSelectedAnswers'] ?? ''), // Convert to list of strings
     );
   }
 }

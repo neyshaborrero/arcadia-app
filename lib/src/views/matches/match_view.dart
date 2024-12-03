@@ -318,7 +318,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     if (matchData.id != null) {
       var didChange = await _changeMatchStatus('ready', hubId);
 
-      if (didChange) showCreateMatch(context, matchData, hubId);
+      if (didChange) showCreateMatch(context, matchData, hubId, matchType);
     }
   }
 
@@ -597,7 +597,6 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
                 padding: const EdgeInsets.all(10.0),
                 child: _buildPlayerAvatarSelection(
                     matchType,
-                    //matchData.matchType ?? '1v1',
                     matchData.team1,
                     matchData.team2,
                     matchData.team3,
@@ -1137,7 +1136,7 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
             // If the status change is successful, show the dialog
             if (success) {
               // Show the dialog and wait for its result
-              await showCreateMatch(context, matchDetails, hubId);
+              await showCreateMatch(context, matchDetails, hubId, matchType);
               Navigator.pop(context, 'refresh');
             } else {
               // Handle the failure case with a message
