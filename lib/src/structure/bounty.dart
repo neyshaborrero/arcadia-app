@@ -32,18 +32,18 @@ class Bounty {
   // Factory constructor to create a Bounty instance from JSON
   factory Bounty.fromJson(Map<String, dynamic> json) {
     return Bounty(
-        bountyId: json['bountyId'],
-        currentStreak: json['currentStreak'],
-        bountyAmount: json['bountyAmount'],
-        gameId: json['gameId'],
-        gameImage: json['gameImage'],
-        gameName: json['gameName'],
-        gamerTag: json['gamerTag'],
-        hubId: json['hubId'],
-        hubName: json['hubName'],
-        playerProfileImageUrl: json['playerProfileImageUrl'],
-        playerUserId: json['playerUserId'],
-        status: json['status'],
-        expirationTimestamp: json['expirationTimestamp']);
+        bountyId: json['bountyId'] ?? '',
+        currentStreak: json['currentStreak'] ?? 0,
+        bountyAmount: json['bountyAmount'] ?? 0,
+        gameId: json['gameId'] ?? '',
+        gameImage: json['gameImage'] ?? '',
+        gameName: json['gameName'] ?? '',
+        gamerTag: json['gamerTag'] ?? '',
+        hubId: json['hubId'] ?? '',
+        hubName: json['hubName'] ?? '',
+        playerProfileImageUrl: json['playerProfileImageUrl'] ?? '',
+        playerUserId: json['playerUserId'] ?? '',
+        status: json['status'] ?? '',
+        expirationTimestamp: json['expirationTimestamp'] ?? 0);
   }
 }

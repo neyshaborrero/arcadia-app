@@ -89,7 +89,7 @@ class _GameActivityViewState extends State<GameActivityView> {
     return AppBar(
       title: _currentView == ViewType.createMatch
           ? Text(hubName)
-          : Text("$hubName Bounties"),
+          : Text("Prestige"),
       centerTitle: true,
       backgroundColor: Colors.black,
       automaticallyImplyLeading: false,

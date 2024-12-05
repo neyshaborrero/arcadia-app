@@ -1,4 +1,5 @@
 import 'package:arcadia_mobile/src/components/gradient_avatar.dart';
+import 'package:arcadia_mobile/src/components/profile/user_avatar_widget.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:flutter/material.dart';
@@ -88,50 +89,6 @@ class _PlayerQRCodeWidgetState extends State<PlayerQRCodeWidget>
                 ],
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Widget Function for Circle Avatar
-class UserAvatarWidget extends StatelessWidget {
-  final double avatarRadius;
-  final String profileImageUrl;
-  final Animation<double> animation;
-
-  const UserAvatarWidget({
-    super.key,
-    required this.avatarRadius,
-    required this.profileImageUrl,
-    required this.animation,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: GradientBorderPainter(
-        animation: animation, // Pass the animation controller
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8), // Adjust padding for border thickness
-        child: CircleAvatar(
-          radius: avatarRadius,
-          backgroundColor: const Color(0xFF2C2B2B),
-          child: FractionallySizedBox(
-            widthFactor: 1.0,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: profileImageUrl.isNotEmpty
-                      ? CachedNetworkImageProvider(profileImageUrl)
-                      : const AssetImage('assets/hambopr.jpg') as ImageProvider,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
           ),
         ),
       ),
@@ -413,6 +370,7 @@ class QRCodeWidget extends StatelessWidget {
           style: const TextStyle(
             fontSize: 24.0,
             fontWeight: FontWeight.w700,
+            fontFamily: 'Courier New',
           ),
         ),
       ],

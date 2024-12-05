@@ -132,33 +132,40 @@ class MyApp extends StatelessWidget {
     });
 
     return MaterialApp(
-        title: 'Arcadia Battle Royale 2024',
-        theme: _buildThemeData(context),
-        debugShowCheckedModeBanner: false,
-        home: FutureBuilder<bool>(
-            future: OnboardingManager().hasSeenOnboarding(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
-              }
-              bool hasSeenOnboarding = snapshot.data ?? false;
+      title: 'Arcadia Battle Royale 2024',
+      theme: _buildThemeData(context),
+      debugShowCheckedModeBanner: false,
+      home: initialized ? SplashScreen() : ErrorScreen(),
+    );
 
-              return hasSeenOnboarding
-                  ? initialized
-                      ? SplashScreen()
-                      : ErrorScreen()
-                  : OnboardingScreen(
-                      onFinish: () {
-                        // Rebuild to display the splash screen after onboarding
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                initialized ? SplashScreen() : ErrorScreen(),
-                          ),
-                        );
-                      },
-                    );
-            }));
+    // return MaterialApp(
+    //     title: 'Arcadia Battle Royale 2024',
+    //     theme: _buildThemeData(context),
+    //     debugShowCheckedModeBanner: false,
+    //     home: FutureBuilder<bool>(
+    //         future: OnboardingManager().hasSeenOnboarding(),
+    //         builder: (context, snapshot) {
+    //           if (snapshot.connectionState == ConnectionState.waiting) {
+    //             return CircularProgressIndicator();
+    //           }
+    //           bool hasSeenOnboarding = snapshot.data ?? false;
+
+    //           return hasSeenOnboarding
+    //               ? initialized
+    //                   ? SplashScreen()
+    //                   : ErrorScreen()
+    //               : OnboardingScreen(
+    //                   onFinish: () {
+    //                     // Rebuild to display the splash screen after onboarding
+    //                     Navigator.of(context).pushReplacement(
+    //                       MaterialPageRoute(
+    //                         builder: (_) =>
+    //                             initialized ? SplashScreen() : ErrorScreen(),
+    //                       ),
+    //                     );
+    //                   },
+    //                 );
+    //         }));
   }
 }
 

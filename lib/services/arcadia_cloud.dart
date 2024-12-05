@@ -312,6 +312,33 @@ class ArcadiaCloud {
     }
   }
 
+  Future<void> rejectBounty(String token, String bountyId) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/bounty/updateStatus');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({
+        'bountyId': bountyId,
+        'newStatus': "rejected",
+      }),
+    );
+
+    print("response ${response.statusCode}");
+
+    if (response.statusCode == 404) {
+      throw Exception('No Bounties Available');
+    } else {
+      // Handle error appropriately
+      throw Exception('Failed to load bounties');
+    }
+  }
+
   Future<String> requestBountyChallenge(
       String token, String bountyId, String challengerId) async {
     final url = Uri.parse(
@@ -339,6 +366,33 @@ class ArcadiaCloud {
 
       //final String data = json.decode(response.body)['bounties'];
       return expirationTimestamp;
+    } else if (response.statusCode == 404) {
+      throw Exception('No Bounties Available');
+    } else {
+      // Handle error appropriately
+      throw Exception('Failed to load bounties');
+    }
+  }
+
+  Future<Bounty?> fetchBountyDetails(String token, String bountyId) async {
+    final url =
+        Uri.parse('${_firebaseService.arcadiaCloudAddress}/bounty/$bountyId');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // Decode the JSON response
+      final Map<String, dynamic> data = json.decode(response.body);
+      final bounty = Bounty.fromJson(data);
+
+      return bounty;
     } else if (response.statusCode == 404) {
       throw Exception('No Bounties Available');
     } else {
@@ -809,6 +863,55 @@ class ArcadiaCloud {
       print(
           'Failed to get Arcadia matches. Status code: ${response.statusCode}');
       return [];
+    }
+  }
+
+  Future<MatchDetails?> getMatch(
+      String hubId, String matchId, String token) async {
+    // Construct the API URL
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/match/$hubId/match/$matchId');
+    print("the url $url");
+
+    try {
+      // Send the GET request to the server
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'x-api-key': _firebaseService.xApiKey,
+        },
+      );
+
+      // If the response is successful (status code 200)
+      if (response.statusCode == 200) {
+        try {
+          print("sucess");
+          // Decode the response body into a Map<String, dynamic>
+          final Map<String, dynamic> jsonData = json.decode(response.body);
+
+          // Parse the match details from the response
+          final matchDetails = MatchDetails.fromJson(
+            matchId,
+            jsonData,
+          );
+
+          return matchDetails;
+        } catch (e) {
+          // Handle errors during response decoding or processing
+          print("Error decoding or processing the response: $e");
+          return null;
+        }
+      } else {
+        // Handle non-200 response
+        print('Failed to fetch match. Status code: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      // Handle request or network errors
+      print("Error making GET request: $e");
+      return null;
     }
   }
 

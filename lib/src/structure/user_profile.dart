@@ -19,9 +19,12 @@ class UserProfile {
   int raffleEntries;
   int raffleEntriesDayOne;
   int raffleEntriesDayTwo;
+  String playerCurrentHub;
+  String currentMatch;
 
   UserProfile(
       {required this.fullName,
+      required this.currentMatch,
       required this.gender,
       required this.dob,
       required this.gamertag,
@@ -40,11 +43,13 @@ class UserProfile {
       required this.checkedin,
       required this.playerLevel,
       required this.matchStreak,
-      required this.prestigeTotal});
+      required this.prestigeTotal,
+      required this.playerCurrentHub});
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       fullName: json['fullName'] ?? '',
+      currentMatch: json['currentMatch'] ?? 0,
       xp: json['xp'] ?? 0,
       gender: json['gender'] ?? '',
       dob: json['dob'] ?? '',
@@ -64,6 +69,7 @@ class UserProfile {
       raffleEntriesDayTwo: json['raffleEntriesDayTwo'] ?? 0,
       matchStreak: json['matchStreak'] ?? 0,
       prestigeTotal: json['prestigeTotal'] ?? 0,
+      playerCurrentHub: json['playerCurrentHub'] ?? '',
     );
   }
 

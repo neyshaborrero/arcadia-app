@@ -78,12 +78,11 @@ class _HomeScreenState extends State<HomeScreen>
     if (user == null) return;
 
     final token = await user.getIdToken();
-
     if (token == null) return;
 
     final response = await _arcadiaCloud.fetchArcadiaPrizes(token);
 
-    if (response != null) {
+    if (response != null && mounted) {
       List<PrizeDetails> prizeList = response;
 
       Provider.of<PrizesChangeProvider>(context, listen: false)
@@ -94,13 +93,13 @@ class _HomeScreenState extends State<HomeScreen>
 
     final lootResponse = await _arcadiaCloud.fetchArcadiaLoot(token);
 
-    if (lootResponse != null) {
+    if (lootResponse != null && mounted) {
       List<PrizeDetails> lootList = lootResponse;
 
       Provider.of<PrizesChangeProvider>(context, listen: false)
           .addPrizes(lootList);
     } else {
-      print("failed to load prizes");
+      print("failed to load loot prizes");
     }
   }
 

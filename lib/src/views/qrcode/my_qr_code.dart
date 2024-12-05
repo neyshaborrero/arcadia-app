@@ -110,6 +110,7 @@ class _MyQRCodeState extends State<MyQRCode> {
                   style: const TextStyle(
                     fontSize: 24.0,
                     fontWeight: FontWeight.w700,
+                    fontFamily: 'Courier New',
                   ),
                 ),
                 const SizedBox(
