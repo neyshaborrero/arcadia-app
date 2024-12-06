@@ -211,7 +211,7 @@ class _BountyCountdownModalState extends State<BountyCountdownModal> {
                                   'You have been selected for a Bounty Match. Report yourself to the ',
                             ),
                             TextSpan(
-                              text: 'Bounty Grounds',
+                              text: 'Bounty Hunter Grounds',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: screenWidth * 0.045,

@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/src/components/event/intercative_map_widget.dart';
 import 'package:arcadia_mobile/src/notifiers/prizes_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/routes/slide_right_route.dart';
@@ -16,7 +17,6 @@ import 'package:arcadia_mobile/src/views/profile/settings.dart';
 import 'package:arcadia_mobile/src/views/qrcode/qrcode_view.dart';
 import 'package:arcadia_mobile/src/views/start/event_home.dart';
 import 'package:arcadia_mobile/src/views/start/play_home.dart';
-import 'package:arcadia_mobile/src/views/start/splash_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -50,15 +50,17 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+    userProfile =
+        Provider.of<UserProfileProvider>(context, listen: false).userProfile;
+    _tabController = TabController(
+        length: userProfile != null && userProfile!.checkedin.isEmpty ? 3 : 4,
+        vsync: this,
+        initialIndex: 0);
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
 
     _arcadiaCloud = ArcadiaCloud(firebaseService);
     _fetchPrizes();
-
-    userProfile =
-        Provider.of<UserProfileProvider>(context, listen: false).userProfile;
 
     if (userProfile != null) {
       firebaseService.initFirebaseNotifications(userProfile!);
@@ -114,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen>
   //   }
   // }
 
-  List<String> tabTitles = ['Quests', 'Event', 'News'];
+  List<String> tabTitles = ['Quests', 'Event', 'News', 'Map'];
 
   @override
   Widget build(BuildContext context) {
@@ -136,15 +138,16 @@ class _HomeScreenState extends State<HomeScreen>
                         context, const SettingsScreen());
                   },
                 ),
-              IconButton(
-                icon: const Icon(
-                  Icons.confirmation_num_outlined,
-                  size: 32,
+              if (userProfile != null && userProfile!.checkedin.isEmpty)
+                IconButton(
+                  icon: const Icon(
+                    Icons.confirmation_num_outlined,
+                    size: 32,
+                  ),
+                  onPressed: () {
+                    launchURL(Uri.parse('https://prticket.sale/ARCADIA'));
+                  },
                 ),
-                onPressed: () {
-                  launchURL(Uri.parse('https://prticket.sale/ARCADIA'));
-                },
-              ),
             ],
             backgroundColor: Colors.black,
             automaticallyImplyLeading: false,
@@ -180,12 +183,15 @@ class _HomeScreenState extends State<HomeScreen>
                                   userProfile!.checkedin.isEmpty)
                               ? 'Quests'
                               : 'Play'),
-                      Tab(text: 'Vote'),
                       Tab(
                           text: (userProfile != null &&
                                   userProfile!.checkedin.isEmpty)
                               ? 'News'
                               : 'Event'),
+                      Tab(text: 'Vote'),
+                      if (userProfile != null &&
+                          userProfile!.checkedin.isNotEmpty)
+                        Tab(text: 'Map'),
                     ],
                   )
                 : null,
@@ -202,15 +208,19 @@ class _HomeScreenState extends State<HomeScreen>
 
                 case ViewType.events:
                   return TabBarView(
+                    physics: const NeverScrollableScrollPhysics(),
                     controller: _tabController,
                     children: [
                       (userProfile != null && userProfile!.checkedin.isEmpty)
                           ? QuestsView(missionList: widget.missions)
                           : PlayHome(),
-                      const EventView(),
                       (userProfile != null && userProfile!.checkedin.isEmpty)
                           ? NewsScreen()
-                          : EventHome()
+                          : EventHome(missionList: widget.missions),
+                      const EventView(),
+                      if (userProfile != null &&
+                          userProfile!.checkedin.isNotEmpty)
+                        const InteractiveMapWidget()
                     ],
                   );
                 default:

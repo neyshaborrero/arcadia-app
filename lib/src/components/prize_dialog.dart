@@ -18,8 +18,7 @@ void showPrizeDialog(
   required String termsurl,
   required String eventId,
   required int userTokens,
-  required bool enable,
-  required bool userCheckedIn,
+  required bool canUserParticipate,
 }) {
   final firebaseService = Provider.of<FirebaseService>(context, listen: false);
   final ArcadiaCloud arcadiaCloud = ArcadiaCloud(firebaseService);
@@ -123,7 +122,8 @@ void showPrizeDialog(
                       token: token,
                       description: description,
                       poweredby: poweredby,
-                      canParticipate: token > userTokens,
+                      doesUserHaveTokens: token <= userTokens,
+                      canParticipate: canUserParticipate,
                     ),
                     const SizedBox(height: 8),
                     _buildIncrementDecrementWidget(
@@ -133,13 +133,13 @@ void showPrizeDialog(
                       userTokens: userTokens,
                     ),
                     const SizedBox(height: 20),
-                    if (userCheckedIn && (token <= userTokens) && enable)
+                    if (canUserParticipate && (token <= userTokens))
                       _buildActionButtons(
                         context: context,
                         count: entries,
                         onPurchasePressed: entries > 0 ? handlePurchase : null,
                       ),
-                    if (!userCheckedIn || (token > userTokens))
+                    if (!canUserParticipate || (token > userTokens))
                       _buildCloseButton(context)
                   ],
                 ),
@@ -246,6 +246,7 @@ Widget _buildPrizeContainer({
   required String image,
   required int token,
   required bool canParticipate,
+  required bool doesUserHaveTokens,
   required String description,
   required String poweredby,
 }) {
@@ -275,7 +276,16 @@ Widget _buildPrizeContainer({
         _buildDescription(description),
         const SizedBox(height: 2),
         _buildSponsorRow(poweredby),
-        if (canParticipate)
+        if (!canParticipate)
+          const Text(
+            'Converting your tokens for entries will be enable later in the evening.',
+            style: TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        if (canParticipate && !doesUserHaveTokens)
           const Text(
             'You don\'t have enough tokens to participate in this prize.',
             style: TextStyle(
@@ -304,7 +314,7 @@ Widget _buildPrizeImage(String imageUrl) {
   return CachedNetworkImage(
     width: 214,
     height: 118,
-    imageUrl: imageUrl,
+    imageUrl: "$imageUrl&w=400",
     fit: BoxFit.fitWidth,
     errorWidget: (context, url, error) => const Icon(Icons.error),
   );
@@ -365,7 +375,7 @@ Widget _buildSponsorRow(String poweredByUrl) {
       CachedNetworkImage(
         width: 100,
         height: 60,
-        imageUrl: poweredByUrl,
+        imageUrl: "$poweredByUrl&w=400",
         fit: BoxFit.fitWidth,
         errorWidget: (context, url, error) => const Icon(Icons.error),
       ),

@@ -61,6 +61,7 @@ class _RaffleViewState extends State<RaffleView>
         ),
       ),
       body: TabBarView(
+        physics: const NeverScrollableScrollPhysics(),
         controller: _tabController,
         children: [
           if (widget.viewType == ViewType.prize)

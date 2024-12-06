@@ -1,6 +1,7 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/db_listener_service.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/services/network_status_checker.dart';
 import 'package:arcadia_mobile/src/components/lifecycle_manager.dart';
 import 'package:arcadia_mobile/src/notifiers/activity_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
@@ -60,6 +61,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider(create: (_) => NetworkStatusChecker()),
         ChangeNotifierProvider(create: (_) => ClickedState()),
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
         ChangeNotifierProvider(create: (_) => UserActivityProvider()),
@@ -135,7 +137,11 @@ class MyApp extends StatelessWidget {
       title: 'Arcadia Battle Royale 2024',
       theme: _buildThemeData(context),
       debugShowCheckedModeBanner: false,
-      home: initialized ? SplashScreen() : ErrorScreen(),
+      home: initialized
+          ? SplashScreen()
+          : ErrorScreen(
+              isWifi: false,
+            ),
     );
 
     // return MaterialApp(

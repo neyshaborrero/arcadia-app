@@ -31,7 +31,7 @@ class MatchInProgressModal extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.green,
+                  const Color(0xFF4BAE4F),
                   const Color(0xFF020202),
                 ],
               ),
@@ -56,7 +56,7 @@ class MatchInProgressModal extends StatelessWidget {
                   CachedNetworkImage(
                     width: 100,
                     height: 100,
-                    imageUrl: gameImage,
+                    imageUrl: "$gameImage&w=400",
                     fit: BoxFit.cover,
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.error),
@@ -102,9 +102,9 @@ class MatchInProgressModal extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildPlayerCard(context, matchDetails.team1?.first, 'Team 1'),
+        _buildPlayerCard(context, matchDetails.team1?.first, 'Team 1', 'A'),
         _buildVersusIcon(context),
-        _buildPlayerCard(context, matchDetails.team2?.first, 'Team 2'),
+        _buildPlayerCard(context, matchDetails.team2?.first, 'Team 2', 'B'),
       ],
     );
   }
@@ -115,8 +115,10 @@ class MatchInProgressModal extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildPlayerCard(context, matchDetails.team1?[0], 'Team 1 - A'),
-            _buildPlayerCard(context, matchDetails.team1?[1], 'Team 1 - B'),
+            _buildPlayerCard(
+                context, matchDetails.team1?[0], 'Team 1 - A', 'A'),
+            _buildPlayerCard(
+                context, matchDetails.team1?[1], 'Team 1 - B', 'B'),
           ],
         ),
         SizedBox(
@@ -147,8 +149,10 @@ class MatchInProgressModal extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildPlayerCard(context, matchDetails.team2?[0], 'Team 2 - A'),
-            _buildPlayerCard(context, matchDetails.team2?[1], 'Team 2 - B'),
+            _buildPlayerCard(
+                context, matchDetails.team2?[0], 'Team 2 - A', 'C'),
+            _buildPlayerCard(
+                context, matchDetails.team2?[1], 'Team 2 - B', 'D'),
           ],
         ),
       ],
@@ -156,39 +160,94 @@ class MatchInProgressModal extends StatelessWidget {
   }
 
   Widget _build1v1v1v1Match(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
+    return SizedBox(
+      width: double.infinity,
+      height: 300, // Adjust height based on your layout needs
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Top-left corner: Team 1
+          Positioned(
+            top: 20,
+            left: 20,
+            child: _buildPlayerCard(
+                context, matchDetails.team1?.first, 'Team 1', 'A'),
+          ),
+
+          // Top-right corner: Team 2
+          Positioned(
+            top: 20,
+            right: 20,
+            child: _buildPlayerCard(
+                context, matchDetails.team2?.first, 'Team 2', 'B'),
+          ),
+
+          // Center: Versus Icon
+          _buildVersusIcon(context),
+
+          // Bottom-left corner: Team 3
+          Positioned(
+            bottom: 20,
+            left: 20,
+            child: _buildPlayerCard(
+                context, matchDetails.team3?.first, 'Team 3', 'C'),
+          ),
+
+          // Bottom-right corner: Team 4
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: _buildPlayerCard(
+                context, matchDetails.team4?.first, 'Team 4', 'D'),
+          ),
+        ],
       ),
-      itemCount: 4,
-      itemBuilder: (context, index) {
-        final team = [
-          matchDetails.team1,
-          matchDetails.team2,
-          matchDetails.team3,
-          matchDetails.team4
-        ][index];
-        return _buildPlayerCard(context, team?.first, 'Team ${index + 1}');
-      },
     );
   }
 
-  Widget _buildPlayerCard(
-      BuildContext context, MatchPlayer? player, String label) {
+  Widget _buildPlayerCard(BuildContext context, MatchPlayer? player,
+      String label, String stationSpot) {
     return Column(
       children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundColor: const Color(0xFF2C2B2B),
-          backgroundImage:
-              player != null ? NetworkImage(player.imageprofile) : null,
-          child: player == null
-              ? const Icon(Icons.person, color: Colors.white, size: 40)
-              : null,
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // CircleAvatar
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: const Color(0xFF2C2B2B),
+              backgroundImage:
+                  player != null ? NetworkImage(player.imageprofile) : null,
+              child: player == null
+                  ? const Icon(Icons.person, color: Colors.white, size: 40)
+                  : null,
+            ),
+
+            // Station Spot Badge
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFD20E0D),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    stationSpot,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Text(
@@ -203,8 +262,8 @@ class MatchInProgressModal extends StatelessWidget {
   Widget _buildVersusIcon(BuildContext context) {
     return const Image(
       image: AssetImage('assets/versus.png'),
-      width: 50,
-      height: 50,
+      width: 65,
+      height: 65,
     );
   }
 }

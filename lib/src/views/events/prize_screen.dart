@@ -179,7 +179,7 @@ class PrizeScreen extends StatelessWidget {
                             CachedNetworkImage(
                               width: 280,
                               height: 150,
-                              imageUrl: prize.image,
+                              imageUrl: "${prize.image}&w=400",
                               fit: BoxFit.fitWidth,
                               placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator(
@@ -214,25 +214,26 @@ class PrizeScreen extends StatelessWidget {
                               height: 5,
                             ),
                             ElevatedButton(
-                              onPressed: () => showPrizeDialog(context,
-                                  title: prize.title,
-                                  image: prize.image,
-                                  prizeId: prize.id,
-                                  eventId: userProfile != null
-                                      ? userProfile.checkedin
-                                      : '',
-                                  token: prize.token,
-                                  description: prize.description,
-                                  poweredby: prize.poweredBy,
-                                  termsurl: prize.termsurl,
-                                  userTokens: userProfile != null
-                                      ? userProfile.tokens
-                                      : 0,
-                                  userCheckedIn: userProfile != null &&
-                                          userProfile.checkedin.isNotEmpty
-                                      ? true
-                                      : false,
-                                  enable: prize.enable),
+                              onPressed: () => showPrizeDialog(
+                                context,
+                                title: prize.title,
+                                image: prize.image,
+                                prizeId: prize.id,
+                                eventId: userProfile != null
+                                    ? userProfile.checkedin
+                                    : '',
+                                token: prize.token,
+                                description: prize.description,
+                                poweredby: prize.poweredBy,
+                                termsurl: prize.termsurl,
+                                userTokens: userProfile != null
+                                    ? userProfile.tokens
+                                    : 0,
+                                canUserParticipate: userProfile != null &&
+                                        userProfile.raffleParticipation
+                                    ? true
+                                    : false,
+                              ),
                               style: ElevatedButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: const Size(0, 0),
@@ -267,7 +268,7 @@ class PrizeScreen extends StatelessWidget {
                                 CachedNetworkImage(
                                   width: 150,
                                   height: 90,
-                                  imageUrl: prize.poweredBy,
+                                  imageUrl: "${prize.poweredBy}&w=400",
                                   fit: BoxFit.fitWidth,
                                   errorWidget: (context, url, error) =>
                                       const Icon(Icons.error),

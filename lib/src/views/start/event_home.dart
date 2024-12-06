@@ -1,13 +1,16 @@
 import 'package:arcadia_mobile/src/components/ads_carousel.dart';
+import 'package:arcadia_mobile/src/components/event/intercative_map_widget.dart';
 import 'package:arcadia_mobile/src/routes/slide_up_route.dart';
+import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
+import 'package:arcadia_mobile/src/views/events/event_quests_screen.dart';
 import 'package:arcadia_mobile/src/views/events/loot_screen.dart';
-import 'package:arcadia_mobile/src/views/events/quests_screen.dart';
 import 'package:arcadia_mobile/src/views/events/raffle_view.dart';
 import 'package:flutter/material.dart';
 
 class EventHome extends StatefulWidget {
-  const EventHome({super.key});
+  final List<MissionDetails> missionList;
+  const EventHome({super.key, required this.missionList});
 
   @override
   _EventHomeState createState() => _EventHomeState();
@@ -58,19 +61,32 @@ class _EventHomeState extends State<EventHome> {
                     ),
                     const SizedBox(height: 20),
                     _EventSection(
-                      title: 'Daily Quests',
+                      title: 'Event Quests',
                       description: 'Complete quest for daily token rewards!',
                       assetPath: 'assets/map.png',
                       actionLabel: 'Earn Tokens',
                       onActionPressed: () {
                         _navigateUpWithSlideTransition(
                           context,
-                          const QuestsView(
-                            missionList: [],
-                          ), // Destination page
+                          EventQuestsScreen(
+                              missionList:
+                                  widget.missionList), // Destination page
                         );
                       },
                     ),
+                    // const SizedBox(height: 20),
+                    // _EventSection(
+                    //   title: 'Event Map',
+                    //   description: 'Explore Battle Royale Arena ',
+                    //   assetPath: 'assets/map_icon_1.png',
+                    //   actionLabel: 'View',
+                    //   onActionPressed: () {
+                    //     _navigateUpWithSlideTransition(
+                    //       context,
+                    //       InteractiveMapWidget(), // Destination page
+                    //     );
+                    //   },
+                    // ),
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -136,7 +152,7 @@ class _EventSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            width: 200, // Set the maximum width
+            width: 250, // Set the maximum width
             child: ElevatedButton(
               onPressed: onActionPressed, // Trigger the navigation callback
               style: ElevatedButton.styleFrom(
@@ -170,9 +186,5 @@ class _EventSection extends StatelessWidget {
         color: Colors.grey,
       ),
     );
-  }
-
-  void _navigateUpWithSlideTransition(BuildContext context, Widget page) {
-    Navigator.of(context).push(SlideFromBottomPageRoute(page: page));
   }
 }

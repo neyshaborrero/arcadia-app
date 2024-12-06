@@ -103,29 +103,6 @@ class _EventViewState extends State<EventView> {
                   const SizedBox(
                     height: 20,
                   ),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: tablet ? 400 : 200),
-                    child: ElevatedButton(
-                      onPressed: () =>
-                          launchURL(Uri.parse('https://prticket.sale/ARCADIA')),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size.fromHeight(tablet ? 70 : 50),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: tablet ? 20 : 10,
-                          vertical: tablet ? 20 : 10,
-                        ),
-                        child: Text(
-                          'Buy Tickets',
-                          style: TextStyle(fontSize: tablet ? 24 : 18),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 30,
-                  ),
                 ],
               ),
             ),

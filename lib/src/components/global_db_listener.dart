@@ -1,7 +1,9 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/db_listener_service.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/services/network_status_checker.dart';
 import 'package:arcadia_mobile/src/components/matches/bounty_countdown_modal.dart';
+import 'package:arcadia_mobile/src/components/matches/final_competition_modal.dart';
 import 'package:arcadia_mobile/src/components/matches/match_in_progress_modal.dart';
 import 'package:arcadia_mobile/src/components/matches/match_lost_modal.dart';
 import 'package:arcadia_mobile/src/components/matches/match_won_modal.dart';
@@ -9,6 +11,8 @@ import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
 import 'package:arcadia_mobile/src/structure/bounty.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
+import 'package:arcadia_mobile/src/views/start/error_view.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +30,7 @@ class _GlobalDBListenerState extends State<GlobalDBListener> {
   late final ArcadiaCloud _arcadiaCloud;
   Future<MatchDetails?>? _matchDetailsFuture;
   Future<Bounty?>? _bountyDetailsFuture;
+  //late NetworkStatusChecker _networkStatusChecker;
 
   @override
   void initState() {
@@ -33,6 +38,24 @@ class _GlobalDBListenerState extends State<GlobalDBListener> {
     final firebaseService =
         Provider.of<FirebaseService>(context, listen: false);
     _arcadiaCloud = ArcadiaCloud(firebaseService);
+
+    // _networkStatusChecker =
+    //     Provider.of<NetworkStatusChecker>(context, listen: false);
+
+    // // Listen for connectivity changes
+    // _networkStatusChecker.onConnectivityChanged.listen((connectivityResults) {
+    //   print("whifi issue");
+    //   if (!connectivityResults.contains(ConnectivityResult.wifi)) {
+    //     // If no Wi-Fi, navigate to ErrorScreen
+    //     Future.microtask(() {
+    //       Navigator.of(context).pushReplacement(
+    //         MaterialPageRoute(
+    //           builder: (context) => const ErrorScreen(isWifi: false),
+    //         ),
+    //       );
+    //     });
+    //   }
+    // });
   }
 
   Future<MatchDetails?> _fetchMatchDetails(String hubId) async {
@@ -48,35 +71,25 @@ class _GlobalDBListenerState extends State<GlobalDBListener> {
       return null;
     }
 
-    // Fetch matches from the API
     try {
       final userProfileProvider =
           Provider.of<UserProfileProvider>(context, listen: false);
+      UserProfile? userProfile = userProfileProvider.userProfile;
 
-      UserProfile? userprofile = userProfileProvider.userProfile;
-
-      if (userprofile != null) {
+      if (userProfile != null) {
         final currentMatchId =
             Provider.of<DatabaseListenerService>(context, listen: false)
                 .currentMatchValue;
-        final MatchDetails? match = await _arcadiaCloud.getMatch(
-            userprofile.playerCurrentHub, currentMatchId, token);
-        // Find the current match based on databaseService.currentMatchValue
-
-        if (match != null) {
-          return match;
-        } else {
-          return null;
-        }
+        return await _arcadiaCloud.getMatch(
+            userProfile.playerCurrentHub, currentMatchId, token);
       }
     } catch (e) {
       print("Error fetching match details: $e");
-      return null;
     }
     return null;
   }
 
-  Future<Bounty?> fetchBountyDetails(String bountyId) async {
+  Future<Bounty?> _fetchBountyDetails(String bountyId) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       print("User not authenticated");
@@ -89,20 +102,12 @@ class _GlobalDBListenerState extends State<GlobalDBListener> {
       return null;
     }
 
-    // Fetch matches from the API
     try {
-      final Bounty? bounty =
-          await _arcadiaCloud.fetchBountyDetails(token, bountyId);
-
-      if (bounty != null) {
-        return bounty;
-      } else {
-        return null;
-      }
+      return await _arcadiaCloud.fetchBountyDetails(token, bountyId);
     } catch (e) {
-      print("Error fetching BOUNTY details: $e");
-      return null;
+      print("Error fetching bounty details: $e");
     }
+    return null;
   }
 
   @override
@@ -128,12 +133,11 @@ class _GlobalDBListenerState extends State<GlobalDBListener> {
     }
 
     if (databaseService.thirdListenerValue.isNotEmpty) {
-      final bountyId = databaseService
-          .thirdListenerValue; // Replace with your bounty ID logic
-      _bountyDetailsFuture = fetchBountyDetails(bountyId);
+      final bountyId = databaseService.thirdListenerValue;
+      _bountyDetailsFuture = _fetchBountyDetails(bountyId);
     }
 
-    // Check the static flag for navigation
+    // Handle navigation based on secondListenerValue
     if (databaseService.secondListenerValue) {
       Future.microtask(() async {
         final user = FirebaseAuth.instance.currentUser;
@@ -147,7 +151,6 @@ class _GlobalDBListenerState extends State<GlobalDBListener> {
           false,
         );
 
-        print("we are setting false");
         Navigator.of(context).pushNamedAndRemoveUntil(
           '/',
           (Route<dynamic> route) => false,
@@ -174,10 +177,8 @@ class _GlobalDBListenerState extends State<GlobalDBListener> {
               } else {
                 return Positioned.fill(
                   child: Container(
-                    alignment: Alignment
-                        .center, // Centers the child horizontally and vertically
-                    color: Colors.black.withOpacity(
-                        0.8), // Optional semi-transparent background
+                    alignment: Alignment.center,
+                    color: Colors.black.withOpacity(0.8),
                     child: MatchInProgressModal(
                       matchDetails: snapshot.data!,
                     ),
@@ -191,6 +192,8 @@ class _GlobalDBListenerState extends State<GlobalDBListener> {
             firebaseService: firebaseService,
             winXp: winStreak * 100,
           ),
+        if (winStreak == -100)
+          FinalCompetitionModal(firebaseService: firebaseService),
         if (winStreak == -1) MatchLostModal(firebaseService: firebaseService),
         if (databaseService.thirdListenerValue.isNotEmpty)
           FutureBuilder<Bounty?>(

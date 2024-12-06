@@ -69,7 +69,7 @@ class LootPrizeScreen extends StatelessWidget {
                             CachedNetworkImage(
                               width: 280,
                               height: 300,
-                              imageUrl: prize.image,
+                              imageUrl: "${prize.image}&w=400",
                               fit: BoxFit.fitWidth,
                               placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator(

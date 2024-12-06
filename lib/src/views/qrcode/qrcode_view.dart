@@ -1,3 +1,4 @@
+import 'package:arcadia_mobile/src/components/event/intercative_map_widget.dart';
 import 'package:arcadia_mobile/src/components/operator_qr_cod_widget.dart';
 import 'package:arcadia_mobile/src/components/qr_code_widget.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
@@ -27,9 +28,14 @@ class _QRCodeScreenState extends State<QRCodeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     userProfile =
         Provider.of<UserProfileProvider>(context, listen: false).userProfile;
+
+    _tabController = TabController(
+        length:
+            (userProfile != null && !userProfile!.checkedin.isNotEmpty) ? 2 : 1,
+        vsync: this,
+        initialIndex: 0);
 
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -44,8 +50,9 @@ class _QRCodeScreenState extends State<QRCodeScreen>
   Widget build(BuildContext context) {
     List<String> tabTitles = [];
     tabTitles.add('QRCode');
-    if (widget.viewType != ViewType.createMatch ||
-        widget.viewType != ViewType.challengeBounty) tabTitles.add('QRCode');
+    if ((widget.viewType != ViewType.createMatch ||
+            widget.viewType != ViewType.challengeBounty) &&
+        userProfile!.checkedin.isEmpty) tabTitles.add('QRCode');
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
@@ -64,18 +71,22 @@ class _QRCodeScreenState extends State<QRCodeScreen>
           indicatorSize: TabBarIndicatorSize.tab,
           tabs: [
             Tab(text: 'Scan'),
-            if (widget.viewType != ViewType.createMatch ||
-                widget.viewType != ViewType.challengeBounty)
+            if ((widget.viewType != ViewType.createMatch ||
+                    widget.viewType != ViewType.challengeBounty) &&
+                userProfile!.checkedin.isEmpty)
               Tab(text: 'My QR'),
           ],
         ),
       ),
       body: TabBarView(
+        physics: const NeverScrollableScrollPhysics(),
         controller: _tabController,
-        children: userProfile == null || userProfile?.userType == null
-            ? const [
+        children: userProfile?.userType != "operator"
+            ? [
                 QRScan(),
-                MyQRCode(),
+                userProfile!.checkedin.isNotEmpty
+                    ? InteractiveMapWidget()
+                    : MyQRCode(),
               ]
             : userProfile?.userType == "operator"
                 ? [

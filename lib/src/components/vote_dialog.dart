@@ -80,7 +80,7 @@ Widget _buildVoteContent(
                 ? CachedNetworkImage(
                     width: 180,
                     height: 180,
-                    imageUrl: image,
+                    imageUrl: "$image&w=400",
                     fit: BoxFit.contain,
                     placeholder: (context, url) {
                       return buildLoadingImageSkeleton(95);

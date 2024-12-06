@@ -170,7 +170,7 @@ class _SurveyContainerState extends State<SurveyContainer> {
             CachedNetworkImage(
               width: imageSize,
               height: imageSize,
-              imageUrl: widget.surveyDetails.pictureUrl!,
+              imageUrl: "${widget.surveyDetails.pictureUrl!}&w=400",
               fit: BoxFit.contain,
               placeholder: (context, url) {
                 return buildLoadingImageSkeleton(imageSize);
@@ -224,7 +224,8 @@ class _SurveyContainerState extends State<SurveyContainer> {
               ),
             ),
           ),
-          if (widget.surveyDetails.sponsorBy != null)
+          if (widget.surveyDetails.sponsorBy != null &&
+              widget.surveyDetails.sponsorBy!.isNotEmpty)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -240,7 +241,7 @@ class _SurveyContainerState extends State<SurveyContainer> {
                 CachedNetworkImage(
                   width: 90,
                   height: 60,
-                  imageUrl: widget.surveyDetails.sponsorBy ?? '',
+                  imageUrl: "${widget.surveyDetails.sponsorBy}&w=400",
                   fit: BoxFit.fitWidth,
                   errorWidget: (context, url, error) => const Icon(Icons.error),
                 ),

@@ -202,6 +202,7 @@ class _ManualQRCodeViewState extends State<ManualQRCodeView> {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (context) => ScanView(
             appBarTitle: "Check In to Arcadia Battle Royale",
+            disableBack: true,
           ),
         ));
       }

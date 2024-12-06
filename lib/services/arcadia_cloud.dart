@@ -339,6 +339,33 @@ class ArcadiaCloud {
     }
   }
 
+  Future<void> answerFinalCompetition(String token, String status) async {
+    final url = Uri.parse(
+        '${_firebaseService.arcadiaCloudAddress}/match/finalCompetition');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({'status': status}),
+    );
+
+    print("Response status code: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      // Success: No need to throw an error
+      return;
+    } else if (response.statusCode == 404) {
+      throw Exception(
+          'Error sending the answer to Master Control, please try again later');
+    } else {
+      throw Exception('Failed to send the answer to Master Control');
+    }
+  }
+
   Future<String> requestBountyChallenge(
       String token, String bountyId, String challengerId) async {
     final url = Uri.parse(
@@ -451,6 +478,33 @@ class ArcadiaCloud {
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
       return HubCheckin.fromJson(data);
+    } else if (response.statusCode == 400 || response.statusCode == 401) {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    } else {
+      final Map<String, dynamic> errorResponse = json.decode(response.body);
+      throw BadRequestException(errorResponse['errors'][0]['message']);
+    }
+  }
+
+  Future<String> panicOperator(String hubId, String token) async {
+    final response = await http.post(
+      Uri.parse(
+          '${_firebaseService.arcadiaCloudAddress}/operator/hitPanic'), // Replace with your actual endpoint
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add the Firebase ID token here
+        'x-api-key': _firebaseService.xApiKey,
+      },
+      body: jsonEncode({
+        'hubId': hubId,
+      }),
+    );
+
+    print("response, $response");
+
+    if (response.statusCode == 200) {
+      return "An admin has been notified. Someone will come over soon.";
     } else if (response.statusCode == 400 || response.statusCode == 401) {
       final Map<String, dynamic> errorResponse = json.decode(response.body);
       throw BadRequestException(errorResponse['errors'][0]['message']);
@@ -704,8 +758,6 @@ class ArcadiaCloud {
     final url =
         Uri.parse('${_firebaseService.arcadiaCloudAddress}/match/addPlayer');
 
-    print("token, $token");
-
     final response = await http.post(
       url,
       headers: {
@@ -731,7 +783,10 @@ class ArcadiaCloud {
     } else {
       // Handle error
       print('Failed to add player ${response.body}');
-      return null;
+      final Map<String, dynamic> jsonData = json.decode(response.body);
+      final Map<String, dynamic> errorJson =
+          jsonData['errors'][0]; // Extract the first error
+      throw ErrorDetail.fromJson(errorJson);
     }
   }
 
@@ -1060,7 +1115,7 @@ class ArcadiaCloud {
   }
 
   //Missions
-  Future<List<MissionDetails>?> fetchArcadiaMissions(
+  Future<List<MissionDetails>> fetchArcadiaMissions(
       String token, String? userDate, String? timeZone) async {
     final baseUrl =
         '${_firebaseService.arcadiaCloudAddress}/mission/getmissions';
@@ -1096,7 +1151,48 @@ class ArcadiaCloud {
       print(
         'Failed to load arcadia missions ${response.statusCode}',
       );
-      return null;
+      return [];
+    }
+  }
+
+  //Missions
+  Future<List<MissionDetails>> fetchEventArcadiaMissions(
+      String token, String? userDate, String? timeZone) async {
+    final baseUrl =
+        '${_firebaseService.arcadiaCloudAddress}/mission/getEventMissions';
+
+    // Add query parameters to the base URL
+    final url = Uri.parse(baseUrl).replace(queryParameters: {
+      if (userDate != null)
+        'date': userDate, // Add date as a query parameter if it's not null
+      if (timeZone != null)
+        'timeZone':
+            timeZone, // Add timeZone as a query parameter if it's not null
+    });
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-api-key': _firebaseService.xApiKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      List<MissionDetails> missions = [];
+      missions = data.map((missionJson) {
+        return MissionDetails.fromJson(missionJson, missionJson['id']);
+      }).toList();
+
+      return missions;
+    } else {
+      // Handle error
+      print(
+        'Failed to load arcadia missions ${response.statusCode}',
+      );
+      return [];
     }
   }
 

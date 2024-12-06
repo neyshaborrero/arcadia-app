@@ -85,30 +85,30 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
                   const SizedBox(
                     height: 8,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Center(
-                      child: ElevatedButton(
-                        onPressed: () => setState(() => isManual = !isManual),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(50),
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 48, vertical: 16),
-                          child: Text(
-                            'Enter Manually',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.all(10.0),
+                  //   child: Center(
+                  //     child: ElevatedButton(
+                  //       onPressed: () => setState(() => isManual = !isManual),
+                  //       style: ElevatedButton.styleFrom(
+                  //         minimumSize: const Size.fromHeight(50),
+                  //       ),
+                  //       child: const Padding(
+                  //         padding: EdgeInsets.symmetric(
+                  //             horizontal: 48, vertical: 16),
+                  //         child: Text(
+                  //           'Enter Manually',
+                  //           style: TextStyle(fontSize: 18),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                   if (Provider.of<UserProfileProvider>(context, listen: false)
                           .isOperator &&
                       Provider.of<UserProfileProvider>(context, listen: false)
-                              .currentHubId !=
-                          null)
+                          .currentHubId!
+                          .isNotEmpty)
                     _buildCheckOutButton(
                         context,
                         Provider.of<UserProfileProvider>(context, listen: false)
@@ -213,12 +213,12 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
       }
 
       if (widget.viewType == ViewType.checkin) {
-        print("refreshing in 5 seconds");
         await Future.delayed(const Duration(seconds: 5));
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (context) => ScanView(
             appBarTitle: "Check In to Arcadia Battle Royale",
+            disableBack: true,
           ),
         ));
       }
@@ -303,8 +303,8 @@ class _OperatorQRScanState extends State<OperatorQRScan> {
       } else {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (context) => ScanView(
-            appBarTitle: "Check In to Arcadia Battle Royale",
-          ),
+              appBarTitle: "Check In to Arcadia Battle Royale",
+              disableBack: true),
         ));
       }
     } else {

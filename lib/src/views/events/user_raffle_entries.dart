@@ -160,7 +160,7 @@ class RaffleEntriesScreen extends StatelessWidget {
                             CachedNetworkImage(
                               width: 280,
                               height: 150,
-                              imageUrl: prize.image,
+                              imageUrl: "${prize.image}&w=400",
                               fit: BoxFit.fitWidth,
                               placeholder: (context, url) => const Center(
                                 child: CircularProgressIndicator(
@@ -212,7 +212,7 @@ class RaffleEntriesScreen extends StatelessWidget {
                                 CachedNetworkImage(
                                   width: 150,
                                   height: 90,
-                                  imageUrl: prize.poweredBy,
+                                  imageUrl: "${prize.poweredBy}&w=400",
                                   fit: BoxFit.fitWidth,
                                   errorWidget: (context, url, error) =>
                                       const Icon(Icons.error),

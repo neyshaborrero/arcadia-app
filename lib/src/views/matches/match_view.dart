@@ -1,6 +1,7 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
 import 'package:arcadia_mobile/src/components/create_match_dialog.dart';
+import 'package:arcadia_mobile/src/structure/error_detail.dart';
 import 'package:arcadia_mobile/src/structure/game.dart';
 import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/match_details.dart';
@@ -182,39 +183,6 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     );
   }
 
-  // Method to change the match status before enabling winner selection
-  Future<void> _startMatch(String hubId) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final token = await user.getIdToken();
-
-    if (token == null || matchDetails.id == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to get authentication token')),
-      );
-      return;
-    }
-
-    // Change the match status to 'in progress'
-    bool success = await _arcadiaCloud.changeMatchStatus(
-        'in progress', matchDetails.id!, hubId, token);
-
-    if (success) {
-      setState(() {
-        isWinnerSelectionEnabled =
-            true; // Enable winner selection after match starts
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Match started. Select the winner.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to start the match')),
-      );
-    }
-  }
-
   Future<MatchPlayer?> _addPlayer(
       String userId,
       String playerSlot,
@@ -223,25 +191,31 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
       String matchType,
       String hubId,
       String stationId) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
 
-    final token = await user.getIdToken();
+      final token = await user.getIdToken();
 
-    if (token == null) return null;
+      if (token == null) return null;
 
-    final MatchPlayer? response = await _arcadiaCloud.addPlayerArcadiaMatch(
-      gameId,
-      matchId,
-      playerSlot,
-      userId,
-      matchType,
-      stationId,
-      hubId,
-      token,
-    );
+      final MatchPlayer? response = await _arcadiaCloud.addPlayerArcadiaMatch(
+        gameId,
+        matchId,
+        playerSlot,
+        userId,
+        matchType,
+        stationId,
+        hubId,
+        token,
+      );
 
-    return response;
+      return response;
+    } on ErrorDetail catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    }
   }
 
   // Method to call the setMatchWinner API
@@ -268,9 +242,22 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
     // First, update the match status to 'completed'
     await _changeMatchStatus("completed", hubId);
 
+    String teamNumber;
+    if (_selectedWinner == 'team1') {
+      teamNumber = '1';
+    } else if (_selectedWinner == 'team2') {
+      teamNumber = '2';
+    } else if (_selectedWinner == 'team3') {
+      teamNumber = '3';
+    } else if (_selectedWinner == 'team4') {
+      teamNumber = '4';
+    } else {
+      teamNumber = '1';
+    }
+
     // Call setMatchWinner API
     bool success = await _arcadiaCloud.setMatchWinner(
-      _selectedWinner == 'team1' ? '1' : '2', // Pass 1 for team1, 2 for team2
+      teamNumber,
       matchDetails.id!,
       hubId,
       token,
@@ -1068,7 +1055,6 @@ class _MatchViewState extends State<MatchView> with TickerProviderStateMixin {
         onTap: () {
           setState(() {
             _selectedGameIndex = index; // Set the selected game index
-            print("game match type $gameMatchType");
             matchType = gameMatchType;
             matchDetails.team2 = [];
             matchDetails.team1 = [];

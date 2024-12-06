@@ -138,7 +138,7 @@ class _AdsCarouselComponentState extends State<AdsCarouselComponent> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10.0),
                           child: CachedNetworkImage(
-                            imageUrl: ad.image,
+                            imageUrl: "${ad.image}&w=400",
                             fit: BoxFit.fitWidth,
                             placeholder: (context, url) =>
                                 buildShimmerAdContainer(

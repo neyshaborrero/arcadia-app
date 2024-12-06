@@ -95,9 +95,33 @@ class _GameActivityViewState extends State<GameActivityView> {
       automaticallyImplyLeading: false,
       actions: [
         IconButton(
-          icon: const Icon(Icons.report_problem_rounded, color: Colors.white),
-          onPressed: () {},
-        ),
+            icon: Image.asset(
+              'assets/subtract.png', // Replace with the path to your asset
+              width: 50, // Set the desired width
+              height: 50, // Set the desired height
+              fit: BoxFit.contain, // Adjust the fit
+            ),
+            onPressed: () async {
+              final User? user = FirebaseAuth.instance.currentUser;
+              if (user == null) return;
+
+              final token = await user.getIdToken();
+              if (token == null) return;
+
+              try {
+                var response =
+                    await _arcadiaCloud.panicOperator(widget.hubId, token);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(response)),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          'Error sending notification to master control, try again later')),
+                );
+              }
+            }),
       ],
     );
   }

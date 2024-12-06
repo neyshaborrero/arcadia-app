@@ -1,5 +1,6 @@
 import 'package:arcadia_mobile/services/arcadia_cloud.dart';
 import 'package:arcadia_mobile/services/firebase.dart';
+import 'package:arcadia_mobile/services/network_status_checker.dart';
 import 'package:arcadia_mobile/src/components/global_db_listener.dart';
 import 'package:arcadia_mobile/src/notifiers/ads_change_notifier.dart';
 import 'package:arcadia_mobile/src/notifiers/user_change_notifier.dart';
@@ -8,9 +9,9 @@ import 'package:arcadia_mobile/src/structure/hub.dart';
 import 'package:arcadia_mobile/src/structure/mission_details.dart';
 import 'package:arcadia_mobile/src/structure/user_profile.dart';
 import 'package:arcadia_mobile/src/structure/view_types.dart';
-import 'package:arcadia_mobile/src/tools/url.dart';
 import 'package:arcadia_mobile/src/views/matches/match_activity.dart';
 import 'package:arcadia_mobile/src/views/profile/update_profile.dart';
+import 'package:arcadia_mobile/src/views/start/error_view.dart';
 import 'package:arcadia_mobile/src/views/start/scan_view.dart';
 import 'package:arcadia_mobile/src/views/start/start_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -90,6 +91,24 @@ class _SplashScreenState extends State<SplashScreen>
               Provider.of<UserProfileProvider>(context, listen: false)
                   .setUserProfile(profile);
 
+              // if (profile.checkedin.isNotEmpty) {
+              //   // Check Wi-Fi connectivity
+              //   final networkChecker = NetworkStatusChecker();
+              //   bool isConnectedToWiFi =
+              //       await networkChecker.isConnectedToWiFi();
+              //   if (!isConnectedToWiFi) {
+              //     Navigator.of(context).pushReplacement(
+              //       MaterialPageRoute(
+              //         builder: (context) => ErrorScreen(
+              //           isWifi:
+              //               true, // No profile since the user isn't authenticated
+              //         ),
+              //       ),
+              //     );
+              //     return;
+              //   }
+              // }
+
               if (profile.currentHubId != null &&
                   profile.currentHubId!.isNotEmpty) {
                 _goToOperatorView(token, profile.currentHubId!);
@@ -102,17 +121,26 @@ class _SplashScreenState extends State<SplashScreen>
                       builder: (context) => const UserProfileUpdateScreen()),
                 );
               }
+
+              List<MissionDetails> missions = [];
+
+              if (profile.checkedin.isNotEmpty) {
+                missions = await _fetchMissions(token, true);
+              } else {
+                missions = await _fetchMissions(token, false);
+              }
+
+              if (missions.isNotEmpty) {
+                missions = MissionDetails.sortByCompletedAndTitle(missions);
+              }
+
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      GlobalDBListener(child: HomeScreen(missions: missions)),
+                ),
+              );
             }
-
-            List<MissionDetails>? missions = await _fetchMissions(token);
-            missions = MissionDetails.sortByCompletedAndTitle(missions ?? []);
-
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => GlobalDBListener(
-                    child: HomeScreen(missions: missions ?? [])),
-              ),
-            );
           }
         } catch (e) {
           // Handle errors (e.g., network issues, token retrieval issues)
@@ -125,13 +153,14 @@ class _SplashScreenState extends State<SplashScreen>
     });
   }
 
-  Future<List<MissionDetails>?> _fetchMissions(String token) async {
+  Future<List<MissionDetails>> _fetchMissions(
+      String token, bool userCheckedIn) async {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return null;
+      if (user == null) return [];
 
       final token = await user.getIdToken();
-      if (token == null) return null;
+      if (token == null) return [];
 
       // Get the user's local datetime
       final userLocalDatetime = DateTime.now().toIso8601String();
@@ -139,12 +168,18 @@ class _SplashScreenState extends State<SplashScreen>
       // Get the user's timezone name (using intl)
       // final userTimezone = DateFormat('z').format(DateTime.now());
       const userTimezone = "EST";
-      return await _arcadiaCloud.fetchArcadiaMissions(
-          token, userLocalDatetime, userTimezone);
+
+      if (userCheckedIn) {
+        return await _arcadiaCloud.fetchEventArcadiaMissions(
+            token, userLocalDatetime, userTimezone);
+      } else {
+        return await _arcadiaCloud.fetchArcadiaMissions(
+            token, userLocalDatetime, userTimezone);
+      }
     } catch (e) {
       // Handle network or token retrieval errors
       print('Error fetching missions: $e');
-      return null;
+      return [];
     }
   }
 
@@ -199,7 +234,7 @@ class _SplashScreenState extends State<SplashScreen>
                           //_recordAdClick(ad);
                         },
                         child: CachedNetworkImage(
-                          imageUrl: ad.image,
+                          imageUrl: "${ad.image}&w=400",
                           fit: BoxFit
                               .contain, // Fit the image within the screen while preserving aspect ratio
                           placeholder: (context, url) => const Center(
@@ -263,6 +298,7 @@ class _SplashScreenState extends State<SplashScreen>
         Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (context) => ScanView(
             appBarTitle: "Check In to Arcadia Battle Royale",
+            disableBack: true,
           ),
         ));
       }

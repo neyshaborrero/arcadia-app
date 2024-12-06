@@ -50,7 +50,7 @@ class _MatchWonModalState extends State<MatchWonModal> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        const Color(0xFFD20E0D),
+                        const Color(0xFF4BAE4F),
                         const Color(0xFF020202),
                       ],
                     ),
